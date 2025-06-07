@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c824614047074a147a716e2b85ae5cbd, type: 3}
+  m_Name: GridPowerupRocketH
+  m_EditorClassIdentifier: 
+  icon: {fileID: 21300000, guid: 7a5ec45b81ed64d4b9c2643d6b38cc53, type: 3}
+  shadow: {fileID: 21300000, guid: 78c843556f96d334d8951d12f03eb565, type: 3}
+  glow: {fileID: 21300000, guid: 80afc2db3c8bb1346b09d2813342cd1c, type: 3}
+  color: {r: 1, g: 1, b: 1, a: 1}
