@@ -5241,28 +5241,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa51aa5050b7e0040906dd04374643d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customItem: {fileID: 11400000, guid: 92363ec20112b61479d2e58b56d15abe, type: 2}
-  type: -3
-  thisAnimator: {fileID: 6648771514197060315}
-  thisCanvas: {fileID: 8266851217113978354}
-  iconImage: {fileID: 3641184012650453365}
-  shadowImage: {fileID: 8223508610432866734}
-  textObject: {fileID: 2063859010245087155}
-  glowImage: {fileID: 3348376476649861205}
-  glowAnimator: {fileID: 3179151693860239124}
-  clearAnimation: CollectRocket
-  collectEffect: {fileID: 2224887877576881728, guid: cc138d940a916d944b8c4264f223abb9, type: 3}
-  collectAnimation: 
-  canMerge: 1
-  throwDistance: 0
-  otherOrientations:
-  - gridItem: {fileID: -4054056152294309094, guid: 18765f2eac97bd2499cc169eb59c61f1, type: 3}
-    orientations:
+  _customItem: {fileID: 11400000, guid: 92363ec20112b61479d2e58b56d15abe, type: 2}
+  _gridItemType: -3
+  _canvas: {fileID: 8266851217113978354}
+  _iconImage: {fileID: 3641184012650453365}
+  _shadowImage: {fileID: 8223508610432866734}
+  _glowImage: {fileID: 3348376476649861205}
+  _text: {fileID: 2063859010245087155}
+  _itemAnimator: {fileID: 6648771514197060315}
+  _glowAnimator: {fileID: 3179151693860239124}
+  _clearAnimationProperty: CollectRocket
+  _collectAnimationProperty: 
+  _collectEffect: {fileID: 4487042741970199928, guid: cc138d940a916d944b8c4264f223abb9, type: 3}
+  <CanMerge>k__BackingField: 1
+  <ThrowDistance>k__BackingField: 0
+  <ExtraExecuteTime>k__BackingField: 0.2
+  _otherOrientations:
+  - <GridItemView>k__BackingField: {fileID: -4054056152294309094, guid: 18765f2eac97bd2499cc169eb59c61f1, type: 3}
+    _orientations:
     - {x: 1, y: 0}
     - {x: -1, y: 0}
     - {x: 1, y: -1}
     - {x: -1, y: 1}
-  extraExecuteTime: 0.2
+  IsSpawning: 0
+  IsClearing: 0
+  IsMerging: 0
+  IsLastInLink: 0
 --- !u!114 &-1430675530763012233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5275,12 +5279,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8422c67eee29473418f8a38e07042173, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  executeDelay: 0
-  destroyEffect: {fileID: 0}
-  destroyPattern:
-    patternName: 8 around tile
-    delay: 0
-    directions:
+  _executeDelay: 0
+  _destroyEffect: {fileID: 0}
+  _destroyPatternInfo:
+    <PatternName>k__BackingField: 8 around tile
+    <Delay>k__BackingField: 0
+    _directions:
     - {x: 1, y: 0}
     - {x: 2, y: 0}
     - {x: 3, y: 0}

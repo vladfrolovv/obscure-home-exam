@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c824614047074a147a716e2b85ae5cbd, type: 3}
   m_Name: GridPowerupPropeller
   m_EditorClassIdentifier: 
-  icon: {fileID: 21300000, guid: 2e7997a1adfd0304f819d28a82d73a05, type: 3}
-  shadow: {fileID: 21300000, guid: 83415eb50b9fd2a4796463be350b9743, type: 3}
-  glow: {fileID: 21300000, guid: 78bde7e932b32374caa9de268f587e69, type: 3}
-  color: {r: 1, g: 1, b: 1, a: 1}
+  <Icon>k__BackingField: {fileID: 21300000, guid: 2e7997a1adfd0304f819d28a82d73a05, type: 3}
+  <Shadow>k__BackingField: {fileID: 0}
+  <Glow>k__BackingField: {fileID: 0}
+  <Color>k__BackingField: {r: 1, g: 1, b: 1, a: 1}

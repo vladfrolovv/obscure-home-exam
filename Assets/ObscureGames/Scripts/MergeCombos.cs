@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay.Grid;
 using UnityEngine;
 
 public class MergeCombos : MonoBehaviour
@@ -52,7 +53,7 @@ public class MergeCombos : MonoBehaviour
             for (int indexPowerup = 0; indexPowerup < powerups.Count; indexPowerup++)
             {
                 //if (mergeCombo != null ) print("test " + powerups[indexPowerup].type + " " + mergeCombo.itemTypes.Contains(powerups[indexPowerup].type));
-                if (mergeCombo != null && mergeCombo.itemTypes.Contains(powerups[indexPowerup].type) == false)
+                if (mergeCombo != null && mergeCombo.itemTypes.Contains(powerups[indexPowerup].GridItemType) == false)
                 {
                     mergeCombo = null;
                     continue;

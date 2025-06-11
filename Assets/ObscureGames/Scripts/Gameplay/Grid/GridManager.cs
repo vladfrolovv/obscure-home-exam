@@ -2,6 +2,7 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.Grid.Configs;
 using UnityEngine;
 using UnityEngine.UI;
@@ -231,7 +232,7 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
 
         newItemView.SetType(itemIndex);
 
-        newItemView.Setup(itemTypes[itemIndex]);
+        newItemView.InstallGridItem(itemTypes[itemIndex]);
 
         newItemView.transform.localScale = Vector3.one;
 
@@ -244,13 +245,13 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
             float dropDelay = itemDropDelay * (gridSize.y - gridY);
             float dropTime = itemDropTime * 2;
 
-            tileList[listIndex].GetCurrentItem().PlayAnimationDelayed("Bounce", dropDelay + dropTime);
+            tileList[listIndex].GetCurrentItem().PlayDelayedAnimation("Bounce", dropDelay + dropTime);
 
-            newItemView.isSpawning = true;
+            newItemView.IsSpawning = true;
 
             LeanTween.move(newItemView.gameObject, tileList[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay).setOnComplete(()=>
             {
-                newItemView.isSpawning = false;
+                newItemView.IsSpawning = false;
                 newItemView.transform.position = tileList[listIndex].transform.position;
             });
         }
@@ -265,7 +266,7 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
         if (delay > 0)
         {
             newItemView.PlayAnimation("Hidden");
-            newItemView.PlayAnimationDelayed("IntroPowerup", delay);
+            newItemView.PlayDelayedAnimation("IntroPowerup", delay);
         }
 
         parentTile.SetCurrentItem(newItemView);
@@ -336,8 +337,8 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
                         float dropDelay = itemDropDelay * (gridSize.x - checkIndex / gridSize.x);
                         float dropTime = itemDropTime;
 
-                        tileList[listIndex].GetCurrentItem().PlayAnimationDelayed("Fall", dropDelay);
-                        tileList[listIndex].GetCurrentItem().PlayAnimationDelayed("Bounce", dropDelay + dropTime);
+                        tileList[listIndex].GetCurrentItem().PlayDelayedAnimation("Fall", dropDelay);
+                        tileList[listIndex].GetCurrentItem().PlayDelayedAnimation("Bounce", dropDelay + dropTime);
 
                         LeanTween.move(tileList[listIndex].GetCurrentItem().gameObject, tileList[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay);
 
@@ -379,7 +380,7 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
 
             if (gridItemView)
             {
-                gridItemView.PlayAnimationDelayed("Outro", listIndex * 0.02f);
+                gridItemView.PlayDelayedAnimation("Outro", listIndex * 0.02f);
             }
         }
     }
@@ -493,7 +494,7 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
 
         for ( int tileIndex = 0; tileIndex < tileListRandom.Count; tileIndex++ )
         {
-            if ( tileListRandom[tileIndex].GetCurrentItem() && tileListRandom[tileIndex].GetCurrentItem().type < 0 && tileListRandom[tileIndex].GetCurrentItem().isClearing == false )
+            if ( tileListRandom[tileIndex].GetCurrentItem() && tileListRandom[tileIndex].GetCurrentItem().GridItemType < 0 && tileListRandom[tileIndex].GetCurrentItem().IsClearing == false )
             {
                 powerupTile = tileListRandom[tileIndex];
 

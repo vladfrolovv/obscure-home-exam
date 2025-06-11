@@ -1,6 +1,7 @@
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay.Grid;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -66,7 +67,7 @@ public class GridTile : MonoBehaviour
         // If this tile was already added to the link, backtrack to it
         if (playerController.tileLink.Contains(this))
         {
-            playerController.linkType = GetCurrentItem().type;
+            playerController.linkType = GetCurrentItem().GridItemType;
             playerController.CheckSelectables();
 
             // Remove all items in the link after this one
@@ -84,7 +85,7 @@ public class GridTile : MonoBehaviour
         // If this is the first tile in the link, add it regardless of type match
         if (playerController.tileLink.Count == 0)
         {
-            playerController.linkType = _currentItemView.type;
+            playerController.linkType = _currentItemView.GridItemType;
             playerController.CheckSelectables();
 
             connectorLine.SetActive(false);
@@ -96,7 +97,7 @@ public class GridTile : MonoBehaviour
         }
 
         // Check if the item type matches the last tile in the link
-        if (lastTileInLink && (_currentItemView.type == lastTileInLink._currentItemView.type || _currentItemView.type < 0 || lastTileInLink._currentItemView.type < 0))
+        if (lastTileInLink && (_currentItemView.GridItemType == lastTileInLink._currentItemView.GridItemType || _currentItemView.GridItemType < 0 || lastTileInLink._currentItemView.GridItemType < 0))
         {
             if (connectUp && connectUp == lastTileInLink) // Connect FROM the tile above this one
             {
@@ -153,7 +154,7 @@ public class GridTile : MonoBehaviour
 
         if ( goodLink == true )
         {
-            playerController.linkType = _currentItemView.type;
+            playerController.linkType = _currentItemView.GridItemType;
 
             playerController.CheckSelectables();
 

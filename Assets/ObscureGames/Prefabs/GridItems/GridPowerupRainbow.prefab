@@ -5320,22 +5320,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa51aa5050b7e0040906dd04374643d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customItem: {fileID: 11400000, guid: 8c5211b954bc4844c86bd5ba9e001ff0, type: 2}
-  type: -6
-  thisAnimator: {fileID: 6648771514197060315}
-  thisCanvas: {fileID: 8266851217113978354}
-  iconImage: {fileID: 3641184012650453365}
-  shadowImage: {fileID: 8223508610432866734}
-  textObject: {fileID: 3667355375615698590}
-  glowImage: {fileID: 3348376476649861205}
-  glowAnimator: {fileID: 3179151693860239124}
-  clearAnimation: CollectDisco
-  collectEffect: {fileID: 2224887877576881728, guid: e57e6b9c9d2ccc14fad0e60458cf35cf, type: 3}
-  collectAnimation: 
-  canMerge: 0
-  throwDistance: 0
-  otherOrientations: []
-  extraExecuteTime: 1
+  _customItem: {fileID: 11400000, guid: 8c5211b954bc4844c86bd5ba9e001ff0, type: 2}
+  _gridItemType: -6
+  _canvas: {fileID: 8266851217113978354}
+  _iconImage: {fileID: 3641184012650453365}
+  _shadowImage: {fileID: 8223508610432866734}
+  _glowImage: {fileID: 3348376476649861205}
+  _text: {fileID: 3667355375615698590}
+  _itemAnimator: {fileID: 6648771514197060315}
+  _glowAnimator: {fileID: 3179151693860239124}
+  _clearAnimationProperty: CollectDisco
+  _collectAnimationProperty: 
+  _collectEffect: {fileID: -2659381926475834643, guid: e57e6b9c9d2ccc14fad0e60458cf35cf, type: 3}
+  <CanMerge>k__BackingField: 0
+  <ThrowDistance>k__BackingField: 0
+  <ExtraExecuteTime>k__BackingField: 1
+  _otherOrientations: []
+  IsSpawning: 0
+  IsClearing: 0
+  IsMerging: 0
+  IsLastInLink: 0
 --- !u!114 &-5274741544721915656
 MonoBehaviour:
   m_ObjectHideFlags: 0

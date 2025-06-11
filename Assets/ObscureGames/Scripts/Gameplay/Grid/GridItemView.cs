@@ -1,129 +1,111 @@
-using System.Collections;
+using System;
+using System.Linq;
 using ObscureGames.Gameplay.Grid.Configs;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
-public class GridItemView : MonoBehaviour
+using UniRx;
+using UnityEngine.Serialization;
+namespace ObscureGames.Gameplay.Grid
 {
-
-    public ScriptableGridItem customItem;
-
-    public int type = 0;
-
-    [SerializeField] private Animator _thisAnimator;
-    [SerializeField] private Canvas _canvas;
-
-    [SerializeField] private Image iconImage;
-    [SerializeField] private Image shadowImage;
-    [SerializeField] private TextMeshProUGUI textObject;
-
-    public Canvas GridItemCanvas => _canvas;
-
-    public Image glowImage;
-    public Animator glowAnimator;
-    internal Color color;
-
-    public string clearAnimation = "";
-
-    public Transform collectEffect;
-    public string collectAnimation = "";
-
-    internal bool isSpawning = false;
-    internal bool isClearing = false;
-
-    public bool canMerge = true;
-    internal bool isMerging = false;
-
-    public float throwDistance = 0.4f;
-
-    [NonReorderable] public OrientedItem[] otherOrientations;
-
-    public float extraExecuteTime = 0;
-
-    internal bool isLastInLink = false;
-
-    private void Start()
+    public class GridItemView : MonoBehaviour
     {
-        if (customItem)
+
+        [Header("Item Base")]
+        [SerializeField] private ScriptableGridItem _customItem;
+        [SerializeField, FormerlySerializedAs("_type")] private int _gridItemType;
+        [SerializeField] private Canvas _canvas;
+
+        [Header("Item View")]
+        [SerializeField] private Image _iconImage;
+        [SerializeField] private Image _shadowImage;
+        [SerializeField] private Image _glowImage;
+        [SerializeField] private TextMeshProUGUI _text;
+
+        [Header("Animations")]
+        [SerializeField] private Animator _itemAnimator;
+        [SerializeField] private Animator _glowAnimator;
+        [SerializeField] private string _clearAnimationProperty;
+        [SerializeField] private string _collectAnimationProperty;
+        [SerializeField] private GridItemCollectEffectView _collectEffect;
+
+        [field: SerializeField, Header("Other")] public bool CanMerge { get; private set; } = true;
+        [field: SerializeField] public float ThrowDistance { get; private set; } = 0.4f;
+        [field: SerializeField] public float ExtraExecuteTime { get; private set; }
+
+        [Header("Oriented Items"), NonReorderable]
+        [SerializeField] private OrientedItemInfo[] _otherOrientations;
+
+        [HideInInspector] public bool IsSpawning;
+        [HideInInspector] public bool IsClearing;
+        [HideInInspector] public bool IsMerging;
+        [HideInInspector] public bool IsLastInLink;
+
+        public Color Color { get; private set; } = Color.white;
+
+        public int GridItemType => _gridItemType;
+        public Canvas GridItemCanvas => _canvas;
+        public bool HasOtherOrientations => _otherOrientations.Length > 0;
+
+        public void SetGlowAnimator(bool active) => _glowAnimator.enabled = active;
+        public void SetType(int setValue) => _gridItemType = setValue;
+        public void PlayAnimation(string setValue) => _itemAnimator.Play(setValue);
+        public void SetAnimatorBool(string stateName, bool setValue) => _itemAnimator.SetBool(stateName, setValue);
+
+        public void InstallGridItem(ScriptableGridItem gridItemInfo)
         {
-            Setup(customItem);
-        }
-    }
+            if (gridItemInfo == null) return;
 
-    private void OnValidate()
-    {
-        if (!Application.isEditor) return;
-        ValidateCustomItem();
-    }
+            _iconImage.sprite = gridItemInfo.Icon;
+            _shadowImage.sprite = gridItemInfo.Shadow;
+            _glowImage.sprite = gridItemInfo.Glow;
+            _text.SetText(string.Empty);
 
-    private void ValidateCustomItem()
-    {
-        if (!customItem) return;
-        Setup(customItem);
-    }
-
-    public void SetType(int setValue)
-    {
-        type = setValue;
-    }
-
-    public void Setup( ScriptableGridItem setValue )
-    {
-        iconImage.sprite = setValue.Icon;
-        shadowImage.sprite = setValue.Shadow;
-        glowImage.sprite = setValue.Glow;
-        color = setValue.Color;
-
-        textObject.SetText("");
-    }
-
-    public void PlayAnimation( string setValue )
-    {
-        _thisAnimator.Play(setValue);
-    }
-
-    public void PlayAnimationDelayed(string setValue, float delay)
-    {
-        StartCoroutine(DelayedAnimation(setValue, delay));
-    }
-
-    IEnumerator DelayedAnimation(string setValue, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-
-        _thisAnimator.Play(setValue);
-    }
-
-    public void SetAnimatorBool(string stateName, bool setValue)
-    {
-        _thisAnimator.SetBool(stateName, setValue);
-    }
-
-    public void SetAnimatorTrigger(string stateName)
-    {
-        _thisAnimator.SetTrigger(stateName);
-    }
-
-    public Image GetIconImage()
-    {
-        return iconImage;
-    }
-
-    public GridItemView GetOtherOrientation(Vector2 orienation)
-    {
-        for (int index = 0; index < otherOrientations.Length; index++)
-        {
-            for (int indexB = 0; indexB < otherOrientations[index].orientations.Length; indexB++)
-            {
-                if (otherOrientations[index].orientations[indexB] == orienation)
-                {
-                    return otherOrientations[index].GridItemView;
-                }
-            }
+            Color = gridItemInfo.Color;
         }
 
-        return null;
+        public void PlayDelayedAnimation(string setValue, float delay)
+        {
+            Observable.Timer(TimeSpan.FromSeconds(delay)).Subscribe(_ => PlayAnimation(setValue));
+        }
+
+        public GridItemView GetOtherOrientation(Vector2 orientation)
+        {
+            return _otherOrientations
+                .FirstOrDefault(item => item.Orientations.Any(o => o == orientation))
+                ?.GridItemView;
+        }
+
+        public void TryToClear()
+        {
+            if (!_collectEffect) return;
+
+            GridItemCollectEffectView effect = Instantiate(_collectEffect, transform.position, Quaternion.identity);
+            effect.DestroyInSeconds(2f);
+
+            ParticleSystem.MainModule particle = effect.GetComponent<ParticleSystem>().main;
+            particle.startColor = Color;
+
+            if (string.IsNullOrEmpty(_clearAnimationProperty) || _gridItemType < 0) return;
+            _canvas.enabled = false;
+        }
+
+        public void TryToCollect()
+        {
+            if (string.IsNullOrEmpty(_collectAnimationProperty)) return;
+            PlayAnimation(_collectAnimationProperty);
+        }
+
+        private void Start()
+        {
+            InstallGridItem(_customItem);
+        }
+
+        private void OnValidate()
+        {
+            if (!Application.isEditor) return;
+            InstallGridItem(_customItem);
+        }
+
     }
 }
-

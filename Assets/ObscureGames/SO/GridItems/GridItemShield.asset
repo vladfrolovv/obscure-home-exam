@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c824614047074a147a716e2b85ae5cbd, type: 3}
   m_Name: GridItemShield
   m_EditorClassIdentifier: 
-  icon: {fileID: 21300000, guid: 4890e9343a963214db6fe629a77082ae, type: 3}
-  shadow: {fileID: 21300000, guid: 4a6d55fc71e2eaf469113cd0efe11557, type: 3}
-  glow: {fileID: 21300000, guid: e192afbfa5440d64cb36c25afb55110d, type: 3}
-  color: {r: 0, g: 0.5568628, b: 1, a: 1}
+  <Icon>k__BackingField: {fileID: 21300000, guid: 4890e9343a963214db6fe629a77082ae, type: 3}
+  <Shadow>k__BackingField: {fileID: 21300000, guid: 4a6d55fc71e2eaf469113cd0efe11557, type: 3}
+  <Glow>k__BackingField: {fileID: 21300000, guid: e192afbfa5440d64cb36c25afb55110d, type: 3}
+  <Color>k__BackingField: {r: 0, g: 0.5568628, b: 1, a: 1}

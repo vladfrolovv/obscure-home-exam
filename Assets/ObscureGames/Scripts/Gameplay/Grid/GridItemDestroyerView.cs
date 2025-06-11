@@ -1,4 +1,5 @@
 using System.Collections;
+using ObscureGames.Gameplay.Grid.Configs;
 using ObscureGames.Timers;
 using UnityEngine;
 using Zenject;
@@ -9,8 +10,7 @@ namespace ObscureGames.Gameplay.Grid
 
         [SerializeField] private float _executeDelay;
         [SerializeField] private Transform _destroyEffect;
-
-        [SerializeField] private DestroyPattern _destroyPattern;
+        [SerializeField] private DestroyPatternInfo _destroyPatternInfo;
 
         private GridManager _gridManager;
         private PlayerController _playerController;
@@ -42,12 +42,12 @@ namespace ObscureGames.Gameplay.Grid
             Vector2Int gridSize = _gridManager.GetGridSize();
             Vector2Int tileGridIndex = _playerController.GetIndexInGrid(gridTile);
 
-            for (_patternIndex = 0; _patternIndex < _destroyPattern.directions.Length; _patternIndex++)
+            for (_patternIndex = 0; _patternIndex < _destroyPatternInfo.Directions.Count; _patternIndex++)
             {
-                int tileX = Mathf.Clamp(tileGridIndex.x + _destroyPattern.directions[_patternIndex].x, 0, gridSize.x - 1);
-                int tileY = Mathf.Clamp(tileGridIndex.y + _destroyPattern.directions[_patternIndex].y, 0, gridSize.y - 1);
+                int tileX = Mathf.Clamp(tileGridIndex.x + _destroyPatternInfo.Directions[_patternIndex].x, 0, gridSize.x - 1);
+                int tileY = Mathf.Clamp(tileGridIndex.y + _destroyPatternInfo.Directions[_patternIndex].y, 0, gridSize.y - 1);
 
-                _playerController.CollectItemAtGrid(tileX, tileY, _destroyPattern.delay);
+                _playerController.CollectItemAtGrid(tileX, tileY, _destroyPatternInfo.Delay);
             }
 
             yield return new WaitForSeconds(0.2f);

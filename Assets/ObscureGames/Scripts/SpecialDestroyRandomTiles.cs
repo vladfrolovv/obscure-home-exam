@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay.Grid;
 using UnityEngine;
 
 public class SpecialDestroyRandomTiles : MonoBehaviour
@@ -21,7 +22,7 @@ public class SpecialDestroyRandomTiles : MonoBehaviour
 
         GridItemView gridItemView = gridTile.GetCurrentItem();
 
-        if (gridItemView) gridItemView.isClearing = true;
+        if (gridItemView) gridItemView.IsClearing = true;
 
         yield return new WaitForSeconds(delay);
 
@@ -72,15 +73,12 @@ public class SpecialDestroyRandomTiles : MonoBehaviour
 
         if (gridItemView)
         {
-            GameManager.instance.playerController.CollectAnimation(gridItemView);
-
-
-            GameManager.instance.playerController.ClearEffect(gridItemView);
+            gridItemView.TryToCollect();
+            gridItemView.TryToClear();
             Destroy(gridItemView.gameObject);
         }
 
         GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);
-
         GameManager.instance.playerController.CheckExecuteLink();
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using ObscureGames.Gameplay.Grid;
 using Photon.Pun;
 
 public class GameManager : MonoBehaviourPunCallbacks, IPunObservable

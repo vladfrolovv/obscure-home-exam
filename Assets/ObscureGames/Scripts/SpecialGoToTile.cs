@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay.Grid;
 using UnityEngine;
 
 public class SpecialGoToTile : MonoBehaviour
@@ -20,7 +21,7 @@ public class SpecialGoToTile : MonoBehaviour
         {
             GameManager.instance.playerController.AddToExecuteList(this.gameObject);
 
-            gridItemView.isClearing = true;
+            gridItemView.IsClearing = true;
 
             if (gridItemView == true) LeanTween.cancel(gridItemView.gameObject);
 
@@ -50,7 +51,7 @@ public class SpecialGoToTile : MonoBehaviour
 
             GameManager.instance.playerController.CollectItemAtTile(targetTile, moveTime);
 
-            GameManager.instance.playerController.CollectAnimation(gridItemView);
+            gridItemView.TryToCollect();
 
             LeanTween.rotate(gridItemView.gameObject, Vector3.forward * UnityEngine.Random.Range(-30, 30), moveTime * 0.9f).setEaseOutSine();
             LeanTween.move(gridItemView.gameObject, gridItemView.transform.position + randomOffset, moveTime * 0.7f).setEaseOutSine().setOnComplete(() =>
@@ -64,7 +65,7 @@ public class SpecialGoToTile : MonoBehaviour
                         GameManager.instance.playerController.CollectItemAtTile(targetTile, 0.0f);
                     }
 
-                    GameManager.instance.playerController.ClearEffect(gridItemView);
+                    gridItemView.TryToClear();
                     Destroy(gridItemView.gameObject);
 
                     GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);

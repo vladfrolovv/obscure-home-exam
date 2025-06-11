@@ -86,7 +86,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b046ad0ba0881ed45945677c6349a2d7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: bd35347580a60bc459e7e5230225c5a2, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -315,7 +315,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 0f2a9fc571d30ea4aa08e751902a3caf, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 750703b13836f8b4d83d0327a71d6304, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -390,7 +390,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a15002506f68d1947912a0218dac091b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: bc25a839d643d1c47b6eb5423c97f49e, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -5320,22 +5320,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa51aa5050b7e0040906dd04374643d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customItem: {fileID: 11400000, guid: 0db24c96a70575743bc51615fa605a1b, type: 2}
-  type: -5
-  thisAnimator: {fileID: 6648771514197060315}
-  thisCanvas: {fileID: 8266851217113978354}
-  iconImage: {fileID: 3641184012650453365}
-  shadowImage: {fileID: 8223508610432866734}
-  textObject: {fileID: 3667355375615698590}
-  glowImage: {fileID: 3348376476649861205}
-  glowAnimator: {fileID: 3179151693860239124}
-  clearAnimation: CollectBomb
-  collectEffect: {fileID: 2224887877576881728, guid: 1fcc1ad40550b714abd4bf7793386f2e, type: 3}
-  collectAnimation: 
-  canMerge: 1
-  throwDistance: 0
-  otherOrientations: []
-  extraExecuteTime: 0.1
+  _customItem: {fileID: 11400000, guid: 0db24c96a70575743bc51615fa605a1b, type: 2}
+  _gridItemType: -5
+  _canvas: {fileID: 8266851217113978354}
+  _iconImage: {fileID: 3641184012650453365}
+  _shadowImage: {fileID: 8223508610432866734}
+  _glowImage: {fileID: 3348376476649861205}
+  _text: {fileID: 3667355375615698590}
+  _itemAnimator: {fileID: 6648771514197060315}
+  _glowAnimator: {fileID: 3179151693860239124}
+  _clearAnimationProperty: CollectBomb
+  _collectAnimationProperty: 
+  _collectEffect: {fileID: 4872356934891788142, guid: 1fcc1ad40550b714abd4bf7793386f2e, type: 3}
+  <CanMerge>k__BackingField: 1
+  <ThrowDistance>k__BackingField: 0
+  <ExtraExecuteTime>k__BackingField: 0.1
+  _otherOrientations: []
+  IsSpawning: 0
+  IsClearing: 0
+  IsMerging: 0
+  IsLastInLink: 0
 --- !u!114 &-1430675530763012233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5348,12 +5352,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8422c67eee29473418f8a38e07042173, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  executeDelay: 0
-  destroyEffect: {fileID: 0}
-  destroyPattern:
-    patternName: 8 around tile
-    delay: 0
-    directions:
+  _executeDelay: 0
+  _destroyEffect: {fileID: 0}
+  _destroyPatternInfo:
+    <PatternName>k__BackingField: 8 around tile
+    <Delay>k__BackingField: 0
+    _directions:
     - {x: 1, y: 0}
     - {x: -1, y: 0}
     - {x: 0, y: 1}

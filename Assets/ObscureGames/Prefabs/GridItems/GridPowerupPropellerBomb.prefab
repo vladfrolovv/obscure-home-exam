@@ -161,7 +161,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fd30561fc1627df49a797363aa72fa90, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 2e7997a1adfd0304f819d28a82d73a05, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -5241,22 +5241,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa51aa5050b7e0040906dd04374643d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customItem: {fileID: 11400000, guid: 10f700d012d93754ead3e7f9d67744b5, type: 2}
-  type: -2
-  thisAnimator: {fileID: 6648771514197060315}
-  thisCanvas: {fileID: 8266851217113978354}
-  iconImage: {fileID: 3641184012650453365}
-  shadowImage: {fileID: 8223508610432866734}
-  textObject: {fileID: 167644816515133470}
-  glowImage: {fileID: 3348376476649861205}
-  glowAnimator: {fileID: 8435504920586911292}
-  clearAnimation: 
-  collectEffect: {fileID: 2224887877576881728, guid: a28bccf68b7bf894788a42d62afbdc72, type: 3}
-  collectAnimation: CollectPropeller
-  canMerge: 1
-  throwDistance: 0.3
-  otherOrientations: []
-  extraExecuteTime: 0.3
+  _customItem: {fileID: 11400000, guid: 10f700d012d93754ead3e7f9d67744b5, type: 2}
+  _gridItemType: -2
+  _canvas: {fileID: 0}
+  _iconImage: {fileID: 3641184012650453365}
+  _shadowImage: {fileID: 8223508610432866734}
+  _glowImage: {fileID: 3348376476649861205}
+  _text: {fileID: 167644816515133470}
+  _itemAnimator: {fileID: 6648771514197060315}
+  _glowAnimator: {fileID: 8435504920586911292}
+  _clearAnimationProperty: 
+  _collectAnimationProperty: CollectPropeller
+  _collectEffect: {fileID: 4465125857593061003, guid: a28bccf68b7bf894788a42d62afbdc72, type: 3}
+  <CanMerge>k__BackingField: 1
+  <ThrowDistance>k__BackingField: 0.3
+  <ExtraExecuteTime>k__BackingField: 0.3
+  _otherOrientations: []
+  IsSpawning: 0
+  IsClearing: 0
+  IsMerging: 0
+  IsLastInLink: 0
 --- !u!114 &4677514017917788228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5270,7 +5274,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveTime: 1
-  carryItem: {fileID: 0}
+  _carryItemView: {fileID: 0}
 --- !u!223 &8266851217113978354
 Canvas:
   m_ObjectHideFlags: 0

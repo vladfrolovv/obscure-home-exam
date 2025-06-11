@@ -10050,21 +10050,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa51aa5050b7e0040906dd04374643d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customItem: {fileID: 0}
-  type: 1
-  thisAnimator: {fileID: 6648771514197060315}
-  thisCanvas: {fileID: 7623975905978117338}
-  iconImage: {fileID: 3641184012650453365}
-  shadowImage: {fileID: 8223508610432866734}
-  textObject: {fileID: 5784599772589266072}
-  glowImage: {fileID: 3348376476649861205}
-  glowAnimator: {fileID: 1091453937006969982}
-  clearAnimation: 
-  collectEffect: {fileID: 6066822585309757461, guid: c434ee89c518d1f4897c9379239e97f1, type: 3}
-  collectAnimation: CollectItem
-  throwDistance: 0.4
-  otherOrientations: []
-  extraExecuteTime: 0
+  _customItem: {fileID: 0}
+  _gridItemType: 1
+  _canvas: {fileID: 7623975905978117338}
+  _iconImage: {fileID: 3641184012650453365}
+  _shadowImage: {fileID: 8223508610432866734}
+  _glowImage: {fileID: 3348376476649861205}
+  _text: {fileID: 5784599772589266072}
+  _itemAnimator: {fileID: 6648771514197060315}
+  _glowAnimator: {fileID: 1091453937006969982}
+  _clearAnimationProperty: 
+  _collectAnimationProperty: CollectItem
+  _collectEffect: {fileID: 364069122951770258, guid: c434ee89c518d1f4897c9379239e97f1, type: 3}
+  <CanMerge>k__BackingField: 1
+  <ThrowDistance>k__BackingField: 0.4
+  <ExtraExecuteTime>k__BackingField: 0
+  _otherOrientations: []
+  IsSpawning: 0
+  IsClearing: 0
+  IsMerging: 0
+  IsLastInLink: 0
 --- !u!223 &7623975905978117338
 Canvas:
   m_ObjectHideFlags: 0
