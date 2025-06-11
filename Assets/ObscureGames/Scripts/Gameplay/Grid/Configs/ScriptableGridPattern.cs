@@ -1,11 +1,14 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-
-/*Defines a grid pattern that contains GridItems (items, powerups, etc)*/
-[CreateAssetMenu(fileName = "Grid Pattern", menuName = "ScriptableObjects/Grid Pattern", order = 1)]
-public class ScriptableGridPattern : ScriptableObject
+namespace ObscureGames.Gameplay.Grid.Configs
 {
-    public int[] items;
+    [CreateAssetMenu(fileName = "Grid Pattern", menuName = "ScriptableObjects/Grid Pattern", order = 1)]
+
+    public class ScriptableGridPattern : ScriptableObject
+    {
+
+        [SerializeField] private int[] _items;
+        public int[] Items => _items;
+
+    }
 }

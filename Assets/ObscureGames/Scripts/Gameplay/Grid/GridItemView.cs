@@ -70,10 +70,10 @@ public class GridItemView : MonoBehaviour
 
     public void Setup( ScriptableGridItem setValue )
     {
-        iconImage.sprite = setValue.icon;
-        shadowImage.sprite = setValue.shadow;
-        glowImage.sprite = setValue.glow;
-        color = setValue.color;
+        iconImage.sprite = setValue.Icon;
+        shadowImage.sprite = setValue.Shadow;
+        glowImage.sprite = setValue.Glow;
+        color = setValue.Color;
 
         textObject.SetText("");
     }

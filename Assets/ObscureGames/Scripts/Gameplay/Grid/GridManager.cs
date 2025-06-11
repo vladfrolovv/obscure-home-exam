@@ -287,13 +287,13 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
                 {
                     Vector2Int gridIndex = new Vector2Int(arrayIndex % gridSize.x, arrayIndex / gridSize.y);
 
-                    if (overrideGridPattern.items[arrayIndex] < 0)
+                    if (overrideGridPattern.Items[arrayIndex] < 0)
                     {
-                        SpawnItem(itemPowerups[overrideGridPattern.items[arrayIndex] * -1 - 1], tileList[arrayIndex], 0);
+                        SpawnItem(itemPowerups[overrideGridPattern.Items[arrayIndex] * -1 - 1], tileList[arrayIndex], 0);
                     }
                     else
                     {
-                        SpawnItem(overrideGridPattern.items[arrayIndex], gridIndex.x, gridIndex.y, 0);
+                        SpawnItem(overrideGridPattern.Items[arrayIndex], gridIndex.x, gridIndex.y, 0);
                     }
 
                     arrayIndex++;
