@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -29,7 +30,7 @@ public class Player : MonoBehaviour
 
     public TextMeshProUGUI movesText;
     public Animator movesAnimator;
-    public ProgressBar movesBar;
+    public ProgressBarView MovesBarView;
 
     // Start is called before the first frame update
     void Awake()
@@ -124,7 +125,7 @@ public class Player : MonoBehaviour
     {
         moves += changeValue;
 
-        if (movesBar) movesBar.ChangeProgress(changeValue);
+        if (MovesBarView) MovesBarView.ChangeProgress(changeValue);
 
         UpdateMoves();
     }

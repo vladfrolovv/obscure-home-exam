@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using System.Linq;
 using ObscureGames;
 using ObscureGames.Gameplay.Grid;
+using ObscureGames.Gameplay.UI;
 using Photon.Pun;
 
 public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
@@ -448,13 +449,10 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         if (specialIndex != -1)
         {
             GridItemView gridItemView = GameManager.instance.specialLinks[specialIndex].SpawnItemView;
-
-            if (GameManager.instance.specialLinks[specialIndex].SpawnItemView.HasOtherOrientations)
+            if (gridItemView != null && gridItemView.HasOtherOrientations)
             {
                 CheckDirection();
-
                 GridItemView tempGridItemView = GameManager.instance.specialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
-
                 if (tempGridItemView != null) GameManager.instance.specialLinks[specialIndex].SpawnItemView = tempGridItemView;
             }
         }

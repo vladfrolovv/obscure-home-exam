@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay.UI;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
@@ -31,7 +32,7 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
 
     public TextMeshProUGUI movesText;
     public Animator movesAnimator;
-    public ProgressBar movesBar;
+    public ProgressBarView MovesBarView;
 
     //public Booster booster;
 
@@ -110,8 +111,8 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
         photonView.RPC(nameof(SetScore), RpcTarget.All, score);
 
         photonView.RPC(nameof(SetMoves), RpcTarget.All, moves);
-        movesBar.SetProgressMax(moves);
-        movesBar.Setup(this);
+        MovesBarView.SetProgressMax(moves);
+        MovesBarView.Setup(this);
 
         photonView.RPC(nameof(SetBonus), RpcTarget.All, 0);
 
@@ -199,7 +200,7 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
     {
         moves += changeValue;
 
-        if (movesBar) movesBar.ChangeProgress(changeValue);
+        if (MovesBarView) MovesBarView.ChangeProgress(changeValue);
 
         photonView.RPC(nameof(UpdateMoves), RpcTarget.All);
     }

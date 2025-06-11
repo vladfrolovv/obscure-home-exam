@@ -1,6 +1,6 @@
 using UnityEngine;
 using TMPro;
-namespace ObscureGames
+namespace ObscureGames.Gameplay.UI
 {
     public class ToastView : MonoBehaviour
     {

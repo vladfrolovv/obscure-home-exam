@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using System.Linq;
 using ObscureGames.Gameplay.Grid;
+using ObscureGames.Gameplay.UI;
 using Photon.Pun;
 
 public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
@@ -27,7 +28,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private float timePerRound = 20;
     private float timeLeft;
 
-    [SerializeField] private ProgressBar timer;
+    [SerializeField] private ProgressBarView timer;
     private bool timerRunning = false;
     private bool timeAlmostUp = false;
 
@@ -35,7 +36,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private TextMeshProUGUI playerTurnText;
 
     [SerializeField] private TextMeshProUGUI roundsText;
-    [SerializeField] private ProgressBar roundsBar;
+    [SerializeField] private ProgressBarView _roundsBarView;
     [SerializeField] private TextMeshProUGUI currentRoundText;
     [SerializeField] private int rounds = 5;
     [SerializeField] private int currentRound;
@@ -101,11 +102,11 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
         roundsText.SetText("");
 
-        if (roundsBar)
+        if (_roundsBarView)
         {
-            roundsBar.SetProgress(0);
-            roundsBar.SetProgressMax(rounds);
-            roundsBar.Setup(null);
+            _roundsBarView.SetProgress(0);
+            _roundsBarView.SetProgressMax(rounds);
+            _roundsBarView.Setup(null);
         }
 
         if ( timer )
@@ -214,12 +215,12 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
 
         //if (currentPlayer.photonView.IsMine){
         currentPlayer.SetMoves(movesPerRound);
-        if (currentPlayer.movesBar) currentPlayer.movesBar.SetProgress(movesPerRound);
+        if (currentPlayer.MovesBarView) currentPlayer.MovesBarView.SetProgress(movesPerRound);
 
-        if ( roundsBar )
+        if ( _roundsBarView )
         {
-            roundsBar.SetIncrementColor(currentPlayer.playerColor);
-            roundsBar.Bounce();
+            _roundsBarView.SetIncrementColor(currentPlayer.playerColor);
+            _roundsBarView.Bounce();
         }
 
         if ( timer )
@@ -354,7 +355,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public void ResetRounds()
     {
         currentRound = 1;
-        if ( roundsBar ) roundsBar.SetProgress(1);
+        if ( _roundsBarView ) _roundsBarView.SetProgress(1);
         
         UpdateRounds();
     }
@@ -362,7 +363,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public void NextRound()
     {
         currentRound++;
-        if (roundsBar) roundsBar.ChangeProgress(1);
+        if (_roundsBarView) _roundsBarView.ChangeProgress(1);
 
         UpdateRounds();
     }

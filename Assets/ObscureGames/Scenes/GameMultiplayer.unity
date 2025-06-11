@@ -387,7 +387,7 @@ MonoBehaviour:
   executeTotalTime: 0
   longestSpecial: 0
   currentLinkSize: 0
-  ToastView: {fileID: 0}
+  ToastView: {fileID: 4317119075900152663}
   specialIndex: -1
   powerupsInLink: []
   direction: {x: 0, y: 0}
@@ -1082,7 +1082,7 @@ MonoBehaviour:
   tileList: []
   tileListRandom: []
   tileListRandomIndex: 0
-  ItemViewPrefab: {fileID: 0}
+  ItemViewPrefab: {fileID: -4054056152294309094, guid: 042c69b8ad2e1404c83736c1769a14da, type: 3}
   itemTypes:
   - {fileID: 11400000, guid: ae78b344879d16645b5db1e9c00a808d, type: 2}
   - {fileID: 11400000, guid: 699fae67ca8ac2f4db15c92076028838, type: 2}
@@ -1656,6 +1656,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1742782789718998504, guid: 75c231075c374894592d56525baab130, type: 3}
   m_PrefabInstance: {fileID: 4317119075900152661}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4317119075900152663 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4859594228784025240, guid: 75c231075c374894592d56525baab130, type: 3}
+  m_PrefabInstance: {fileID: 4317119075900152661}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdc756686f6601548969c9fa02cfd65f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &4690915901686861116
 PrefabInstance:
   m_ObjectHideFlags: 0
