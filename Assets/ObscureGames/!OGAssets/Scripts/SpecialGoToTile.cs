@@ -1,0 +1,77 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SpecialGoToTile : MonoBehaviour
+{
+    [SerializeField] private float moveTime = 1;
+    [SerializeField] private GridItem carryItem;
+
+    public void Execute(ExecuteData executeData)
+    {
+        StartCoroutine(ExecutePatternCoroutine(executeData.gridTile, executeData.delay));
+    }
+
+    IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
+    {
+        GridItem gridItem = gridTile.GetCurrentItem();
+
+        if (gridItem == true)
+        {
+            GameManager.instance.playerController.AddToExecuteList(this.gameObject);
+
+            gridItem.isClearing = true;
+
+            if (gridItem == true) LeanTween.cancel(gridItem.gameObject);
+
+            yield return new WaitForSeconds(delay);
+       
+            gridItem.thisCanvas.sortingOrder *= 2;
+
+            Vector3 randomOffset = UnityEngine.Random.insideUnitCircle * 0.5f;
+
+            GridTile targetTile = GridManager.instance.GetPowerupTile();
+
+            //if ( targetTile == null ) targetTile = GridManager.instance.GetBoosterTile();
+
+            if (targetTile == null)
+            {
+                targetTile = GridManager.instance.GetRandomTile();
+
+                int timeout = 20;
+
+                while (timeout > 0 && targetTile.GetCurrentItem() == null)
+                {
+                    targetTile = GridManager.instance.GetRandomTile();
+
+                    timeout--;
+                }
+            }
+
+            GameManager.instance.playerController.CollectItemAtTile(targetTile, moveTime);
+
+            GameManager.instance.playerController.CollectAnimation(gridItem);
+
+            LeanTween.rotate(gridItem.gameObject, Vector3.forward * UnityEngine.Random.Range(-30, 30), moveTime * 0.9f).setEaseOutSine();
+            LeanTween.move(gridItem.gameObject, gridItem.transform.position + randomOffset, moveTime * 0.7f).setEaseOutSine().setOnComplete(() =>
+            {
+                LeanTween.moveX(gridItem.gameObject, targetTile.transform.position.x, moveTime * 0.3f).setEaseInOutSine();
+                LeanTween.moveY(gridItem.gameObject, targetTile.transform.position.y, moveTime * 0.3f).setEaseInSine().setOnComplete(()=>
+                {
+                    if (carryItem)
+                    {
+                        GridManager.instance.SpawnItem(carryItem, targetTile, 0);
+                        GameManager.instance.playerController.CollectItemAtTile(targetTile, 0.0f);
+                    }
+
+                    GameManager.instance.playerController.ClearEffect(gridItem);
+                    Destroy(gridItem.gameObject);
+
+                    GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);
+                    GameManager.instance.playerController.CheckExecuteLink();
+                });
+            });
+
+        }
+    }
+}
