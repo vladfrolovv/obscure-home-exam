@@ -26,7 +26,7 @@ public class GridItemDestroyer : MonoBehaviour
 
         yield return new WaitForSeconds(executeDelay);
 
-        TimeManager.instance.SlowMotion(0.2f, 0.1f);
+        // TimeController.instance.SlowMotion(0.2f, 0.1f);
 
         Vector2Int gridSize = GridManager.instance.GetGridSize();
 

@@ -30,7 +30,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     public ToastView ToastView;
 
     public int specialIndex = -1;
-    public List<GridItem> powerupsInLink = new List<GridItem>();
+    public List<GridItemView> powerupsInLink = new List<GridItemView>();
 
     public Vector2 direction = Vector2.zero;
 
@@ -130,7 +130,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
         //LeanTween.rotate(tile.GetCurrentItem().gameObject, Vector3.forward * 10, 0.2f);
 
-        tile.GetCurrentItem().thisCanvas.overrideSorting = true;
+        tile.GetCurrentItem().GridItemCanvas.overrideSorting = true;
 
         tile.GetCurrentItem().PlayAnimation("LinkAdd");
 
@@ -161,7 +161,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         
         if (tileLink.Count > 1) tile.connectorLine.SetActive(true);
 
-        tile.GetCurrentItem().thisCanvas.overrideSorting = true;
+        tile.GetCurrentItem().GridItemCanvas.overrideSorting = true;
 
         tile.GetCurrentItem().PlayAnimation("LinkAdd");
 
@@ -332,7 +332,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
             
             GridTile gridTile = tileLink[index];
 
-            GridItem gridItem = gridTile.GetCurrentItem();
+            GridItemView gridItemView = gridTile.GetCurrentItem();
             Vector2Int tileGridIndex = GetIndexInGrid(gridTile);
             if (gridTile.GetCurrentItem().type < 0)
             {
@@ -347,7 +347,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
                 photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
             }
 
-            if (gridItem.type > -1 || powerupsInLink.Count < 2) extraExecuteTime += gridItem.extraExecuteTime;
+            if (gridItemView.type > -1 || powerupsInLink.Count < 2) extraExecuteTime += gridItemView.extraExecuteTime;
             
             executeTotalTime += tempExecuteTime;
 
@@ -397,21 +397,21 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
         gridTile.SetClickSize(1);
 
-        GridItem gridItem = gridTile.GetCurrentItem();
+        GridItemView gridItemView = gridTile.GetCurrentItem();
 
         gridTile.Glow(delay);
 
-        if (gridItem == null || gridItem.isSpawning == true) return;
+        if (gridItemView == null || gridItemView.isSpawning == true) return;
 
-        if (gridItem.transform.parent && gridItem.transform.parent.parent && gridItem.transform.parent.parent.parent) gridItem.transform.SetParent(gridItem.transform.parent.parent.parent);
+        if (gridItemView.transform.parent && gridItemView.transform.parent.parent && gridItemView.transform.parent.parent.parent) gridItemView.transform.SetParent(gridItemView.transform.parent.parent.parent);
 
         // Gathering multiple powerups in link
-        if (gridItem.type < 0 && powerupsInLink.Count > 1)
+        if (gridItemView.type < 0 && powerupsInLink.Count > 1)
         {
-            gridItem.isMerging = true;
+            gridItemView.isMerging = true;
         }
         
-        Collect(gridItem, GameManager.instance.currentPlayer.bonusText.transform, delay, gridTile);
+        Collect(gridItemView, GameManager.instance.currentPlayer.bonusText.transform, delay, gridTile);
 
         gridTile.SetCurrentItem(null);
     }
@@ -447,15 +447,15 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
         if (specialIndex != -1)
         {
-            GridItem gridItem = GameManager.instance.specialLinks[specialIndex].spawnItem;
+            GridItemView gridItemView = GameManager.instance.specialLinks[specialIndex].SpawnItemView;
 
-            if (GameManager.instance.specialLinks[specialIndex].spawnItem.otherOrientations.Length > 0)
+            if (GameManager.instance.specialLinks[specialIndex].SpawnItemView.otherOrientations.Length > 0)
             {
                 CheckDirection();
 
-                GridItem tempGridItem = GameManager.instance.specialLinks[specialIndex].spawnItem.GetOtherOrientation(direction);
+                GridItemView tempGridItemView = GameManager.instance.specialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
 
-                if (tempGridItem != null) GameManager.instance.specialLinks[specialIndex].spawnItem = tempGridItem;
+                if (tempGridItemView != null) GameManager.instance.specialLinks[specialIndex].SpawnItemView = tempGridItemView;
             }
         }
 
@@ -467,7 +467,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (index != -1)
         {
-            GridItem gridItem = GameManager.instance.specialLinks[index].spawnItem;
+            GridItemView gridItemView = GameManager.instance.specialLinks[index].SpawnItemView;
 
             /*if ( GameManager.instance.specialLinks[index].spawnItem.otherOrientations.Length > 0 )
             {
@@ -478,7 +478,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
 
 
-            GridManager.instance.SpawnItem(gridItem, tileLink[tileLink.Count - 1], delay);
+            GridManager.instance.SpawnItem(gridItemView, tileLink[tileLink.Count - 1], delay);
 
             if (GameManager.instance.currentPlayer.photonView.IsMine)
             {
@@ -489,44 +489,44 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    void Collect(GridItem gridItem, Transform target, float delay, GridTile gridTile)
+    void Collect(GridItemView gridItemView, Transform target, float delay, GridTile gridTile)
     {
-        if (gridItem.isMerging == false && mergeCombo == null) gridItem.SendMessage("Execute", new ExecuteData(gridTile, delay), SendMessageOptions.DontRequireReceiver);
+        if (gridItemView.isMerging == false && mergeCombo == null) gridItemView.SendMessage("Execute", new ExecuteData(gridTile, delay), SendMessageOptions.DontRequireReceiver);
 
         // This is here to make sure that combo powerups trigger if the last tile in the link is a powerup
-        if (powerupsInLink.Count > 1 && gridItem.isLastInLink == true)
+        if (powerupsInLink.Count > 1 && gridItemView.isLastInLink == true)
         {
-            gridItem.isClearing = gridItem.isMerging = false;
+            gridItemView.isClearing = gridItemView.isMerging = false;
             //delay = executeTotalTime * 1.2f;
         }
 
-        if (gridItem.isMerging) gridItem.PlayAnimationDelayed("LinkAdd", delay - 0.2f);
-        else if (gridItem.clearAnimation != "") gridItem.PlayAnimationDelayed(gridItem.clearAnimation, delay - 0.2f);
+        if (gridItemView.isMerging) gridItemView.PlayAnimationDelayed("LinkAdd", delay - 0.2f);
+        else if (gridItemView.clearAnimation != "") gridItemView.PlayAnimationDelayed(gridItemView.clearAnimation, delay - 0.2f);
 
-        gridItem.glowAnimator.enabled = false;
+        gridItemView.glowAnimator.enabled = false;
 
-        gridItem.glowImage.color = Color.white;
+        gridItemView.glowImage.color = Color.white;
 
-        Vector3 randomOffset = UnityEngine.Random.insideUnitCircle * gridItem.throwDistance;
+        Vector3 randomOffset = UnityEngine.Random.insideUnitCircle * gridItemView.throwDistance;
 
         //LeanTween.cancel(gridItem.gameObject);
-        LeanTween.scale(gridItem.gameObject, Vector3.one * 1.4f, collectTime * 0.3f).setDelay(delay).setEaseInSine().setOnComplete(() =>
+        LeanTween.scale(gridItemView.gameObject, Vector3.one * 1.4f, collectTime * 0.3f).setDelay(delay).setEaseInSine().setOnComplete(() =>
         {
-            if (gridItem.isClearing == true ) return;
+            if (gridItemView.isClearing == true ) return;
 
-            gridItem.isClearing = true;
+            gridItemView.isClearing = true;
 
-            CollectAnimation(gridItem);
+            CollectAnimation(gridItemView);
 
-            if (gridItem.isMerging == true) return;
+            if (gridItemView.isMerging == true) return;
 
-            if (powerupsInLink.Count < 2 || gridItem.type > -1 || gridItem.isLastInLink == false || isExecuting == false ) ClearEffect(gridItem);
+            if (powerupsInLink.Count < 2 || gridItemView.type > -1 || gridItemView.isLastInLink == false || isExecuting == false ) ClearEffect(gridItemView);
 
-            if (gridItem.isLastInLink == true)
+            if (gridItemView.isLastInLink == true)
             {
                 ExecuteLastInLink(gridTile, target, collectTime * 0.3f);
 
-                if (gridItem.type < 0 && powerupsInLink.Count > 1 && gridItem.canMerge == true) return;
+                if (gridItemView.type < 0 && powerupsInLink.Count > 1 && gridItemView.canMerge == true) return;
             }
 
             if (GameManager.instance.currentPlayer.photonView.IsMine)
@@ -534,16 +534,16 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
                 GameManager.instance.currentPlayer.AddBonus(1, 0.5f);
             }
 
-            LeanTween.rotate(gridItem.gameObject, Vector3.forward * UnityEngine.Random.Range(-30,30), collectTime * 0.7f).setEaseOutSine();
-            LeanTween.move(gridItem.gameObject, gridItem.transform.position + randomOffset, collectTime * 0.7f).setEaseOutSine().setOnComplete(() =>
+            LeanTween.rotate(gridItemView.gameObject, Vector3.forward * UnityEngine.Random.Range(-30,30), collectTime * 0.7f).setEaseOutSine();
+            LeanTween.move(gridItemView.gameObject, gridItemView.transform.position + randomOffset, collectTime * 0.7f).setEaseOutSine().setOnComplete(() =>
             {
-                LeanTween.scale(gridItem.gameObject, Vector3.one * 0.6f, collectTime * 0.3f).setEaseInSine();
-                LeanTween.moveX(gridItem.gameObject, target.position.x, collectTime * 0.3f).setEaseOutSine();
-                LeanTween.moveY(gridItem.gameObject, target.position.y, collectTime * 0.3f).setEaseInSine().setOnComplete(() =>
+                LeanTween.scale(gridItemView.gameObject, Vector3.one * 0.6f, collectTime * 0.3f).setEaseInSine();
+                LeanTween.moveX(gridItemView.gameObject, target.position.x, collectTime * 0.3f).setEaseOutSine();
+                LeanTween.moveY(gridItemView.gameObject, target.position.y, collectTime * 0.3f).setEaseInSine().setOnComplete(() =>
                 {
                     //MAJD: Here was the add points after the animation, moved it out for now
 
-                    Destroy(gridItem.gameObject);
+                    Destroy(gridItemView.gameObject);
                 });
             });
         });
@@ -635,35 +635,35 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
         RegainControl();
     }
 
-    public void CollectAnimation(GridItem gridItem)
+    public void CollectAnimation(GridItemView gridItemView)
     {
-        if (gridItem.collectAnimation != "") gridItem.PlayAnimation(gridItem.collectAnimation);
+        if (gridItemView.collectAnimation != "") gridItemView.PlayAnimation(gridItemView.collectAnimation);
     }
 
-    public void ClearEffect(GridItem gridItem)
+    public void ClearEffect(GridItemView gridItemView)
     {
-        if (gridItem.collectEffect)
+        if (gridItemView.collectEffect)
         {
             //if (powerupsInLink.Count > 1) mergeCombo = MergeCombos.instance.GetCombo(powerupsInLink);
 
            // if ( gridItem.type > -1 || powerupsInLink.Count > 0 )
            // {
-                Transform newEffect = Instantiate(gridItem.collectEffect);
+                Transform newEffect = Instantiate(gridItemView.collectEffect);
 
-                newEffect.position = gridItem.transform.position;
+                newEffect.position = gridItemView.transform.position;
 
                 // Color the shatter effect
                 if (newEffect.GetComponent<ParticleSystem>())
                 {
                     ParticleSystem.MainModule particle = newEffect.GetComponent<ParticleSystem>().main;
-                    particle.startColor = gridItem.color;
+                    particle.startColor = gridItemView.color;
                 }
 
                 Destroy(newEffect.gameObject, 2);
             //}
 
             // Hide the art
-            if (gridItem.clearAnimation != "" || gridItem.type < 0) gridItem.GetComponent<Canvas>().enabled = false;
+            if (gridItemView.clearAnimation != "" || gridItemView.type < 0) gridItemView.GetComponent<Canvas>().enabled = false;
         }
     }
 
@@ -671,13 +671,13 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (gridTile == null) return;
 
-        GridItem gridItem = gridTile.GetCurrentItem();
+        GridItemView gridItemView = gridTile.GetCurrentItem();
 
-        if (gridItem == null) return;
+        if (gridItemView == null) return;
 
-        LeanTween.moveLocal(gridItem.gameObject, direction * 5, 0.3f).setEaseOutCubic().setOnComplete(() =>
+        LeanTween.moveLocal(gridItemView.gameObject, direction * 5, 0.3f).setEaseOutCubic().setOnComplete(() =>
         {
-            LeanTween.moveLocal(gridItem.gameObject, Vector2.zero, 0.5f).setEaseInSine();
+            LeanTween.moveLocal(gridItemView.gameObject, Vector2.zero, 0.5f).setEaseInSine();
         });
     }
 
@@ -687,32 +687,32 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
         for (int listIndex = tileList.Count - 1; listIndex >= 0; listIndex--)
         {
-            GridItem currentItem = tileList[listIndex].GetCurrentItem();
+            GridItemView currentItemView = tileList[listIndex].GetCurrentItem();
 
-            if (currentItem)
+            if (currentItemView)
             {
-                if ( currentItem.type == linkType || linkType < 0 || currentItem.type < 0 )
+                if ( currentItemView.type == linkType || linkType < 0 || currentItemView.type < 0 )
                 {
-                    currentItem.SetAnimatorBool("Selectable", true);
+                    currentItemView.SetAnimatorBool("Selectable", true);
                 }
                 else
                 {
-                    currentItem.SetAnimatorBool("Selectable", false);
+                    currentItemView.SetAnimatorBool("Selectable", false);
                 }
 
                 // Set the color of the line based on the tile
                 if (linkType < 0)
                 {
                     tileList[listIndex].SetConnectorAnimator(true);
-                    currentItem.glowAnimator.enabled = true;
+                    currentItemView.glowAnimator.enabled = true;
                 }
                 else
                 {
-                    tileList[listIndex].connectorLineColor.color = currentItem.color;
-                    currentItem.glowImage.color = Color.white;
+                    tileList[listIndex].connectorLineColor.color = currentItemView.color;
+                    currentItemView.glowImage.color = Color.white;
 
                     tileList[listIndex].SetConnectorAnimator(false);
-                    currentItem.glowAnimator.enabled = false;
+                    currentItemView.glowAnimator.enabled = false;
                 }
             }
         }
@@ -724,11 +724,11 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
         for (int listIndex = tileList.Count - 1; listIndex >= 0; listIndex--)
         {
-            GridItem currentItem = tileList[listIndex].GetCurrentItem();
+            GridItemView currentItemView = tileList[listIndex].GetCurrentItem();
 
-            if ( currentItem )
+            if ( currentItemView )
             {
-                currentItem.SetAnimatorBool("Selectable", true);
+                currentItemView.SetAnimatorBool("Selectable", true);
             }
         }
     }

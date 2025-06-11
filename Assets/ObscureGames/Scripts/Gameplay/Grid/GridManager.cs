@@ -2,6 +2,7 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ObscureGames.Gameplay.Grid.Configs;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,9 +26,9 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
     public List<GridTile> tileListRandom = new List<GridTile>();
     public int tileListRandomIndex = 0;
 
-    public GridItem itemPrefab;
+    public GridItemView ItemViewPrefab;
     public ScriptableGridItem[] itemTypes;
-    public GridItem[] itemPowerups;
+    public GridItemView[] itemPowerups;
 
     [SerializeField] private bool allowDiagonal = true;
 
@@ -225,49 +226,49 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
 
         //Network Spawn
         //GridItem newItem = PhotonNetwork.Instantiate(itemPrefab.name, tileList[listIndex].transform.position,Quaternion.identity).GetComponent<GridItem>();
-        GridItem newItem = Instantiate(itemPrefab, tileList[listIndex].transform);
+        GridItemView newItemView = Instantiate(ItemViewPrefab, tileList[listIndex].transform);
         //newItem.transform.SetParent(tileList[listIndex].transform);
 
-        newItem.SetType(itemIndex);
+        newItemView.SetType(itemIndex);
 
-        newItem.Setup(itemTypes[itemIndex]);
+        newItemView.Setup(itemTypes[itemIndex]);
 
-        newItem.transform.localScale = Vector3.one;
+        newItemView.transform.localScale = Vector3.one;
 
-        tileList[listIndex].SetCurrentItem(newItem);
+        tileList[listIndex].SetCurrentItem(newItemView);
 
         if ( offsetY > 0 )
         {
-            newItem.GetComponent<RectTransform>().anchoredPosition += Vector2.up * offsetY;
+            newItemView.GetComponent<RectTransform>().anchoredPosition += Vector2.up * offsetY;
 
             float dropDelay = itemDropDelay * (gridSize.y - gridY);
             float dropTime = itemDropTime * 2;
 
             tileList[listIndex].GetCurrentItem().PlayAnimationDelayed("Bounce", dropDelay + dropTime);
 
-            newItem.isSpawning = true;
+            newItemView.isSpawning = true;
 
-            LeanTween.move(newItem.gameObject, tileList[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay).setOnComplete(()=>
+            LeanTween.move(newItemView.gameObject, tileList[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay).setOnComplete(()=>
             {
-                newItem.isSpawning = false;
-                newItem.transform.position = tileList[listIndex].transform.position;
+                newItemView.isSpawning = false;
+                newItemView.transform.position = tileList[listIndex].transform.position;
             });
         }
     }
 
-    public void SpawnItem(GridItem spawnItem, GridTile parentTile, float delay)
+    public void SpawnItem(GridItemView spawnItemView, GridTile parentTile, float delay)
     {
-        GridItem newItem = Instantiate(spawnItem, parentTile.transform);
+        GridItemView newItemView = Instantiate(spawnItemView, parentTile.transform);
 
-        newItem.transform.localScale = Vector3.one;
+        newItemView.transform.localScale = Vector3.one;
 
         if (delay > 0)
         {
-            newItem.PlayAnimation("Hidden");
-            newItem.PlayAnimationDelayed("IntroPowerup", delay);
+            newItemView.PlayAnimation("Hidden");
+            newItemView.PlayAnimationDelayed("IntroPowerup", delay);
         }
 
-        parentTile.SetCurrentItem(newItem);
+        parentTile.SetCurrentItem(newItemView);
     }
 
     public void FillGrid()
@@ -312,10 +313,10 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
         // Check from bottom right to top left (from end of list to start)
         for ( int listIndex = tileList.Count - 1; listIndex >= 0; listIndex-- )
         {
-            GridItem gridItem = tileList[listIndex].GetCurrentItem();
+            GridItemView gridItemView = tileList[listIndex].GetCurrentItem();
 
             // If this grid tile is empty (has no item), check upwards until we find an item, and take it
-            if (gridItem == null)
+            if (gridItemView == null)
             {
                 int checkIndex = listIndex;
 
@@ -372,13 +373,13 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         for (int listIndex = 0; listIndex < tileList.Count; listIndex++)
         {
-            GridItem gridItem = tileList[listIndex].GetCurrentItem();
+            GridItemView gridItemView = tileList[listIndex].GetCurrentItem();
 
             tileList[listIndex].eventTrigger.enabled = false;
 
-            if (gridItem)
+            if (gridItemView)
             {
-                gridItem.PlayAnimationDelayed("Outro", listIndex * 0.02f);
+                gridItemView.PlayAnimationDelayed("Outro", listIndex * 0.02f);
             }
         }
     }
@@ -387,13 +388,13 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         for (int listIndex = 0; listIndex < tileList.Count; listIndex++)
         {
-            GridItem gridItem = tileList[listIndex].GetCurrentItem();
+            GridItemView gridItemView = tileList[listIndex].GetCurrentItem();
 
             tileList[listIndex].eventTrigger.enabled = false;
 
-            if (gridItem)
+            if (gridItemView)
             {
-                gridItem.SetAnimatorBool("Selectable", false);
+                gridItemView.SetAnimatorBool("Selectable", false);
             }
         }
     }
@@ -402,13 +403,13 @@ public class GridManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         for (int listIndex = 0; listIndex < tileList.Count; listIndex++)
         {
-            GridItem gridItem = tileList[listIndex].GetCurrentItem();
+            GridItemView gridItemView = tileList[listIndex].GetCurrentItem();
 
             tileList[listIndex].eventTrigger.enabled = true;
 
-            if (gridItem)
+            if (gridItemView)
             {
-                gridItem.SetAnimatorBool("Selectable", true);
+                gridItemView.SetAnimatorBool("Selectable", true);
             }
         }
     }

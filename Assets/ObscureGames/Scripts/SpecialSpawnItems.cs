@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SpecialSpawnItems : MonoBehaviour
 {
-    [SerializeField] private GridItem[] spawns;
+    [SerializeField] private GridItemView[] spawns;
     [SerializeField] private bool autoTrigger = true;
     [SerializeField] private float triggerRate = 0.2f;
     [SerializeField] private bool spawnOnRandomTile = false;

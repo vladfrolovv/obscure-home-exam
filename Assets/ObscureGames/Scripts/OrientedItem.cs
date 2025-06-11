@@ -5,6 +5,6 @@ using UnityEngine;
 [System.Serializable]
 public class OrientedItem
 {
-    public GridItem gridItem;
+    public GridItemView GridItemView;
     public Vector2[] orientations;
 }

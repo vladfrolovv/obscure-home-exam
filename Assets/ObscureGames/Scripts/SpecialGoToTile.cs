@@ -5,7 +5,7 @@ using UnityEngine;
 public class SpecialGoToTile : MonoBehaviour
 {
     [SerializeField] private float moveTime = 1;
-    [SerializeField] private GridItem carryItem;
+    [SerializeField] private GridItemView _carryItemView;
 
     public void Execute(ExecuteData executeData)
     {
@@ -14,19 +14,19 @@ public class SpecialGoToTile : MonoBehaviour
 
     IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
     {
-        GridItem gridItem = gridTile.GetCurrentItem();
+        GridItemView gridItemView = gridTile.GetCurrentItem();
 
-        if (gridItem == true)
+        if (gridItemView == true)
         {
             GameManager.instance.playerController.AddToExecuteList(this.gameObject);
 
-            gridItem.isClearing = true;
+            gridItemView.isClearing = true;
 
-            if (gridItem == true) LeanTween.cancel(gridItem.gameObject);
+            if (gridItemView == true) LeanTween.cancel(gridItemView.gameObject);
 
             yield return new WaitForSeconds(delay);
        
-            gridItem.thisCanvas.sortingOrder *= 2;
+            gridItemView.GridItemCanvas.sortingOrder *= 2;
 
             Vector3 randomOffset = UnityEngine.Random.insideUnitCircle * 0.5f;
 
@@ -50,22 +50,22 @@ public class SpecialGoToTile : MonoBehaviour
 
             GameManager.instance.playerController.CollectItemAtTile(targetTile, moveTime);
 
-            GameManager.instance.playerController.CollectAnimation(gridItem);
+            GameManager.instance.playerController.CollectAnimation(gridItemView);
 
-            LeanTween.rotate(gridItem.gameObject, Vector3.forward * UnityEngine.Random.Range(-30, 30), moveTime * 0.9f).setEaseOutSine();
-            LeanTween.move(gridItem.gameObject, gridItem.transform.position + randomOffset, moveTime * 0.7f).setEaseOutSine().setOnComplete(() =>
+            LeanTween.rotate(gridItemView.gameObject, Vector3.forward * UnityEngine.Random.Range(-30, 30), moveTime * 0.9f).setEaseOutSine();
+            LeanTween.move(gridItemView.gameObject, gridItemView.transform.position + randomOffset, moveTime * 0.7f).setEaseOutSine().setOnComplete(() =>
             {
-                LeanTween.moveX(gridItem.gameObject, targetTile.transform.position.x, moveTime * 0.3f).setEaseInOutSine();
-                LeanTween.moveY(gridItem.gameObject, targetTile.transform.position.y, moveTime * 0.3f).setEaseInSine().setOnComplete(()=>
+                LeanTween.moveX(gridItemView.gameObject, targetTile.transform.position.x, moveTime * 0.3f).setEaseInOutSine();
+                LeanTween.moveY(gridItemView.gameObject, targetTile.transform.position.y, moveTime * 0.3f).setEaseInSine().setOnComplete(()=>
                 {
-                    if (carryItem)
+                    if (_carryItemView)
                     {
-                        GridManager.instance.SpawnItem(carryItem, targetTile, 0);
+                        GridManager.instance.SpawnItem(_carryItemView, targetTile, 0);
                         GameManager.instance.playerController.CollectItemAtTile(targetTile, 0.0f);
                     }
 
-                    GameManager.instance.playerController.ClearEffect(gridItem);
-                    Destroy(gridItem.gameObject);
+                    GameManager.instance.playerController.ClearEffect(gridItemView);
+                    Destroy(gridItemView.gameObject);
 
                     GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);
                     GameManager.instance.playerController.CheckExecuteLink();

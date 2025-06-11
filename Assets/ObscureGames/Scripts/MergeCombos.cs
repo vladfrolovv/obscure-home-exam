@@ -41,7 +41,7 @@ public class MergeCombos : MonoBehaviour
         }
     }
 
-    public MergeCombo GetCombo( List<GridItem> powerups )
+    public MergeCombo GetCombo( List<GridItemView> powerups )
     {
         MergeCombo mergeCombo = null;
 

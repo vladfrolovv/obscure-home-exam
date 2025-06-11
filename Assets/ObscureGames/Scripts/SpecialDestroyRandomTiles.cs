@@ -19,21 +19,21 @@ public class SpecialDestroyRandomTiles : MonoBehaviour
     {
         GameManager.instance.playerController.AddToExecuteList(this.gameObject);
 
-        GridItem gridItem = gridTile.GetCurrentItem();
+        GridItemView gridItemView = gridTile.GetCurrentItem();
 
-        if (gridItem) gridItem.isClearing = true;
+        if (gridItemView) gridItemView.isClearing = true;
 
         yield return new WaitForSeconds(delay);
 
-        if (gridItem) gridItem.thisCanvas.sortingOrder *= 2;
+        if (gridItemView) gridItemView.GridItemCanvas.sortingOrder *= 2;
 
         for ( int destroyIndex = 0; destroyIndex < destroyCount; destroyIndex++ )
         {
             GridTile targetTile = GridManager.instance.GetRandomTile();
 
-            GridItem targetItem = targetTile.GetCurrentItem();
+            GridItemView targetItemView = targetTile.GetCurrentItem();
 
-            if (targetItem)
+            if (targetItemView)
             {
                 /*ParticleSystem newEffect = Instantiate(glowEffect);
 
@@ -50,8 +50,8 @@ public class SpecialDestroyRandomTiles : MonoBehaviour
 
                 LeanTween.value(0, 0.3f, 0.4f).setDelay(Random.Range(0.0f, 0.8f)).setOnUpdate((float width)=> newGlowLine.startWidth = width).setOnComplete(()=>
                 {
-                    targetItem.thisCanvas.overrideSorting = true;
-                    targetItem.PlayAnimation("LinkAdd");
+                    targetItemView.GridItemCanvas.overrideSorting = true;
+                    targetItemView.PlayAnimation("LinkAdd");
                 });
 
                 Destroy(newGlowLine.gameObject, executeDelay);
@@ -70,13 +70,13 @@ public class SpecialDestroyRandomTiles : MonoBehaviour
 
         GridManager.instance.ShakeBoard();
 
-        if (gridItem)
+        if (gridItemView)
         {
-            GameManager.instance.playerController.CollectAnimation(gridItem);
+            GameManager.instance.playerController.CollectAnimation(gridItemView);
 
 
-            GameManager.instance.playerController.ClearEffect(gridItem);
-            Destroy(gridItem.gameObject);
+            GameManager.instance.playerController.ClearEffect(gridItemView);
+            Destroy(gridItemView.gameObject);
         }
 
         GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);

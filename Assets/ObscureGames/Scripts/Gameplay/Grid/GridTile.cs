@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class GridTile : MonoBehaviour
 {
     public EventTrigger eventTrigger;
-    private GridItem currentItem;
+    private GridItemView _currentItemView;
 
     internal GridTile connectRight, connectLeft, connectUp, connectDown;
 
@@ -47,7 +47,7 @@ public class GridTile : MonoBehaviour
     {
         //if (!TurnManager.Instance.IsLocalPlayersTurn()) return;
         // If there's no item on this tile, return
-        if (currentItem == null) return;
+        if (_currentItemView == null) return;
 
         if (!GameManager.instance.currentPlayer.photonView.IsMine) return;
 
@@ -84,7 +84,7 @@ public class GridTile : MonoBehaviour
         // If this is the first tile in the link, add it regardless of type match
         if (playerController.tileLink.Count == 0)
         {
-            playerController.linkType = currentItem.type;
+            playerController.linkType = _currentItemView.type;
             playerController.CheckSelectables();
 
             connectorLine.SetActive(false);
@@ -96,7 +96,7 @@ public class GridTile : MonoBehaviour
         }
 
         // Check if the item type matches the last tile in the link
-        if (lastTileInLink && (currentItem.type == lastTileInLink.currentItem.type || currentItem.type < 0 || lastTileInLink.currentItem.type < 0))
+        if (lastTileInLink && (_currentItemView.type == lastTileInLink._currentItemView.type || _currentItemView.type < 0 || lastTileInLink._currentItemView.type < 0))
         {
             if (connectUp && connectUp == lastTileInLink) // Connect FROM the tile above this one
             {
@@ -153,7 +153,7 @@ public class GridTile : MonoBehaviour
 
         if ( goodLink == true )
         {
-            playerController.linkType = currentItem.type;
+            playerController.linkType = _currentItemView.type;
 
             playerController.CheckSelectables();
 
@@ -162,14 +162,14 @@ public class GridTile : MonoBehaviour
         }
     }
 
-    public void SetCurrentItem( GridItem setValue )
+    public void SetCurrentItem( GridItemView setValue )
     {
-        currentItem = setValue;
+        _currentItemView = setValue;
     }
 
-    public GridItem GetCurrentItem()
+    public GridItemView GetCurrentItem()
     {
-        return currentItem;
+        return _currentItemView;
     }
 
     public void SetConnectorAnimator(bool setValue)

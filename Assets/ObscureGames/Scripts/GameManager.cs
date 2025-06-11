@@ -51,7 +51,7 @@ public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     public class SpecialLink
     {
         public int linkSize = 4;
-        public GridItem spawnItem;
+        public GridItemView SpawnItemView;
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)

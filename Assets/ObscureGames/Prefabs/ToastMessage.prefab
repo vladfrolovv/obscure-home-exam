@@ -4920,8 +4920,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc756686f6601548969c9fa02cfd65f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  thisAnimator: {fileID: 4055251447817523474}
-  thisText: {fileID: 6373799445148783359}
+  _thisAnimator: {fileID: 4055251447817523474}
+  _introAnimationProperty: Intro
+  _text: {fileID: 6373799445148783359}
 --- !u!95 &4055251447817523474
 Animator:
   serializedVersion: 3

@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using ObscureGames;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -99,7 +96,7 @@ public class DebugSettings : MonoBehaviour
     {
         currentRuleSet = rulesets[rulesetIndex];
 
-        TimeManager.instance.SetGameSpeed(currentRuleSet.gameSpeed);
+        // TimeController.instance.SetGameSpeed(currentRuleSet.gameSpeed);
         GameManager.instance.SetRoundsPerMatch(currentRuleSet.roundsPerMatch);
         GameManager.instance.SetMovesPerRound(currentRuleSet.movesPerRound);
         GameManager.instance.SetTimePerRound(currentRuleSet.timePerRound);

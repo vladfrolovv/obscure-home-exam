@@ -1,21 +1,24 @@
 using System.Collections;
-using System.Collections.Generic;
+using ObscureGames.Gameplay.Grid.Configs;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class GridItem : MonoBehaviour
+public class GridItemView : MonoBehaviour
 {
+
     public ScriptableGridItem customItem;
 
     public int type = 0;
 
-    [SerializeField] private Animator thisAnimator;
-    [SerializeField] internal Canvas thisCanvas;
+    [SerializeField] private Animator _thisAnimator;
+    [SerializeField] private Canvas _canvas;
 
     [SerializeField] private Image iconImage;
     [SerializeField] private Image shadowImage;
     [SerializeField] private TextMeshProUGUI textObject;
+
+    public Canvas GridItemCanvas => _canvas;
 
     public Image glowImage;
     public Animator glowAnimator;
@@ -50,13 +53,14 @@ public class GridItem : MonoBehaviour
 
     private void OnValidate()
     {
-        if ( Application.isEditor )
-        {
-            if (customItem)
-            {
-                Setup(customItem);
-            }
-        }
+        if (!Application.isEditor) return;
+        ValidateCustomItem();
+    }
+
+    private void ValidateCustomItem()
+    {
+        if (!customItem) return;
+        Setup(customItem);
     }
 
     public void SetType(int setValue)
@@ -76,7 +80,7 @@ public class GridItem : MonoBehaviour
 
     public void PlayAnimation( string setValue )
     {
-        thisAnimator.Play(setValue);
+        _thisAnimator.Play(setValue);
     }
 
     public void PlayAnimationDelayed(string setValue, float delay)
@@ -88,17 +92,17 @@ public class GridItem : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
 
-        thisAnimator.Play(setValue);
+        _thisAnimator.Play(setValue);
     }
 
     public void SetAnimatorBool(string stateName, bool setValue)
     {
-        thisAnimator.SetBool(stateName, setValue);
+        _thisAnimator.SetBool(stateName, setValue);
     }
 
     public void SetAnimatorTrigger(string stateName)
     {
-        thisAnimator.SetTrigger(stateName);
+        _thisAnimator.SetTrigger(stateName);
     }
 
     public Image GetIconImage()
@@ -106,7 +110,7 @@ public class GridItem : MonoBehaviour
         return iconImage;
     }
 
-    public GridItem GetOtherOrientation(Vector2 orienation)
+    public GridItemView GetOtherOrientation(Vector2 orienation)
     {
         for (int index = 0; index < otherOrientations.Length; index++)
         {
@@ -114,7 +118,7 @@ public class GridItem : MonoBehaviour
             {
                 if (otherOrientations[index].orientations[indexB] == orienation)
                 {
-                    return otherOrientations[index].gridItem;
+                    return otherOrientations[index].GridItemView;
                 }
             }
         }
