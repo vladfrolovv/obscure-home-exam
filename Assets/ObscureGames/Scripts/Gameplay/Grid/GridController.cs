@@ -368,11 +368,10 @@ namespace ObscureGames.Gameplay.Grid
                 int x = i % width;
                 int y = i / width;
 
-                // Only grab a neighbor if we’re not on that edge:
-                GridTileView left   = x > 0           ? _tiles[i - 1]       : null;
-                GridTileView right  = x < width - 1   ? _tiles[i + 1]       : null;
-                GridTileView top    = y > 0           ? _tiles[i - width]   : null;
-                GridTileView bottom = y < height - 1  ? _tiles[i + width]   : null;
+                GridTileView left = x > 0 ? _tiles[i - 1] : null;
+                GridTileView right = x < width - 1 ? _tiles[i + 1] : null;
+                GridTileView top = y > 0 ? _tiles[i - width] : null;
+                GridTileView bottom = y < height - 1 ? _tiles[i + width] : null;
 
                 _tiles[i].InstallTileConnections(right, left, top, bottom);
             }

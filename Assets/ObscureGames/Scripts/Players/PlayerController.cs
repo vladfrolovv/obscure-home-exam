@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using System.Linq;
 using ObscureGames.Gameplay;
 using ObscureGames.Gameplay.Grid;
+using ObscureGames.Gameplay.Grid.MergeCombos;
 using ObscureGames.Gameplay.Grid.Models;
 using ObscureGames.Gameplay.UI;
 using Photon.Pun;
@@ -38,17 +39,19 @@ namespace ObscureGames.Players
 
         public Vector2 direction = Vector2.zero;
 
-        private MergeCombos.MergeCombo mergeCombo;
+        private MergeComboModel _mergeComboModel;
         public bool hasPowerups = false;
 
-        private GridController _gridController;
         private GameManager _gameManager;
+        private GridController _gridController;
+        private MergeCombosController _mergeCombosController;
 
         [Inject]
-        public void Construct(GridController gridController, GameManager gameManager)
+        public void Construct(GridController gridController, GameManager gameManager, MergeCombosController mergeCombosController)
         {
             _gridController = gridController;
             _gameManager = gameManager;
+            _mergeCombosController = mergeCombosController;
         }
 
         public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -122,7 +125,7 @@ namespace ObscureGames.Players
 
             tileLink.Clear();
             powerupsInLink.Clear();
-            mergeCombo = null;
+            _mergeComboModel = null;
 
             direction = Vector2.zero;
 
@@ -160,7 +163,7 @@ namespace ObscureGames.Players
         {
             tileLink.Clear();
             powerupsInLink.Clear();
-            mergeCombo = null;
+            _mergeComboModel = null;
             //_gameManager.currentPlayer.booster.EndActivation();
 
             direction = Vector2.zero;
@@ -502,7 +505,7 @@ namespace ObscureGames.Players
 
         void Collect(GridItemView gridItemView, Transform target, float delay, GridTileView gridTileView)
         {
-            if (gridItemView.IsMerging == false && mergeCombo == null) gridItemView.SendMessage("Execute", new ExecuteDataModel(gridTileView, delay), SendMessageOptions.DontRequireReceiver);
+            if (gridItemView.IsMerging == false && _mergeComboModel == null) gridItemView.SendMessage("Execute", new ExecuteDataModel(gridTileView, delay), SendMessageOptions.DontRequireReceiver);
 
             // This is here to make sure that combo powerups trigger if the last tile in the link is a powerup
             if (powerupsInLink.Count > 1 && gridItemView.IsLastInLink == true)
@@ -586,19 +589,18 @@ namespace ObscureGames.Players
                     Collect(powerupsInLink[powerupIndex], target, delay * 0.8f, gridTileView);
                 }
 
-                MergeCombos.instance.MergeEffect(gridTileView.transform.position);
+                _mergeCombosController.MergeEffect(gridTileView.transform.position);
 
-                mergeCombo = MergeCombos.instance.GetCombo(powerupsInLink);
+                _mergeComboModel = _mergeCombosController.GetMergeCombo(powerupsInLink);
 
                 powerupsInLink.Clear();
 
-                if (mergeCombo != null)
+                if (_mergeComboModel != null)
                 {
-                    var executeObject = Instantiate(mergeCombo.executeObject);
+                    GameObject executeObject = Instantiate(_mergeComboModel.ExecuteObject);
                     executeObject.SendMessage("Execute", new ExecuteDataModel(gridTileView, delay), SendMessageOptions.DontRequireReceiver);
-                    //Destroy(executeObject, delay + 0.1f);
 
-                    mergeCombo = null;
+                    _mergeComboModel = null;
                 }
             }
         }

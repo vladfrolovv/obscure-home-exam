@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f850cb7d10542d4a80b47193fe40618, type: 3}
+  m_Name: ScriptableMergeCombos
+  m_EditorClassIdentifier: 
+  _mergeCombos:
+  - <ComboName>k__BackingField: RocketH + RocketV
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: 0f885388d202370489a7cbbb138d092b, type: 3}
+    _itemTypes: fdfffffffcffffff
+  - <ComboName>k__BackingField: RocketH + RocketH
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: 0f885388d202370489a7cbbb138d092b, type: 3}
+    _itemTypes: fdfffffffdffffff
+  - <ComboName>k__BackingField: RocketV + RocketV
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: 0f885388d202370489a7cbbb138d092b, type: 3}
+    _itemTypes: fcfffffffcffffff
+  - <ComboName>k__BackingField: Bomb + Bomb
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: bdba9f1ac0c95da479eae814a150e01d, type: 3}
+    _itemTypes: fbfffffffbffffff
+  - <ComboName>k__BackingField: Bomb + RocketH
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: f0994dd97c78f3f4a9f565f2b82c999e, type: 3}
+    _itemTypes: fdfffffffbffffff
+  - <ComboName>k__BackingField: Bomb + RocketV
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: 4219910cfd7fdf145a94b7bb2ffbb533, type: 3}
+    _itemTypes: fcfffffffbffffff
+  - <ComboName>k__BackingField: Bomb + RocketH + RocketV
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: b334a8afba1e42443b3aa242ccf8853f, type: 3}
+    _itemTypes: fdfffffffcfffffffbffffff
+  - <ComboName>k__BackingField: Disco + Disco
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: 0715165676ce0954d845e2ed016fdde7, type: 3}
+    _itemTypes: fafffffffaffffff
+  - <ComboName>k__BackingField: Propeller + Propeller
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: e3df7a92a49e5284093e9757c15f3103, type: 3}
+    _itemTypes: fefffffffeffffff
+  - <ComboName>k__BackingField: Propeller + RocketH
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: 6c1a40afb979e7347bb21b819259d318, type: 3}
+    _itemTypes: fefffffffdffffff
+  - <ComboName>k__BackingField: Propeller + RocketV
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: 7b41db750832a7844a2f57bf47a6e0b4, type: 3}
+    _itemTypes: fefffffffcffffff
+  - <ComboName>k__BackingField: Propeller + Bomb
+    <Icon>k__BackingField: {fileID: 0}
+    <ExecuteObject>k__BackingField: {fileID: 61577749503720476, guid: d4c60f058ec6c3643ac8c8e57b093531, type: 3}
+    _itemTypes: fefffffffbffffff

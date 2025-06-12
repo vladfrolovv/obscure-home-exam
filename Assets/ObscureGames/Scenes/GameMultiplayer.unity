@@ -847,7 +847,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1425435797}
   - component: {fileID: 1425435796}
-  - component: {fileID: 1425435799}
   - component: {fileID: 1425435798}
   m_Layer: 0
   m_Name: GameManager
@@ -927,68 +926,6 @@ MonoBehaviour:
   sceneViewId: 2
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &1425435799
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1425435795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 339a68331eb5594468c20d10982ee0e1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mergeEffect: {fileID: 430826705497098691, guid: 6f52e434c70ab5445b5f12ca7c19fb2d, type: 3}
-  mergeCombos:
-  - comboName: RocketH + RocketV
-    icon: {fileID: 21300000, guid: 5dcf0f88750e57b4997d4059101d04d0, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: 0f885388d202370489a7cbbb138d092b, type: 3}
-    itemTypes: fdfffffffcffffff
-  - comboName: RocketH + RocketH
-    icon: {fileID: 21300000, guid: 5dcf0f88750e57b4997d4059101d04d0, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: 0f885388d202370489a7cbbb138d092b, type: 3}
-    itemTypes: fdfffffffdffffff
-  - comboName: RocketV + RocketV
-    icon: {fileID: 21300000, guid: 5dcf0f88750e57b4997d4059101d04d0, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: 0f885388d202370489a7cbbb138d092b, type: 3}
-    itemTypes: fcfffffffcffffff
-  - comboName: Bomb + Bomb
-    icon: {fileID: 21300000, guid: 0d25e512eeb1db940bcc66b13803d355, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: bdba9f1ac0c95da479eae814a150e01d, type: 3}
-    itemTypes: fbfffffffbffffff
-  - comboName: Bomb + RocketH
-    icon: {fileID: 21300000, guid: d55804194e08dc747998b48fb1fd65cf, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: f0994dd97c78f3f4a9f565f2b82c999e, type: 3}
-    itemTypes: fdfffffffbffffff
-  - comboName: Bomb + RocketV
-    icon: {fileID: 21300000, guid: cdd58b57fe888e74a9e8d586af303a7c, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: 4219910cfd7fdf145a94b7bb2ffbb533, type: 3}
-    itemTypes: fcfffffffbffffff
-  - comboName: Bomb + RocketH + RocketV
-    icon: {fileID: 21300000, guid: 6f02714198d63604fa9915194c5f34f2, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: b334a8afba1e42443b3aa242ccf8853f, type: 3}
-    itemTypes: fdfffffffcfffffffbffffff
-  - comboName: Disco + Disco
-    icon: {fileID: 21300000, guid: d9bd7bcd835e20447a27f54f20cfddb9, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: 0715165676ce0954d845e2ed016fdde7, type: 3}
-    itemTypes: fafffffffaffffff
-  - comboName: Propeller + Propeller
-    icon: {fileID: 21300000, guid: 456b383ca5a48994caae963ba5897e00, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: e3df7a92a49e5284093e9757c15f3103, type: 3}
-    itemTypes: fefffffffeffffff
-  - comboName: Propeller + RocketH
-    icon: {fileID: 21300000, guid: 6c66ba4db1030bc40b939295c8ec3889, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: 6c1a40afb979e7347bb21b819259d318, type: 3}
-    itemTypes: fefffffffdffffff
-  - comboName: Propeller + RocketV
-    icon: {fileID: 21300000, guid: 0e4c3c737705b8a4baa09e0cc9ef9d6a, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: 7b41db750832a7844a2f57bf47a6e0b4, type: 3}
-    itemTypes: fefffffffcffffff
-  - comboName: Propeller + Bomb
-    icon: {fileID: 21300000, guid: 0427ff7c7d0c4c94faece1a836ea2dd3, type: 3}
-    executeObject: {fileID: 61577749503720476, guid: d4c60f058ec6c3643ac8c8e57b093531, type: 3}
-    itemTypes: fefffffffbffffff
 --- !u!1 &1446735163 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1210809818738370413, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
@@ -1190,6 +1127,7 @@ MonoBehaviour:
   _gameManager: {fileID: 1425435796}
   _gridController: {fileID: 1770781316}
   _playerController: {fileID: 799268482}
+  _mergeEffectView: {fileID: 0}
 --- !u!1001 &1210809817494440534
 PrefabInstance:
   m_ObjectHideFlags: 0
