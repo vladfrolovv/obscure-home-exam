@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay;
 using ObscureGames.Gameplay.UI;
+using ObscureGames.Players;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;

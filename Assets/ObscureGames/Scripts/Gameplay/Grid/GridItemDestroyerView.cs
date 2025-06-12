@@ -1,6 +1,7 @@
 using System.Collections;
 using ObscureGames.Gameplay.Grid.Configs;
 using ObscureGames.Gameplay.Grid.Models;
+using ObscureGames.Players;
 using ObscureGames.Timers;
 using UnityEngine;
 using Zenject;

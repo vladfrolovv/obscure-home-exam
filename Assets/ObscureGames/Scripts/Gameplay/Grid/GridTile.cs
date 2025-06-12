@@ -1,7 +1,9 @@
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using ObscureGames.Gameplay;
 using ObscureGames.Gameplay.Grid;
+using ObscureGames.Players;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
