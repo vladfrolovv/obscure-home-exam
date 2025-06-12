@@ -14,26 +14,26 @@ namespace ObscureGames.Gameplay.Grid
         [SerializeField] private Transform _destroyEffect;
         [SerializeField] private DestroyPatternModel _destroyPatternModel;
 
-        private GridManager _gridManager;
+        private GridController _gridController;
         private PlayerController _playerController;
         private TimeController _timeController;
 
         private int _patternIndex;
 
         [Inject]
-        public void Construct(GridManager gridManager, PlayerController playerController, TimeController timeController)
+        public void Construct(GridController gridController, PlayerController playerController, TimeController timeController)
         {
-            _gridManager = gridManager;
+            _gridController = gridController;
             _playerController = playerController;
             _timeController = timeController;
         }
 
         public void Execute(ExecuteDataModel executeDataModel)
         {
-            StartCoroutine(ExecutePatternCoroutine(executeDataModel.GridTile, executeDataModel.Delay));
+            StartCoroutine(ExecutePatternCoroutine(executeDataModel.GridTileView, executeDataModel.Delay));
         }
 
-        private IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
+        private IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
             _playerController.AddToExecuteList(gameObject);
 
@@ -41,8 +41,8 @@ namespace ObscureGames.Gameplay.Grid
 
             _timeController.SlowMotion(0.2f, 0.1f);
 
-            Vector2Int gridSize = _gridManager.GetGridSize();
-            Vector2Int tileGridIndex = _playerController.GetIndexInGrid(gridTile);
+            Vector2Int gridSize = _gridController.GridSize;
+            Vector2Int tileGridIndex = _playerController.GetIndexInGrid(gridTileView);
 
             for (_patternIndex = 0; _patternIndex < _destroyPatternModel.Directions.Count; _patternIndex++)
             {
@@ -54,9 +54,9 @@ namespace ObscureGames.Gameplay.Grid
 
             yield return new WaitForSeconds(0.2f);
 
-            if (_destroyEffect) Instantiate(_destroyEffect, gridTile.transform.position, Quaternion.identity);
+            if (_destroyEffect) Instantiate(_destroyEffect, gridTileView.transform.position, Quaternion.identity);
 
-            _gridManager.ShakeBoard();
+            _gridController.ShakeBoard();
 
             _playerController.RemoveFromExecuteList(this.gameObject);
             _playerController.CheckExecuteLink();

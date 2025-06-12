@@ -1,16 +1,15 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
-using System.Linq;
 using ObscureGames.Debug;
 using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.UI;
 using ObscureGames.Players;
 using Photon.Pun;
+using Zenject;
 
 namespace ObscureGames.Gameplay
 {
@@ -53,6 +52,14 @@ namespace ObscureGames.Gameplay
         [SerializeField] public SpecialLink[] specialLinks;
 
         public Camera MainCamera;
+
+        private GridController _gridController;
+
+        [Inject]
+        public void Construct(GridController gridController)
+        {
+            _gridController = gridController;
+        }
 
         [Serializable]
         public class SpecialLink
@@ -172,11 +179,9 @@ namespace ObscureGames.Gameplay
         [PunRPC]
         public void StartMatch()
         {
-            //GridManager.instance.CreateGrid();
-            GridManager.instance.FillGrid();
-            GridManager.instance.ShowGrid();
-
-            //Invoke(nameof(ShowPlayers), startDelay * 0.5f);
+            // _gridController.CreateGrid();
+            _gridController.FillGrid();
+            _gridController.ShowGrid();
 
             Invoke(nameof(ResetRounds), startDelay * 1.0f);
             Invoke(nameof(SetCurrentPlayer), startDelay * 1.0f);
@@ -411,8 +416,8 @@ namespace ObscureGames.Gameplay
                     winnerText.SetText(winner.playerName + " WINS!");
 
                     // FINISH MATCH
-                    GridManager.instance.ClearGrid();
-                    GridManager.instance.HideGrid();
+                    _gridController.ClearGrid();
+                    _gridController.HideGrid();
 
                     Invoke(nameof(GameOver), 0.5f);
                 }

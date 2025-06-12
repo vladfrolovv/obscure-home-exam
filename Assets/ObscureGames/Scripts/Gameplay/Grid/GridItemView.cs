@@ -27,6 +27,7 @@ namespace ObscureGames.Gameplay.Grid
         [SerializeField] private Animator _itemAnimator;
         [SerializeField] private Animator _glowAnimator;
         [SerializeField] private string _clearAnimationProperty;
+
         [SerializeField] private string _collectAnimationProperty;
         [SerializeField] private GridItemCollectEffectView _collectEffect;
 

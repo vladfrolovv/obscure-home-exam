@@ -3,13 +3,13 @@ namespace ObscureGames.Gameplay.Grid.Models
     public class ExecuteDataModel
     {
 
-        public ExecuteDataModel(GridTile gridTile, float delay)
+        public ExecuteDataModel(GridTileView gridTileView, float delay)
         {
-            GridTile = gridTile;
+            GridTileView = gridTileView;
             Delay = delay;
         }
 
-        public GridTile GridTile { get; }
+        public GridTileView GridTileView { get; }
         public float Delay { get; }
 
     }

@@ -1,5 +1,6 @@
 using Photon.Pun;
 using System.Collections;
+using ObscureGames.Gameplay.Grid;
 using UnityEngine;
 
 /*Adds an extra move to the player,
@@ -13,7 +14,7 @@ namespace ObscureGames.Gameplay.Specials
         [SerializeField] private string message = "EXTRA MOVE!";
         [SerializeField] private Color textColor = Color.white;
 
-        protected override IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
+        protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
             yield return new WaitForSeconds(delay);
 

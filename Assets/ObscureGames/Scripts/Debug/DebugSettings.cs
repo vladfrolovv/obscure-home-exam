@@ -1,9 +1,11 @@
 using ObscureGames.Gameplay;
+using ObscureGames.Gameplay.Grid;
+using ObscureGames.Timers;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
-
+using Zenject;
 namespace ObscureGames.Debug
 {
     public class DebugSettings : MonoBehaviour
@@ -47,6 +49,18 @@ namespace ObscureGames.Debug
         [SerializeField] private Canvas canvasPopup;
         [SerializeField] private Button buttonOK;
         [SerializeField] private Button buttonClose;
+
+        private GameManager _gameManager;
+        private GridController _gridController;
+        private TimeController _timeController;
+
+        [Inject]
+        public void Construct(GameManager gameManager, GridController gridController, TimeController timeController)
+        {
+            _gameManager = gameManager;
+            _gridController = gridController;
+            _timeController = timeController;
+        }
 
         private void Awake()
         {
@@ -101,21 +115,23 @@ namespace ObscureGames.Debug
         {
             currentRuleSet = rulesets[rulesetIndex];
 
-            // TimeController.instance.SetGameSpeed(currentRuleSet.gameSpeed);
-            GameManager.instance.SetRoundsPerMatch(currentRuleSet.roundsPerMatch);
-            GameManager.instance.SetMovesPerRound(currentRuleSet.movesPerRound);
-            GameManager.instance.SetTimePerRound(currentRuleSet.timePerRound);
-            GridManager.instance.SetGridSize(currentRuleSet.gridSize);
-            GridManager.instance.SetGridSeed(currentRuleSet.gridSeed);
-            if (GameManager.instance.playerController != null)
-                GameManager.instance.playerController.SetMinimumLinkSize(currentRuleSet.minimumLinkSize);
-            GridManager.instance.SetAllowDiagonal(currentRuleSet.allowDiagonal);
-            if (GameManager.instance.playerController != null)
-                GameManager.instance.playerController.SetExecuteTime(currentRuleSet.executeTime, currentRuleSet.executeTimeMultiplier, currentRuleSet.executeTimeMinimum);
-            GridManager.instance.SetItemDropDelay(currentRuleSet.itemDropDelay);
-            GridManager.instance.SetItemDropTime(currentRuleSet.itemDropTime);
+            _timeController.SetGameSpeed(currentRuleSet.gameSpeed);
+            _gameManager.SetRoundsPerMatch(currentRuleSet.roundsPerMatch);
+            _gameManager.SetMovesPerRound(currentRuleSet.movesPerRound);
+            _gameManager.SetTimePerRound(currentRuleSet.timePerRound);
+            _gameManager.SetSpecialLink(0, currentRuleSet.bombAtLink);
 
-            GameManager.instance.SetSpecialLink(0, currentRuleSet.bombAtLink);
+            if (_gameManager.playerController != null)
+            {
+                _gameManager.playerController.SetMinimumLinkSize(currentRuleSet.minimumLinkSize);
+                _gameManager.playerController.SetExecuteTime(currentRuleSet.executeTime, currentRuleSet.executeTimeMultiplier, currentRuleSet.executeTimeMinimum);
+            }
+
+            _gridController.SetItemDropDelay(currentRuleSet.itemDropDelay);
+            _gridController.SetItemDropTime(currentRuleSet.itemDropTime);
+            _gridController.SetGridSize(currentRuleSet.gridSize);
+            _gridController.SetSeedValue(currentRuleSet.gridSeed);
+            _gridController.SetDiagonalsAllowed(currentRuleSet.allowDiagonal);
         }
 
 

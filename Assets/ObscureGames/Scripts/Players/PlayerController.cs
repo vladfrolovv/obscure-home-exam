@@ -1,22 +1,19 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Linq;
-using ObscureGames;
 using ObscureGames.Gameplay;
 using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.Grid.Models;
 using ObscureGames.Gameplay.UI;
 using Photon.Pun;
+using Zenject;
 using Random = UnityEngine.Random;
-
 namespace ObscureGames.Players
 {
     public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
-        public List<GridTile> tileLink = new List<GridTile>();
+        public List<GridTileView> tileLink = new List<GridTileView>();
         internal List<GameObject> executeList = new List<GameObject>();
         internal bool isExecuting = false;
 
@@ -43,6 +40,16 @@ namespace ObscureGames.Players
 
         private MergeCombos.MergeCombo mergeCombo;
         public bool hasPowerups = false;
+
+        private GridController _gridController;
+        private GameManager _gameManager;
+
+        [Inject]
+        public void Construct(GridController gridController, GameManager gameManager)
+        {
+            _gridController = gridController;
+            _gameManager = gameManager;
+        }
 
         public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
         {
@@ -88,7 +95,7 @@ namespace ObscureGames.Players
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetButtonUp("Fire1") && GameManager.instance.currentPlayer && GameManager.instance.currentPlayer.photonView.IsMine && GameManager.instance.currentPlayer.moves > 0)
+            if (Input.GetButtonUp("Fire1") && _gameManager.currentPlayer && _gameManager.currentPlayer.photonView.IsMine && _gameManager.currentPlayer.moves > 0)
             {
                 //ExecuteLink();
                 photonView.RPC("ExecuteLink", RpcTarget.All);
@@ -125,107 +132,109 @@ namespace ObscureGames.Players
         [PunRPC]
         public void LinkAddByGrid(int gridX, int gridY)
         {
-            GridTile tile = GetTileByGrid(gridX, gridY);
-            tileLink.Add(tile);
+            GridTileView tileView = GetTileByGrid(gridX, gridY);
+            tileLink.Add(tileView);
 
 
-            if (GameManager.instance.currentPlayer.photonView.IsMine)
+            if (_gameManager.currentPlayer.photonView.IsMine)
             {
-                if (tileLink.Count > 1) tile.connectorLine.SetActive(true);
+                if (tileLink.Count > 1)
+                    tileView.SetConnectorLineActive(true);
             }
 
 
             //LeanTween.rotate(tile.GetCurrentItem().gameObject, Vector3.forward * 10, 0.2f);
 
-            tile.GetCurrentItem().GridItemCanvas.overrideSorting = true;
+            tileView.GridItemView.GridItemCanvas.overrideSorting = true;
 
-            tile.GetCurrentItem().PlayAnimation("LinkAdd");
+            tileView.GridItemView.PlayAnimation("LinkAdd");
 
-            if (tile.GetCurrentItem().GridItemType < 0) powerupsInLink.Add(tile.GetCurrentItem());
+            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Add(tileView.GridItemView);
 
             CheckSpecial();
 
-            tile.SetClickSize(0.5f);
+            tileView.SetClickSize(0.5f);
         }
 
-        public void LinkStart(GridTile tile)
+        public void LinkStart(GridTileView tileView)
         {
             tileLink.Clear();
             powerupsInLink.Clear();
             mergeCombo = null;
-            //GameManager.instance.currentPlayer.booster.EndActivation();
+            //_gameManager.currentPlayer.booster.EndActivation();
 
             direction = Vector2.zero;
 
-            LinkAdd(tile);
+            LinkAdd(tileView);
         }
 
 
 
-        public void LinkAdd(GridTile tile)
+        public void LinkAdd(GridTileView tileView)
         {
-            tileLink.Add(tile);
+            tileLink.Add(tileView);
 
-            if (tileLink.Count > 1) tile.connectorLine.SetActive(true);
+            if (tileLink.Count > 1)
+                tileView.SetConnectorLineActive(true);
 
-            tile.GetCurrentItem().GridItemCanvas.overrideSorting = true;
+            tileView.GridItemView.GridItemCanvas.overrideSorting = true;
 
-            tile.GetCurrentItem().PlayAnimation("LinkAdd");
+            tileView.GridItemView.PlayAnimation("LinkAdd");
 
-            if (tile.GetCurrentItem().GridItemType < 0) powerupsInLink.Add(tile.GetCurrentItem());
+            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Add(tileView.GridItemView);
 
             CheckSpecial();
 
-            tile.SetClickSize(0.5f);
+            tileView.SetClickSize(0.5f);
         }
 
 
 
-        public void LinkRemove(GridTile tile)
+        public void LinkRemove(GridTileView tileView)
         {
-            tileLink.Remove(tile);
+            tileLink.Remove(tileView);
 
-            tile.connectorLine.SetActive(false);
+            tileView.SetConnectorLineActive(false);
 
             //LeanTween.rotate(tile.GetCurrentItem().gameObject, Vector3.forward * 0, 0.2f);
 
-            tile.GetCurrentItem().GetComponent<Canvas>().overrideSorting = false;
+            tileView.GridItemView.GetComponent<Canvas>().overrideSorting = false;
 
-            tile.GetCurrentItem().PlayAnimation("LinkRemove");
+            tileView.GridItemView.PlayAnimation("LinkRemove");
 
-            if (tile.GetCurrentItem().GridItemType < 0) powerupsInLink.Remove(tile.GetCurrentItem());
+            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Remove(tileView.GridItemView);
 
             CheckSpecial();
 
-            tile.SetClickSize(1);
+            tileView.SetClickSize(1);
         }
 
         public void LinkRemoveByGrid(int gridX, int gridY)
         {
-            GridTile tile = GetTileByGrid(gridX, gridY);
-            tileLink.Remove(tile);
+            GridTileView tileView = GetTileByGrid(gridX, gridY);
+            tileLink.Remove(tileView);
 
-            if (GameManager.instance.currentPlayer.photonView.IsMine)
+            if (_gameManager.currentPlayer.photonView.IsMine)
             {
-                tile.connectorLine.SetActive(false);
+                tileView.SetConnectorLineActive(false);
             }
 
-            tile.GetCurrentItem().GetComponent<Canvas>().overrideSorting = false;
+            tileView.GridItemView.GetComponent<Canvas>().overrideSorting = false;
 
-            tile.GetCurrentItem().PlayAnimation("LinkRemove");
+            tileView.GridItemView.PlayAnimation("LinkRemove");
 
-            if (tile.GetCurrentItem().GridItemType < 0) powerupsInLink.Remove(tile.GetCurrentItem());
+            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Remove(tileView.GridItemView);
 
             CheckSpecial();
-            tile.SetClickSize(1);
+            tileView.SetClickSize(1);
         }
 
         [PunRPC]
         public void LinkRemoveAfterByGrid(int gridX, int gridY)
         {
-            GridTile tile = GetTileByGrid(gridX, gridY);
+            GridTileView tileView = GetTileByGrid(gridX, gridY);
 
-            int correctTileIndex = GetIndexInLink(tile);
+            int correctTileIndex = GetIndexInLink(tileView);
 
             for (int tileIndex = tileLink.Count - 1; tileIndex > correctTileIndex; tileIndex--)
                 //for (int tileIndex = correctTileIndex; tileIndex < tileLink.Count; tileIndex++)
@@ -236,9 +245,9 @@ namespace ObscureGames.Players
             }
         }
 
-        public void LinkRemoveAfter(GridTile tile)
+        public void LinkRemoveAfter(GridTileView tileView)
         {
-            int correctTileIndex = GetIndexInLink(tile);
+            int correctTileIndex = GetIndexInLink(tileView);
 
             for (int tileIndex = tileLink.Count - 1; tileIndex > correctTileIndex; tileIndex--)
                 //for (int tileIndex = correctTileIndex; tileIndex < tileLink.Count; tileIndex++)
@@ -248,12 +257,12 @@ namespace ObscureGames.Players
             }
         }
 
-        public int GetIndexInLink(GridTile tile)
+        public int GetIndexInLink(GridTileView tileView)
         {
             for (int tileIndex = 0; tileIndex < tileLink.Count; tileIndex++)
             {
                 // Get the tile index in the current link of tiles
-                if (tileLink[tileIndex] == tile)
+                if (tileLink[tileIndex] == tileView)
                 {
                     return tileIndex;
                 }
@@ -262,14 +271,13 @@ namespace ObscureGames.Players
             return -1;
         }
 
-        public int GetIndexInList(GridTile tile)
+        public int GetIndexInList(GridTileView tileView)
         {
-            List<GridTile> tileList = GridManager.instance.GetTileList();
-
+            List<GridTileView> tileList = _gridController.Tiles.ToList();
             for (int tileIndex = 0; tileIndex < tileList.Count; tileIndex++)
             {
                 // Get the tile index in the list of all tiles
-                if (tileList[tileIndex] == tile)
+                if (tileList[tileIndex] == tileView)
                 {
                     return tileIndex;
                 }
@@ -278,24 +286,24 @@ namespace ObscureGames.Players
             return -1;
         }
 
-        public Vector2Int GetIndexInGrid(GridTile tile)
+        public Vector2Int GetIndexInGrid(GridTileView tileView)
         {
-            int tileListIndex = GetIndexInList(tile);
+            int tileListIndex = GetIndexInList(tileView);
 
-            Vector2Int gridSize = GridManager.instance.GetGridSize();
+            Vector2Int gridSize = _gridController.GridSize;
 
             Vector2Int tileGridIndex = new Vector2Int(tileListIndex % gridSize.x, tileListIndex / gridSize.y);
 
             return tileGridIndex;
         }
 
-        public GridTile GetTileByGrid(int gridX, int gridY)
+        public GridTileView GetTileByGrid(int gridX, int gridY)
         {
-            int listIndex = GridManager.instance.GetGridSize().x * gridY + gridX;
+            int listIndex = _gridController.GridSize.x * gridY + gridX;
 
-            GridTile gridTile = GridManager.instance.GetTileList()[listIndex];
+            GridTileView gridTileView = _gridController.Tiles.ToArray()[listIndex];
 
-            return gridTile;
+            return gridTileView;
         }
 
 
@@ -332,24 +340,24 @@ namespace ObscureGames.Players
             {
                 LeanTween.rotate(tileLink[index].gameObject, Vector3.forward * 0, 0.2f);
 
-                if (GameManager.instance.currentPlayer.photonView.IsMine)
+                if (_gameManager.currentPlayer.photonView.IsMine)
                 {
-                    tileLink[index].connectorLine.SetActive(false);
+                    tileLink[index].SetConnectorLineActive(false);
                 }
 
-                GridTile gridTile = tileLink[index];
+                GridTileView gridTileView = tileLink[index];
 
-                GridItemView gridItemView = gridTile.GetCurrentItem();
-                Vector2Int tileGridIndex = GetIndexInGrid(gridTile);
-                if (gridTile.GetCurrentItem().GridItemType < 0)
+                GridItemView gridItemView = gridTileView.GridItemView;
+                Vector2Int tileGridIndex = GetIndexInGrid(gridTileView);
+                if (gridTileView.GridItemView.GridItemType < 0)
                 {
                     tempExecuteTime = executeTime;
                     hasPowerups = true;
                 }
 
-                if (index == tileLink.Count - 1) gridTile.GetCurrentItem().IsLastInLink = true;
+                if (index == tileLink.Count - 1) gridTileView.GridItemView.IsLastInLink = true;
 
-                if (GameManager.instance.currentPlayer.photonView.IsMine)
+                if (_gameManager.currentPlayer.photonView.IsMine)
                 {
                     photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
                 }
@@ -366,15 +374,15 @@ namespace ObscureGames.Players
             executeTotalTime += extraExecuteTime;
 
 
-            if (GameManager.instance.currentPlayer.photonView.IsMine)
+            if (_gameManager.currentPlayer.photonView.IsMine)
             {
-                GameManager.instance.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
+                _gameManager.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
 
                 if (powerupsInLink.Count > 1)
                 {
-                    GameManager.instance.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+                    _gameManager.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
 
-                    GameManager.instance.playerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
+                    _gameManager.playerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
                 }
 
                 if (powerupsInLink.Count < 1) photonView.RPC(nameof(SpawnSpecial), RpcTarget.All, specialIndex, executeTotalTime);
@@ -382,7 +390,7 @@ namespace ObscureGames.Players
                 Invoke(nameof(RPC_RemoveFromExecuteList), executeTotalTime);
             }
 
-            GameManager.instance.PauseTime(0);
+            _gameManager.PauseTime(0);
             LoseControl(0);
         }
 
@@ -398,15 +406,15 @@ namespace ObscureGames.Players
         }
 
 
-        public void CollectItemAtTile(GridTile gridTile, float delay)
+        public void CollectItemAtTile(GridTileView gridTileView, float delay)
         {
-            if (gridTile == null) return;
+            if (gridTileView == null) return;
 
-            gridTile.SetClickSize(1);
+            gridTileView.SetClickSize(1);
 
-            GridItemView gridItemView = gridTile.GetCurrentItem();
+            GridItemView gridItemView = gridTileView.GridItemView;
 
-            gridTile.Glow(delay);
+            gridTileView.Glow(delay);
 
             if (gridItemView == null || gridItemView.IsSpawning) return;
             if (gridItemView.transform.parent && gridItemView.transform.parent.parent && gridItemView.transform.parent.parent.parent) gridItemView.transform.SetParent(gridItemView.transform.parent.parent.parent);
@@ -417,20 +425,20 @@ namespace ObscureGames.Players
                 gridItemView.IsMerging = true;
             }
 
-            Collect(gridItemView, GameManager.instance.currentPlayer.bonusText.transform, delay, gridTile);
+            Collect(gridItemView, _gameManager.currentPlayer.bonusText.transform, delay, gridTileView);
 
-            gridTile.SetCurrentItem(null);
+            gridTileView.GridItemView = null;
         }
 
         [PunRPC]
         public void CollectItemAtGrid(int gridX, int gridY, float delay)
         {
             // Translate from grid index to list/array index
-            int listIndex = GridManager.instance.GetGridSize().x * gridY + gridX;
+            int listIndex = _gridController.GridSize.x * gridY + gridX;
 
-            GridTile gridTile = GridManager.instance.GetTileList()[listIndex];
+            GridTileView gridTileView = _gridController.Tiles.ToArray()[listIndex];
 
-            CollectItemAtTile(gridTile, delay);
+            CollectItemAtTile(gridTileView, delay);
         }
 
         //[PunRPC]
@@ -440,9 +448,9 @@ namespace ObscureGames.Players
             specialIndex = -1;
 
             // Check any special link size, and create powerups accordingly
-            for (int index = 0; index < GameManager.instance.specialLinks.Length; index++)
+            for (int index = 0; index < _gameManager.specialLinks.Length; index++)
             {
-                currentLinkSize = GameManager.instance.specialLinks[index].linkSize;
+                currentLinkSize = _gameManager.specialLinks[index].linkSize;
 
                 if (currentLinkSize <= tileLink.Count && currentLinkSize > longestSpecial)
                 {
@@ -453,12 +461,12 @@ namespace ObscureGames.Players
 
             if (specialIndex != -1)
             {
-                GridItemView gridItemView = GameManager.instance.specialLinks[specialIndex].SpawnItemView;
+                GridItemView gridItemView = _gameManager.specialLinks[specialIndex].SpawnItemView;
                 if (gridItemView != null && gridItemView.HasOtherOrientations)
                 {
                     CheckDirection();
-                    GridItemView tempGridItemView = GameManager.instance.specialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
-                    if (tempGridItemView != null) GameManager.instance.specialLinks[specialIndex].SpawnItemView = tempGridItemView;
+                    GridItemView tempGridItemView = _gameManager.specialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
+                    if (tempGridItemView != null) _gameManager.specialLinks[specialIndex].SpawnItemView = tempGridItemView;
                 }
             }
 
@@ -470,31 +478,31 @@ namespace ObscureGames.Players
         {
             if (index != -1)
             {
-                GridItemView gridItemView = GameManager.instance.specialLinks[index].SpawnItemView;
+                GridItemView gridItemView = _gameManager.specialLinks[index].SpawnItemView;
 
-                /*if ( GameManager.instance.specialLinks[index].spawnItem.otherOrientations.Length > 0 )
+                /*if ( _gameManager.specialLinks[index].spawnItem.otherOrientations.Length > 0 )
             {
-                GridItem tempGridItem = GameManager.instance.specialLinks[index].spawnItem.GetOtherOrientation(direction);
+                GridItem tempGridItem = _gameManager.specialLinks[index].spawnItem.GetOtherOrientation(direction);
 
                 if (tempGridItem != null) gridItem = tempGridItem;
             }*/
 
 
 
-                GridManager.instance.SpawnItem(gridItemView, tileLink[tileLink.Count - 1], delay);
+                _gridController.SpawnItem(gridItemView, tileLink[tileLink.Count - 1], delay);
 
-                if (GameManager.instance.currentPlayer.photonView.IsMine)
+                if (_gameManager.currentPlayer.photonView.IsMine)
                 {
-                    if (tileLink.Count >= GameManager.instance.GetExtraMoveAtLink()) GameManager.instance.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+                    if (tileLink.Count >= _gameManager.GetExtraMoveAtLink()) _gameManager.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
                 }
 
-                //GameManager.instance.currentPlayer.ChangeMoves(1);
+                //_gameManager.currentPlayer.ChangeMoves(1);
             }
         }
 
-        void Collect(GridItemView gridItemView, Transform target, float delay, GridTile gridTile)
+        void Collect(GridItemView gridItemView, Transform target, float delay, GridTileView gridTileView)
         {
-            if (gridItemView.IsMerging == false && mergeCombo == null) gridItemView.SendMessage("Execute", new ExecuteDataModel(gridTile, delay), SendMessageOptions.DontRequireReceiver);
+            if (gridItemView.IsMerging == false && mergeCombo == null) gridItemView.SendMessage("Execute", new ExecuteDataModel(gridTileView, delay), SendMessageOptions.DontRequireReceiver);
 
             // This is here to make sure that combo powerups trigger if the last tile in the link is a powerup
             if (powerupsInLink.Count > 1 && gridItemView.IsLastInLink == true)
@@ -535,14 +543,14 @@ namespace ObscureGames.Players
 
                 if (gridItemView.IsLastInLink == true)
                 {
-                    ExecuteLastInLink(gridTile, target, collectTime * 0.3f);
+                    ExecuteLastInLink(gridTileView, target, collectTime * 0.3f);
 
                     if (gridItemView.GridItemType < 0 && powerupsInLink.Count > 1 && gridItemView.CanMerge == true) return;
                 }
 
-                if (GameManager.instance.currentPlayer.photonView.IsMine)
+                if (_gameManager.currentPlayer.photonView.IsMine)
                 {
-                    GameManager.instance.currentPlayer.AddBonus(1, 0.5f);
+                    _gameManager.currentPlayer.AddBonus(1, 0.5f);
                 }
 
                 LeanTween.rotate(gridItemView.gameObject, Vector3.forward * Random.Range(-30, 30), collectTime * 0.7f).setEaseOutSine();
@@ -560,7 +568,7 @@ namespace ObscureGames.Players
             });
         }
 
-        public void ExecuteLastInLink(GridTile gridTile, Transform target, float delay)
+        public void ExecuteLastInLink(GridTileView gridTileView, Transform target, float delay)
         {
             if (isExecuting == false) return;
 
@@ -572,13 +580,13 @@ namespace ObscureGames.Players
                     powerupsInLink[powerupIndex].IsMerging = false;
                     powerupsInLink[powerupIndex].IsClearing = false;
 
-                    LeanTween.moveX(powerupsInLink[powerupIndex].gameObject, gridTile.transform.position.x, delay).setEaseInOutSine();
-                    LeanTween.moveY(powerupsInLink[powerupIndex].gameObject, gridTile.transform.position.y, delay).setEaseInOutQuad();
+                    LeanTween.moveX(powerupsInLink[powerupIndex].gameObject, gridTileView.transform.position.x, delay).setEaseInOutSine();
+                    LeanTween.moveY(powerupsInLink[powerupIndex].gameObject, gridTileView.transform.position.y, delay).setEaseInOutQuad();
 
-                    Collect(powerupsInLink[powerupIndex], target, delay * 0.8f, gridTile);
+                    Collect(powerupsInLink[powerupIndex], target, delay * 0.8f, gridTileView);
                 }
 
-                MergeCombos.instance.MergeEffect(gridTile.transform.position);
+                MergeCombos.instance.MergeEffect(gridTileView.transform.position);
 
                 mergeCombo = MergeCombos.instance.GetCombo(powerupsInLink);
 
@@ -587,7 +595,7 @@ namespace ObscureGames.Players
                 if (mergeCombo != null)
                 {
                     var executeObject = Instantiate(mergeCombo.executeObject);
-                    executeObject.SendMessage("Execute", new ExecuteDataModel(gridTile, delay), SendMessageOptions.DontRequireReceiver);
+                    executeObject.SendMessage("Execute", new ExecuteDataModel(gridTileView, delay), SendMessageOptions.DontRequireReceiver);
                     //Destroy(executeObject, delay + 0.1f);
 
                     mergeCombo = null;
@@ -633,24 +641,24 @@ namespace ObscureGames.Players
         {
             isExecuting = false;
 
-            if (GameManager.instance.currentPlayer.moves == 0)
+            if (_gameManager.currentPlayer.moves == 0)
             {
-                GameManager.instance.EndTurn();
+                _gameManager.EndTurn();
             }
 
             tileLink.Clear();
 
-            GridManager.instance.CollapseTiles();
+            _gridController.CollapseTiles();
 
-            GameManager.instance.RPC_StartTimer();
+            _gameManager.RPC_StartTimer();
             RegainControl();
         }
 
-        public void PushBack(GridTile gridTile, Vector2 direction)
+        public void PushBack(GridTileView gridTileView, Vector2 direction)
         {
-            if (gridTile == null) return;
+            if (gridTileView == null) return;
 
-            GridItemView gridItemView = gridTile.GetCurrentItem();
+            GridItemView gridItemView = gridTileView.GridItemView;
 
             if (gridItemView == null) return;
 
@@ -662,11 +670,11 @@ namespace ObscureGames.Players
 
         public void CheckSelectables()
         {
-            List<GridTile> tileList = GridManager.instance.GetTileList();
+            List<GridTileView> tileList = _gridController.Tiles.ToList();
 
             for (int listIndex = tileList.Count - 1; listIndex >= 0; listIndex--)
             {
-                GridItemView currentItemView = tileList[listIndex].GetCurrentItem();
+                GridItemView currentItemView = tileList[listIndex].GridItemView;
 
                 if (currentItemView)
                 {
@@ -687,7 +695,7 @@ namespace ObscureGames.Players
                     }
                     else
                     {
-                        tileList[listIndex].connectorLineColor.color = currentItemView.Color;
+                        tileList[listIndex].SetConnectorLineColor(currentItemView.Color);
                         tileList[listIndex].SetConnectorAnimator(false);
 
                         currentItemView.SetGlowAnimator(false);
@@ -698,11 +706,11 @@ namespace ObscureGames.Players
 
         public void ResetSelectables()
         {
-            List<GridTile> tileList = GridManager.instance.GetTileList();
+            List<GridTileView> tileList = _gridController.Tiles.ToList();
 
             for (int listIndex = tileList.Count - 1; listIndex >= 0; listIndex--)
             {
-                GridItemView currentItemView = tileList[listIndex].GetCurrentItem();
+                GridItemView currentItemView = tileList[listIndex].GridItemView;
 
                 if (currentItemView)
                 {

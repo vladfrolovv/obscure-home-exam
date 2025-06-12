@@ -9,9 +9,9 @@ namespace ObscureGames.Gameplay.Specials
         [SerializeField] private float moveTime = 1;
         [SerializeField] private GridItemView _carryItemView;
 
-        protected override IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
+        protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            GridItemView gridItemView = gridTile.GetCurrentItem();
+            GridItemView gridItemView = gridTileView.GridItemView;
 
             if (gridItemView == true)
             {
@@ -27,38 +27,38 @@ namespace ObscureGames.Gameplay.Specials
 
                 Vector3 randomOffset = UnityEngine.Random.insideUnitCircle * 0.5f;
 
-                GridTile targetTile = GridManager.instance.GetPowerupTile();
+                GridTileView targetTileView = GridController.GetPowerupTile();
 
                 //if ( targetTile == null ) targetTile = GridManager.instance.GetBoosterTile();
 
-                if (targetTile == null)
+                if (targetTileView == null)
                 {
-                    targetTile = GridManager.instance.GetRandomTile();
+                    targetTileView = GridController.GetRandomTile();
 
                     int timeout = 20;
 
-                    while (timeout > 0 && targetTile.GetCurrentItem() == null)
+                    while (timeout > 0 && targetTileView.GridItemView == null)
                     {
-                        targetTile = GridManager.instance.GetRandomTile();
+                        targetTileView = GridController.GetRandomTile();
 
                         timeout--;
                     }
                 }
 
-                GameManager.instance.playerController.CollectItemAtTile(targetTile, moveTime);
+                GameManager.instance.playerController.CollectItemAtTile(targetTileView, moveTime);
 
                 gridItemView.TryToCollect();
 
                 LeanTween.rotate(gridItemView.gameObject, Vector3.forward * UnityEngine.Random.Range(-30, 30), moveTime * 0.9f).setEaseOutSine();
                 LeanTween.move(gridItemView.gameObject, gridItemView.transform.position + randomOffset, moveTime * 0.7f).setEaseOutSine().setOnComplete(() =>
                 {
-                    LeanTween.moveX(gridItemView.gameObject, targetTile.transform.position.x, moveTime * 0.3f).setEaseInOutSine();
-                    LeanTween.moveY(gridItemView.gameObject, targetTile.transform.position.y, moveTime * 0.3f).setEaseInSine().setOnComplete(()=>
+                    LeanTween.moveX(gridItemView.gameObject, targetTileView.transform.position.x, moveTime * 0.3f).setEaseInOutSine();
+                    LeanTween.moveY(gridItemView.gameObject, targetTileView.transform.position.y, moveTime * 0.3f).setEaseInSine().setOnComplete(()=>
                     {
                         if (_carryItemView)
                         {
-                            GridManager.instance.SpawnItem(_carryItemView, targetTile, 0);
-                            GameManager.instance.playerController.CollectItemAtTile(targetTile, 0.0f);
+                            GridController.SpawnItem(_carryItemView, targetTileView, 0);
+                            GameManager.instance.playerController.CollectItemAtTile(targetTileView, 0.0f);
                         }
 
                         gridItemView.TryToClear();

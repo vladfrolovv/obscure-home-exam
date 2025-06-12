@@ -12,11 +12,11 @@ namespace ObscureGames.Gameplay.Specials
         [SerializeField] private float executeDelay = 2;
         [SerializeField] private Transform destroyEffect;
 
-        protected override IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
+        protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
             GameManager.instance.playerController.AddToExecuteList(this.gameObject);
 
-            GridItemView gridItemView = gridTile.GetCurrentItem();
+            GridItemView gridItemView = gridTileView.GridItemView;
 
             if (gridItemView) gridItemView.IsClearing = true;
 
@@ -26,9 +26,9 @@ namespace ObscureGames.Gameplay.Specials
 
             for (int destroyIndex = 0; destroyIndex < destroyCount; destroyIndex++)
             {
-                GridTile targetTile = GridManager.instance.GetRandomTile();
+                GridTileView targetTileView = GridController.GetRandomTile();
 
-                GridItemView targetItemView = targetTile.GetCurrentItem();
+                GridItemView targetItemView = targetTileView.GridItemView;
 
                 if (targetItemView)
                 {
@@ -40,8 +40,8 @@ namespace ObscureGames.Gameplay.Specials
 
                     LineRenderer newGlowLine = Instantiate(glowLineRenderer);
 
-                    newGlowLine.SetPosition(0, gridTile.transform.position);
-                    newGlowLine.SetPosition(1, targetTile.transform.position);
+                    newGlowLine.SetPosition(0, gridTileView.transform.position);
+                    newGlowLine.SetPosition(1, targetTileView.transform.position);
 
                     newGlowLine.startWidth = 0;
 
@@ -53,19 +53,19 @@ namespace ObscureGames.Gameplay.Specials
 
                     Destroy(newGlowLine.gameObject, executeDelay);
 
-                    GameManager.instance.playerController.CollectItemAtTile(targetTile, executeDelay * 0.9f);
+                    GameManager.instance.playerController.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
 
                     //GameManager.instance.currentPlayer.AddBonus(1, 0.5f);
                 }
             }
 
-            if (sourceEffect) Instantiate(sourceEffect, gridTile.transform.position, Quaternion.identity);
+            if (sourceEffect) Instantiate(sourceEffect, gridTileView.transform.position, Quaternion.identity);
 
             yield return new WaitForSeconds(executeDelay);
 
-            if (destroyEffect) Instantiate(destroyEffect, gridTile.transform.position, Quaternion.identity);
+            if (destroyEffect) Instantiate(destroyEffect, gridTileView.transform.position, Quaternion.identity);
 
-            GridManager.instance.ShakeBoard();
+            GridController.ShakeBoard();
 
             if (gridItemView)
             {

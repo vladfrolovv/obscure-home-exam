@@ -11,7 +11,7 @@ namespace ObscureGames.Gameplay.Specials
         [SerializeField] private float triggerRate = 0.2f;
         [SerializeField] private bool spawnOnRandomTile = false;
 
-        protected override IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
+        protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
             GameManager.instance.playerController.AddToExecuteList(this.gameObject);
 
@@ -21,15 +21,15 @@ namespace ObscureGames.Gameplay.Specials
             {
                 if (spawnOnRandomTile == true)
                 {
-                    GridTile targetTile = GridManager.instance.GetRandomTile();
-                    gridTile = targetTile;
+                    GridTileView targetTileView = GridController.GetRandomTile();
+                    gridTileView = targetTileView;
                 }
 
-                if (gridTile.GetCurrentItem() != null) GameManager.instance.playerController.CollectItemAtTile(gridTile, 0);
+                if (gridTileView.GridItemView != null) GameManager.instance.playerController.CollectItemAtTile(gridTileView, 0);
 
-                GridManager.instance.SpawnItem(spawns[spawnIndex], gridTile, 0);
+                GridController.SpawnItem(spawns[spawnIndex], gridTileView, 0);
 
-                if (autoTrigger == true) GameManager.instance.playerController.CollectItemAtTile(gridTile, spawnIndex * triggerRate);
+                if (autoTrigger == true) GameManager.instance.playerController.CollectItemAtTile(gridTileView, spawnIndex * triggerRate);
             }
 
             GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);
