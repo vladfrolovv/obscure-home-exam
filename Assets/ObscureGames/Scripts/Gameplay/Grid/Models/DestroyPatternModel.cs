@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
-namespace ObscureGames.Gameplay.Grid.Configs
+namespace ObscureGames.Gameplay.Grid.Models
 {
     [System.Serializable]
-    public class DestroyPatternInfo
+    public class DestroyPatternModel
     {
 
         [field: SerializeField] public string PatternName { get; private set; } = "8 around tile";

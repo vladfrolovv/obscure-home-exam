@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using System.Linq;
 using ObscureGames;
 using ObscureGames.Gameplay.Grid;
+using ObscureGames.Gameplay.Grid.Models;
 using ObscureGames.Gameplay.UI;
 using Photon.Pun;
 
@@ -489,7 +490,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
 
     void Collect(GridItemView gridItemView, Transform target, float delay, GridTile gridTile)
     {
-        if (gridItemView.IsMerging == false && mergeCombo == null) gridItemView.SendMessage("Execute", new ExecuteData(gridTile, delay), SendMessageOptions.DontRequireReceiver);
+        if (gridItemView.IsMerging == false && mergeCombo == null) gridItemView.SendMessage("Execute", new ExecuteDataModel(gridTile, delay), SendMessageOptions.DontRequireReceiver);
 
         // This is here to make sure that combo powerups trigger if the last tile in the link is a powerup
         if (powerupsInLink.Count > 1 && gridItemView.IsLastInLink == true)
@@ -582,7 +583,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
             if (mergeCombo != null)
             {
                 var executeObject = Instantiate(mergeCombo.executeObject);
-                executeObject.SendMessage("Execute", new ExecuteData(gridTile, delay), SendMessageOptions.DontRequireReceiver);
+                executeObject.SendMessage("Execute", new ExecuteDataModel(gridTile, delay), SendMessageOptions.DontRequireReceiver);
                 //Destroy(executeObject, delay + 0.1f);
 
                 mergeCombo = null;

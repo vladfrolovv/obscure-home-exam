@@ -5281,7 +5281,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _executeDelay: 0
   _destroyEffect: {fileID: 0}
-  _destroyPatternInfo:
+  _destroyPatternModel:
     <PatternName>k__BackingField: 8 around tile
     <Delay>k__BackingField: 0
     _directions:

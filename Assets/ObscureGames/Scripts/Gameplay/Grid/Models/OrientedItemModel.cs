@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-namespace ObscureGames.Gameplay.Grid.Configs
+namespace ObscureGames.Gameplay.Grid.Models
 {
     [Serializable]
-    public class OrientedItemInfo
+    public class OrientedItemModel
     {
 
         [field: SerializeField] public GridItemView GridItemView { get; private set; }

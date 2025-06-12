@@ -1,0 +1,31 @@
+using Photon.Pun;
+using System.Collections;
+using UnityEngine;
+
+/*Adds an extra move to the player,
+used as a component on a GridItem*/
+namespace ObscureGames.Gameplay.Specials
+{
+    public class ExtraMoveSpecialView : BaseSpecialView
+    {
+
+        [SerializeField] private int changeValue = 1;
+        [SerializeField] private string message = "EXTRA MOVE!";
+        [SerializeField] private Color textColor = Color.white;
+
+        protected override IEnumerator ExecutePatternCoroutine(GridTile gridTile, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            if (GameManager.instance.currentPlayer.photonView.IsMine)
+            {
+                GameManager.instance.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
+            }
+
+            //GameManager.instance.currentPlayer.ChangeMoves(changeValue);
+
+            GameManager.instance.playerController.ToastView.SetToast(transform.position, message, textColor);
+        }
+
+    }
+}

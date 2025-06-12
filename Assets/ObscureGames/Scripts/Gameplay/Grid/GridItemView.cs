@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ObscureGames.Gameplay.Grid.Configs;
+using ObscureGames.Gameplay.Grid.Models;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -34,7 +35,7 @@ namespace ObscureGames.Gameplay.Grid
         [field: SerializeField] public float ExtraExecuteTime { get; private set; }
 
         [Header("Oriented Items"), NonReorderable]
-        [SerializeField] private OrientedItemInfo[] _otherOrientations;
+        [SerializeField] private OrientedItemModel[] _otherOrientations;
 
         [HideInInspector] public bool IsSpawning;
         [HideInInspector] public bool IsClearing;
