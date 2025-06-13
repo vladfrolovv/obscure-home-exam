@@ -14,7 +14,7 @@ namespace ObscureGames.Gameplay.Specials
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            GameManager.instance.playerController.AddToExecuteList(this.gameObject);
+            GameManager.Instance.PlayerController.AddToExecuteList(this.gameObject);
 
             GridItemView gridItemView = gridTileView.GridItemView;
 
@@ -53,7 +53,7 @@ namespace ObscureGames.Gameplay.Specials
 
                     Destroy(newGlowLine.gameObject, executeDelay);
 
-                    GameManager.instance.playerController.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
+                    GameManager.Instance.PlayerController.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
 
                     //GameManager.instance.currentPlayer.AddBonus(1, 0.5f);
                 }
@@ -74,8 +74,8 @@ namespace ObscureGames.Gameplay.Specials
                 Destroy(gridItemView.gameObject);
             }
 
-            GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);
-            GameManager.instance.playerController.CheckExecuteLink();
+            GameManager.Instance.PlayerController.RemoveFromExecuteList(this.gameObject);
+            GameManager.Instance.PlayerController.CheckExecuteLink();
         }
 
     }

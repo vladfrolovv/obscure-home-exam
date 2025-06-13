@@ -121,10 +121,10 @@ namespace ObscureGames.Debug
             _gameManager.SetTimePerRound(currentRuleSet.timePerRound);
             _gameManager.SetSpecialLink(0, currentRuleSet.bombAtLink);
 
-            if (_gameManager.playerController != null)
+            if (_gameManager.PlayerController != null)
             {
-                _gameManager.playerController.SetMinimumLinkSize(currentRuleSet.minimumLinkSize);
-                _gameManager.playerController.SetExecuteTime(currentRuleSet.executeTime, currentRuleSet.executeTimeMultiplier, currentRuleSet.executeTimeMinimum);
+                _gameManager.PlayerController.SetMinimumLinkSize(currentRuleSet.minimumLinkSize);
+                _gameManager.PlayerController.SetExecuteTime(currentRuleSet.executeTime, currentRuleSet.executeTimeMultiplier, currentRuleSet.executeTimeMinimum);
             }
 
             _gridController.SetItemDropDelay(currentRuleSet.itemDropDelay);

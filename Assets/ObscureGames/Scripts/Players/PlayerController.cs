@@ -98,7 +98,7 @@ namespace ObscureGames.Players
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetButtonUp("Fire1") && _gameManager.currentPlayer && _gameManager.currentPlayer.photonView.IsMine && _gameManager.currentPlayer.moves > 0)
+            if (Input.GetButtonUp("Fire1") && _gameManager.CurrentPlayer && _gameManager.CurrentPlayer.photonView.IsMine && _gameManager.CurrentPlayer.moves > 0)
             {
                 //ExecuteLink();
                 photonView.RPC("ExecuteLink", RpcTarget.All);
@@ -139,7 +139,7 @@ namespace ObscureGames.Players
             tileLink.Add(tileView);
 
 
-            if (_gameManager.currentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayer.photonView.IsMine)
             {
                 if (tileLink.Count > 1)
                     tileView.SetConnectorLineActive(true);
@@ -217,7 +217,7 @@ namespace ObscureGames.Players
             GridTileView tileView = GetTileByGrid(gridX, gridY);
             tileLink.Remove(tileView);
 
-            if (_gameManager.currentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayer.photonView.IsMine)
             {
                 tileView.SetConnectorLineActive(false);
             }
@@ -343,7 +343,7 @@ namespace ObscureGames.Players
             {
                 LeanTween.rotate(tileLink[index].gameObject, Vector3.forward * 0, 0.2f);
 
-                if (_gameManager.currentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayer.photonView.IsMine)
                 {
                     tileLink[index].SetConnectorLineActive(false);
                 }
@@ -360,7 +360,7 @@ namespace ObscureGames.Players
 
                 if (index == tileLink.Count - 1) gridTileView.GridItemView.IsLastInLink = true;
 
-                if (_gameManager.currentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayer.photonView.IsMine)
                 {
                     photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
                 }
@@ -377,15 +377,15 @@ namespace ObscureGames.Players
             executeTotalTime += extraExecuteTime;
 
 
-            if (_gameManager.currentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayer.photonView.IsMine)
             {
-                _gameManager.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
+                _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
 
                 if (powerupsInLink.Count > 1)
                 {
-                    _gameManager.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+                    _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
 
-                    _gameManager.playerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
+                    _gameManager.PlayerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
                 }
 
                 if (powerupsInLink.Count < 1) photonView.RPC(nameof(SpawnSpecial), RpcTarget.All, specialIndex, executeTotalTime);
@@ -428,7 +428,7 @@ namespace ObscureGames.Players
                 gridItemView.IsMerging = true;
             }
 
-            Collect(gridItemView, _gameManager.currentPlayer.bonusText.transform, delay, gridTileView);
+            Collect(gridItemView, _gameManager.CurrentPlayer.bonusText.transform, delay, gridTileView);
 
             gridTileView.GridItemView = null;
         }
@@ -451,9 +451,9 @@ namespace ObscureGames.Players
             specialIndex = -1;
 
             // Check any special link size, and create powerups accordingly
-            for (int index = 0; index < _gameManager.specialLinks.Length; index++)
+            for (int index = 0; index < _gameManager.SpecialLinks.Length; index++)
             {
-                currentLinkSize = _gameManager.specialLinks[index].linkSize;
+                currentLinkSize = _gameManager.SpecialLinks[index].linkSize;
 
                 if (currentLinkSize <= tileLink.Count && currentLinkSize > longestSpecial)
                 {
@@ -464,12 +464,12 @@ namespace ObscureGames.Players
 
             if (specialIndex != -1)
             {
-                GridItemView gridItemView = _gameManager.specialLinks[specialIndex].SpawnItemView;
+                GridItemView gridItemView = _gameManager.SpecialLinks[specialIndex].SpawnItemView;
                 if (gridItemView != null && gridItemView.HasOtherOrientations)
                 {
                     CheckDirection();
-                    GridItemView tempGridItemView = _gameManager.specialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
-                    if (tempGridItemView != null) _gameManager.specialLinks[specialIndex].SpawnItemView = tempGridItemView;
+                    GridItemView tempGridItemView = _gameManager.SpecialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
+                    if (tempGridItemView != null) _gameManager.SpecialLinks[specialIndex].SpawnItemView = tempGridItemView;
                 }
             }
 
@@ -481,7 +481,7 @@ namespace ObscureGames.Players
         {
             if (index != -1)
             {
-                GridItemView gridItemView = _gameManager.specialLinks[index].SpawnItemView;
+                GridItemView gridItemView = _gameManager.SpecialLinks[index].SpawnItemView;
 
                 /*if ( _gameManager.specialLinks[index].spawnItem.otherOrientations.Length > 0 )
             {
@@ -494,9 +494,9 @@ namespace ObscureGames.Players
 
                 _gridController.SpawnItem(gridItemView, tileLink[tileLink.Count - 1], delay);
 
-                if (_gameManager.currentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayer.photonView.IsMine)
                 {
-                    if (tileLink.Count >= _gameManager.GetExtraMoveAtLink()) _gameManager.currentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+                    if (tileLink.Count >= _gameManager.GetExtraMoveAtLink()) _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
                 }
 
                 //_gameManager.currentPlayer.ChangeMoves(1);
@@ -551,9 +551,9 @@ namespace ObscureGames.Players
                     if (gridItemView.GridItemType < 0 && powerupsInLink.Count > 1 && gridItemView.CanMerge == true) return;
                 }
 
-                if (_gameManager.currentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayer.photonView.IsMine)
                 {
-                    _gameManager.currentPlayer.AddBonus(1, 0.5f);
+                    _gameManager.CurrentPlayer.AddBonus(1, 0.5f);
                 }
 
                 LeanTween.rotate(gridItemView.gameObject, Vector3.forward * Random.Range(-30, 30), collectTime * 0.7f).setEaseOutSine();
@@ -643,7 +643,7 @@ namespace ObscureGames.Players
         {
             isExecuting = false;
 
-            if (_gameManager.currentPlayer.moves == 0)
+            if (_gameManager.CurrentPlayer.moves == 0)
             {
                 _gameManager.EndTurn();
             }

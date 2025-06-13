@@ -15,50 +15,60 @@ namespace ObscureGames.Gameplay
 {
     public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
-        public static GameManager instance;
 
-        public float startDelay = 3;
+        public static GameManager Instance;
 
-        public PlayerController playerController;
+        private readonly Dictionary<int, NetworkPlayer> _players = new Dictionary<int, NetworkPlayer>();
 
-        [SerializeField] internal Dictionary<int, NetworkPlayer> players = new Dictionary<int, NetworkPlayer>();
-        public NetworkPlayer currentPlayer;
-        [SerializeField] internal int playerIndex = 1;
+        [field: SerializeField, Header("Players")]
+        public PlayerController PlayerController { get; private set; }
 
-        [SerializeField] private int movesPerRound = 2;
+        [field: SerializeField]
+        public NetworkPlayer CurrentPlayer { get; private set; }
 
-        [SerializeField] private int extraMoveAtLink = 15;
+        [Header("Timers and Rounds")]
+        [SerializeField] private ProgressBarView _timerView;
 
-        [SerializeField] private float timePerRound = 20;
-        private float timeLeft;
+        [SerializeField] private Animator _playerTurnAnimator;
+        [SerializeField] private TextMeshProUGUI _playerTurnText;
 
-        [SerializeField] private ProgressBarView timer;
-        private bool timerRunning = false;
-        private bool timeAlmostUp = false;
-
-        [SerializeField] private Animator playerTurnAnimator;
-        [SerializeField] private TextMeshProUGUI playerTurnText;
-
-        [SerializeField] private TextMeshProUGUI roundsText;
+        [SerializeField] private TextMeshProUGUI _roundsText;
         [SerializeField] private ProgressBarView _roundsBarView;
-        [SerializeField] private TextMeshProUGUI currentRoundText;
-        [SerializeField] private int rounds = 5;
-        [SerializeField] private int currentRound;
+        [SerializeField] private TextMeshProUGUI _currentRoundText;
 
-        [SerializeField] private GameObject gameOverScreen;
-        [SerializeField] private TextMeshProUGUI winnerText;
-        [SerializeField] private Button restartButton;
+        [Header("Game Endings")]
+        [SerializeField] private GameObject _gameOverScreen;
+        [SerializeField] private TextMeshProUGUI _winnerText;
+        [SerializeField] private Button _restartButton;
 
-        [SerializeField] public SpecialLink[] specialLinks;
+        [Header("Specials")]
+        [SerializeField] private SpecialLink[] _specialLinks;
 
-        public Camera MainCamera;
+        private float _startDelay;
+        private float _timePerRound;
+        private float _timeLeft;
+        private int _movesPerRound;
+        private int _extraMoveAtLink;
+        private int _rounds;
+        private int _currentRound;
+
+        private bool _timerIsActive;
+        private bool _timeAlmostUp;
 
         private GridController _gridController;
+        private ScriptableGameplaySettings _gameplaySettings;
+
+        public int PlayerIndex { get; private set; } = 1;
+        public Camera MainCamera { get; private set; }
+
+        public SpecialLink[] SpecialLinks => _specialLinks;
 
         [Inject]
-        public void Construct(GridController gridController)
+        public void Construct(GridController gridController, ScriptableGameplaySettings gameplaySettings, Camera mainCamera)
         {
             _gridController = gridController;
+            _gameplaySettings = gameplaySettings;
+            MainCamera = mainCamera;
         }
 
         [Serializable]
@@ -72,64 +82,52 @@ namespace ObscureGames.Gameplay
         {
             if (stream.IsWriting)
             {
-                stream.SendNext(startDelay);
-                stream.SendNext(playerIndex);
-                stream.SendNext(movesPerRound);
-                stream.SendNext(extraMoveAtLink);
-                stream.SendNext(timePerRound);
-                stream.SendNext(timeLeft);
-                stream.SendNext(rounds);
-                stream.SendNext(currentRound);
-            }
-            else
-            {
-                startDelay = (float)stream.ReceiveNext();
-                playerIndex = (int)stream.ReceiveNext();
-                movesPerRound = (int)stream.ReceiveNext();
-                extraMoveAtLink = (int)stream.ReceiveNext();
-                timePerRound = (float)stream.ReceiveNext();
-                timeLeft = (float)stream.ReceiveNext();
-                rounds = (int)stream.ReceiveNext();
-                currentRound = (int)stream.ReceiveNext();
-            }
-        }
+                stream.SendNext(_gameplaySettings.StartDelay);
+                stream.SendNext(PlayerIndex);
 
-        private void Awake()
-        {
-            if (instance == null)
-            {
-                instance = this;
+                stream.SendNext(_gameplaySettings.MovesPerTurn);
+                stream.SendNext(_gameplaySettings.ExtraMovesPerLink);
+                stream.SendNext(_gameplaySettings.TimePerTurn);
+                stream.SendNext(_timeLeft);
+                stream.SendNext(_gameplaySettings.RoundsPerGame);
+                stream.SendNext(_currentRound);
             }
             else
             {
-                Destroy(this.gameObject);
+                _startDelay = (float)stream.ReceiveNext();
+                PlayerIndex = (int)stream.ReceiveNext();
+                _movesPerRound = (int)stream.ReceiveNext();
+                _extraMoveAtLink = (int)stream.ReceiveNext();
+                _timePerRound = (float)stream.ReceiveNext();
+                _timeLeft = (float)stream.ReceiveNext();
+                _rounds = (int)stream.ReceiveNext();
+                _currentRound = (int)stream.ReceiveNext();
             }
         }
 
         public void Setup()
         {
-            gameOverScreen.SetActive(false);
-            print("DebugSettings.instance " + DebugSettings.instance);
+            _gameOverScreen.SetActive(false);
             if (DebugSettings.instance) DebugSettings.instance.AssignSettings();
 
-            roundsText.SetText("");
+            _roundsText.SetText("");
 
             if (_roundsBarView)
             {
                 _roundsBarView.SetProgress(0);
-                _roundsBarView.SetProgressMax(rounds);
+                _roundsBarView.SetProgressMax(_rounds);
                 _roundsBarView.Setup(null);
             }
 
-            if (timer)
+            if (_timerView)
             {
-                timer.SetProgress(timePerRound);
-                timer.SetProgressMax(timePerRound);
-                timer.Setup(null);
-                timer.gameObject.SetActive(false);
+                _timerView.SetProgress(_timePerRound);
+                _timerView.SetProgressMax(_timePerRound);
+                _timerView.Setup(null);
+                _timerView.gameObject.SetActive(false);
             }
 
-            if (playerController) playerController.LoseControl(0);
+            if (PlayerController) PlayerController.LoseControl(0);
 
             //players = players.OrderBy(x => Random.value).ToList();
         }
@@ -141,30 +139,30 @@ namespace ObscureGames.Gameplay
 
             if (PhotonNetwork.LocalPlayer.IsMasterClient)
             {
-                Invoke(nameof(RPC_StartMatch), startDelay * 0.2f);
+                Invoke(nameof(RPC_StartMatch), _startDelay * 0.2f);
             }
         }
 
         private void Update()
         {
-            if (timeLeft > 0)
+            if (_timeLeft > 0)
             {
-                if (timerRunning) timeLeft -= Time.deltaTime;
+                if (_timerIsActive) _timeLeft -= Time.deltaTime;
 
-                if (timer)
+                if (_timerView)
                 {
-                    timer.SetProgress(timeLeft);
-                    timer.UpdateProgress(0);
+                    _timerView.SetProgress(_timeLeft);
+                    _timerView.UpdateProgress(0);
                 }
 
-                if (timeLeft <= 10)
+                if (_timeLeft <= 10)
                 {
                     photonView.RPC(nameof(TimeAlmostUp), RpcTarget.All);
                 }
             }
-            else if (timerRunning)
+            else if (_timerIsActive)
             {
-                if (currentPlayer.photonView.IsMine)
+                if (CurrentPlayer.photonView.IsMine)
                 {
                     photonView.RPC(nameof(TimeUp), RpcTarget.All);
                 }
@@ -179,12 +177,11 @@ namespace ObscureGames.Gameplay
         [PunRPC]
         public void StartMatch()
         {
-            // _gridController.CreateGrid();
             _gridController.FillGrid();
             _gridController.ShowGrid();
 
-            Invoke(nameof(ResetRounds), startDelay * 1.0f);
-            Invoke(nameof(SetCurrentPlayer), startDelay * 1.0f);
+            Invoke(nameof(ResetRounds), _startDelay);
+            Invoke(nameof(SetCurrentPlayer), _startDelay);
         }
 
         public void RPC_NextPlayer()
@@ -195,20 +192,20 @@ namespace ObscureGames.Gameplay
         [PunRPC]
         public void NextPlayer()
         {
-            if (playerIndex < players.Count)
+            if (PlayerIndex < _players.Count)
             {
-                playerIndex++;
+                PlayerIndex++;
             }
             else
             {
-                playerIndex = 1;
+                PlayerIndex = 1;
                 NextRound();
             }
 
-            if (currentRound <= rounds) SetCurrentPlayer();
+            if (_currentRound <= _rounds) SetCurrentPlayer();
 
             ResetTime();
-            timer.ChangeProgress(1000);
+            _timerView.ChangeProgress(1000);
         }
 
 
@@ -219,33 +216,32 @@ namespace ObscureGames.Gameplay
 
         public void SetCurrentPlayer()
         {
-            currentPlayer = players[playerIndex];
+            CurrentPlayer = _players[PlayerIndex];
 
             HighlightPlayer();
 
-            //if (currentPlayer.photonView.IsMine){
-            currentPlayer.SetMoves(movesPerRound);
-            if (currentPlayer.MovesBarView) currentPlayer.MovesBarView.SetProgress(movesPerRound);
+            CurrentPlayer.SetMoves(_movesPerRound);
+            if (CurrentPlayer.MovesBarView) CurrentPlayer.MovesBarView.SetProgress(_movesPerRound);
 
             if (_roundsBarView)
             {
-                _roundsBarView.SetIncrementColor(currentPlayer.playerColor);
+                _roundsBarView.SetIncrementColor(CurrentPlayer.playerColor);
                 _roundsBarView.Bounce();
             }
 
-            if (timer)
+            if (_timerView)
             {
-                timer.SetBarColor(currentPlayer.playerColor);
+                _timerView.SetBarColor(CurrentPlayer.playerColor);
             }
 
-            playerTurnText.SetText(currentPlayer.playerName + "'S TURN!");
-            playerTurnAnimator.Play("Intro");
+            _playerTurnText.SetText(CurrentPlayer.playerName + "'S TURN!");
+            _playerTurnAnimator.Play("Intro");
 
-            roundsText.SetText(currentPlayer.playerName + "'S TURN!");
+            _roundsText.SetText(CurrentPlayer.playerName + "'S TURN!");
 
-            playerController.RegainControl();
+            PlayerController.RegainControl();
 
-            if (currentPlayer.photonView.IsMine)
+            if (CurrentPlayer.photonView.IsMine)
             {
                 ResetTime();
                 Invoke(nameof(RPC_StartTimer), 0.5f);
@@ -254,16 +250,16 @@ namespace ObscureGames.Gameplay
 
         public void HighlightPlayer()
         {
-            for (int playerIndex = 1; playerIndex <= players.Count; playerIndex++)
+            for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
-                if (players[playerIndex] == currentPlayer) LeanTween.color(players[playerIndex].avatarImage.rectTransform, Color.white, 0.5f);
-                else LeanTween.color(players[playerIndex].avatarImage.rectTransform, Color.gray, 0.5f);
+                if (_players[playerIndex] == CurrentPlayer) LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.white, 0.5f);
+                else LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.gray, 0.5f);
             }
         }
 
         public void HidePlayers()
         {
-            for (int playerIndex = 1; playerIndex <= players.Count; playerIndex++)
+            for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
                 //players[playerIndex].PlayerCanvas.GetComponent<CanvasGroup>().alpha = 0;
             }
@@ -271,21 +267,21 @@ namespace ObscureGames.Gameplay
 
         public void ShowPlayers()
         {
-            for (int playerIndex = 1; playerIndex <= players.Count; playerIndex++)
+            for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
-                LeanTween.alphaCanvas(players[playerIndex].PlayerCanvas.GetComponent<CanvasGroup>(), 1, 0.3f);
+                LeanTween.alphaCanvas(_players[playerIndex].PlayerCanvas.GetComponent<CanvasGroup>(), 1, 0.3f);
             }
         }
 
 
         public void ResetTime()
         {
-            timeLeft = timePerRound;
-            timeAlmostUp = false;
+            _timeLeft = _timePerRound;
+            _timeAlmostUp = false;
 
-            if (timer) timer.Bounce();
+            if (_timerView) _timerView.Bounce();
 
-            LeanTween.cancel(timer.gameObject);
+            LeanTween.cancel(_timerView.gameObject);
         }
 
 
@@ -297,16 +293,16 @@ namespace ObscureGames.Gameplay
         [PunRPC]
         public void StartTimer()
         {
-            timerRunning = true;
+            _timerIsActive = true;
 
-            if (timer) timer.gameObject.SetActive(true);
+            if (_timerView) _timerView.gameObject.SetActive(true);
         }
 
         public void PauseTime(float delay)
         {
-            timerRunning = false;
+            _timerIsActive = false;
 
-            if (currentPlayer.photonView.IsMine)
+            if (CurrentPlayer.photonView.IsMine)
             {
                 CancelInvoke(nameof(RPC_StartTimer));
                 if (delay > 0) Invoke(nameof(RPC_StartTimer), delay);
@@ -316,42 +312,42 @@ namespace ObscureGames.Gameplay
         [PunRPC]
         public void TimeAlmostUp()
         {
-            if (timeAlmostUp == true) return;
+            if (_timeAlmostUp == true) return;
 
-            timeAlmostUp = true;
+            _timeAlmostUp = true;
 
-            LeanTween.scale(timer.gameObject, Vector3.one * 1.1f, 0.5f).setLoopPingPong().setEaseInBack();
+            LeanTween.scale(_timerView.gameObject, Vector3.one * 1.1f, 0.5f).setLoopPingPong().setEaseInBack();
         }
 
         [PunRPC]
         public void TimeUp()
         {
-            if (timerRunning == false) return;
+            if (_timerIsActive == false) return;
 
-            timerRunning = false;
+            _timerIsActive = false;
 
-            timeLeft = 0;
+            _timeLeft = 0;
 
-            if (timer)
+            if (_timerView)
             {
-                LeanTween.scale(timer.gameObject, Vector3.one * 1, 0.3f).setEaseInBack();
+                LeanTween.scale(_timerView.gameObject, Vector3.one * 1, 0.3f).setEaseInBack();
 
-                timer.Shake();
+                _timerView.Shake();
             }
 
-            if (currentPlayer.photonView.IsMine)
+            if (CurrentPlayer.photonView.IsMine)
             {
-                currentPlayer.photonView.RPC("SetMoves", RpcTarget.All, 0);
+                CurrentPlayer.photonView.RPC("SetMoves", RpcTarget.All, 0);
             }
 
-            if (playerController) playerController.CancelExecuteLink();
+            if (PlayerController) PlayerController.CancelExecuteLink();
 
             EndTurn();
         }
 
         public void EndTurn()
         {
-            if (currentPlayer.photonView.IsMine)
+            if (CurrentPlayer.photonView.IsMine)
             {
                 photonView.RPC(nameof(NextPlayer), RpcTarget.All);
             }
@@ -364,7 +360,7 @@ namespace ObscureGames.Gameplay
 
         public void ResetRounds()
         {
-            currentRound = 1;
+            _currentRound = 1;
             if (_roundsBarView) _roundsBarView.SetProgress(1);
 
             UpdateRounds();
@@ -372,7 +368,7 @@ namespace ObscureGames.Gameplay
 
         public void NextRound()
         {
-            currentRound++;
+            _currentRound++;
             if (_roundsBarView) _roundsBarView.ChangeProgress(1);
 
             UpdateRounds();
@@ -381,24 +377,24 @@ namespace ObscureGames.Gameplay
 
         public void UpdateRounds()
         {
-            if (currentRound > rounds)
+            if (_currentRound > _rounds)
             {
-                NetworkPlayer winner = players[1];
+                NetworkPlayer winner = _players[1];
 
-                for (int playerIndex = 1; playerIndex < players.Count; playerIndex++)
+                for (int playerIndex = 1; playerIndex < _players.Count; playerIndex++)
                 {
-                    if (players[playerIndex].score > winner.score)
+                    if (_players[playerIndex].score > winner.score)
                     {
-                        winner = players[playerIndex];
+                        winner = _players[playerIndex];
                     }
                 }
 
                 // Check for tie
                 int sameScore = 0;
 
-                for (int playerIndex = 1; playerIndex < players.Count; playerIndex++)
+                for (int playerIndex = 1; playerIndex < _players.Count; playerIndex++)
                 {
-                    if (players[playerIndex].score == winner.score)
+                    if (_players[playerIndex].score == winner.score)
                     {
                         sameScore++;
                     }
@@ -406,14 +402,14 @@ namespace ObscureGames.Gameplay
 
                 if (sameScore > 1)
                 {
-                    rounds++;
+                    _rounds++;
 
-                    roundsText.SetText("TIEBREAKER!");
-                    currentRoundText.SetText("TIEBREAKER!");
+                    _roundsText.SetText("TIEBREAKER!");
+                    _currentRoundText.SetText("TIEBREAKER!");
                 }
                 else
                 {
-                    winnerText.SetText(winner.playerName + " WINS!");
+                    _winnerText.SetText(winner.playerName + " WINS!");
 
                     // FINISH MATCH
                     _gridController.ClearGrid();
@@ -423,15 +419,15 @@ namespace ObscureGames.Gameplay
                 }
 
             }
-            else if (currentRound == rounds)
+            else if (_currentRound == _rounds)
             {
-                roundsText.SetText("LAST ROUND!");
-                currentRoundText.SetText("LAST ROUND!");
+                _roundsText.SetText("LAST ROUND!");
+                _currentRoundText.SetText("LAST ROUND!");
             }
             else
             {
-                roundsText.SetText("ROUND " + currentRound + "/" + rounds);
-                currentRoundText.SetText("ROUND " + currentRound);
+                _roundsText.SetText("ROUND " + _currentRound + "/" + _rounds);
+                _currentRoundText.SetText("ROUND " + _currentRound);
             }
         }
 
@@ -442,24 +438,24 @@ namespace ObscureGames.Gameplay
 
         public void GameOver()
         {
-            gameOverScreen.SetActive(true);
-            restartButton.onClick.AddListener(Restart);
+            _gameOverScreen.SetActive(true);
+            _restartButton.onClick.AddListener(Restart);
 
-            timerRunning = false;
+            _timerIsActive = false;
 
-            NetworkPlayer winner = players[1];
+            NetworkPlayer winner = _players[1];
 
-            for (int playerIndex = 1; playerIndex <= players.Count; playerIndex++)
+            for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
-                if (players[playerIndex].score > winner.score)
+                if (_players[playerIndex].score > winner.score)
                 {
-                    winner = players[playerIndex];
+                    winner = _players[playerIndex];
                 }
             }
 
-            winnerText.SetText(winner.playerName + " WINS!");
+            _winnerText.SetText(winner.playerName + " WINS!");
 
-            restartButton.onClick.AddListener(Restart);
+            _restartButton.onClick.AddListener(Restart);
         }
 
         public void Restart()
@@ -469,39 +465,58 @@ namespace ObscureGames.Gameplay
 
         public void SetRoundsPerMatch(int setValue)
         {
-            rounds = setValue;
+            _rounds = setValue;
         }
 
         public void SetMovesPerRound(int setValue)
         {
-            movesPerRound = setValue;
+            _movesPerRound = setValue;
         }
 
         public void SetTimePerRound(float setValue)
         {
-            timePerRound = setValue;
+            _timePerRound = setValue;
         }
 
         public void SetExtraMoveAtLink(int setValue)
         {
-            extraMoveAtLink = setValue;
+            _extraMoveAtLink = setValue;
         }
 
         public int GetExtraMoveAtLink()
         {
-            return extraMoveAtLink;
+            return _extraMoveAtLink;
         }
 
         public int GetSpecialLink(int index, int linkSize)
         {
-            return specialLinks[index].linkSize;
+            return _specialLinks[index].linkSize;
         }
 
         public void SetSpecialLink(int index, int linkSize)
         {
-            specialLinks[index].linkSize = linkSize;
+            _specialLinks[index].linkSize = linkSize;
+        }
+
+        public void AddNewPlayer(int index, NetworkPlayer player)
+        {
+            if (!_players.ContainsKey(index))
+            {
+                _players.Add(index, player);
+            }
+        }
+
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(this.gameObject);
+            }
         }
 
     }
-
 }

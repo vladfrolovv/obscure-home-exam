@@ -7,6 +7,7 @@ using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using UnityEngine.UI;
+using Zenject;
 
 public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
 {
@@ -71,8 +72,8 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
 
     void Awake()
     {
-        GameManager.instance.players.Add(photonView.OwnerActorNr, this);
-        PlayerCanvas.GetComponent<Canvas>().worldCamera = GameManager.instance.MainCamera;
+        GameManager.Instance.AddNewPlayer(photonView.OwnerActorNr, this);
+        PlayerCanvas.GetComponent<Canvas>().worldCamera = GameManager.Instance.MainCamera;
         playerName = PhotonNetwork.LocalPlayer.NickName;
         if (photonView.IsMine)
         {

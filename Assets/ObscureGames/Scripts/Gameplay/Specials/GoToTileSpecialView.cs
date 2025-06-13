@@ -15,7 +15,7 @@ namespace ObscureGames.Gameplay.Specials
 
             if (gridItemView == true)
             {
-                GameManager.instance.playerController.AddToExecuteList(this.gameObject);
+                GameManager.Instance.PlayerController.AddToExecuteList(this.gameObject);
 
                 gridItemView.IsClearing = true;
 
@@ -45,7 +45,7 @@ namespace ObscureGames.Gameplay.Specials
                     }
                 }
 
-                GameManager.instance.playerController.CollectItemAtTile(targetTileView, moveTime);
+                GameManager.Instance.PlayerController.CollectItemAtTile(targetTileView, moveTime);
 
                 gridItemView.TryToCollect();
 
@@ -58,14 +58,14 @@ namespace ObscureGames.Gameplay.Specials
                         if (_carryItemView)
                         {
                             GridController.SpawnItem(_carryItemView, targetTileView, 0);
-                            GameManager.instance.playerController.CollectItemAtTile(targetTileView, 0.0f);
+                            GameManager.Instance.PlayerController.CollectItemAtTile(targetTileView, 0.0f);
                         }
 
                         gridItemView.TryToClear();
                         Destroy(gridItemView.gameObject);
 
-                        GameManager.instance.playerController.RemoveFromExecuteList(this.gameObject);
-                        GameManager.instance.playerController.CheckExecuteLink();
+                        GameManager.Instance.PlayerController.RemoveFromExecuteList(this.gameObject);
+                        GameManager.Instance.PlayerController.CheckExecuteLink();
                     });
                 });
 

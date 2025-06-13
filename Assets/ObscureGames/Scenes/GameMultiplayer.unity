@@ -123,17 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!114 &116388906 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 9167454281784894865, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
-  m_PrefabInstance: {fileID: 3785692791766625728}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 510422d3685b57545a6f33204381056a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &132484315 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3785692791831798043, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
@@ -867,28 +856,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fbdcc64752ccab459bf7f508f267151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startDelay: 0.5
-  playerController: {fileID: 799268482}
-  currentPlayer: {fileID: 0}
-  playerIndex: 1
-  movesPerRound: 2
-  extraMoveAtLink: 100
-  timePerRound: 5
-  timer: {fileID: 116388906}
-  playerTurnAnimator: {fileID: 406856168}
-  playerTurnText: {fileID: 132484315}
-  roundsText: {fileID: 590297151}
+  <PlayerController>k__BackingField: {fileID: 799268482}
+  <CurrentPlayer>k__BackingField: {fileID: 0}
+  _timerView: {fileID: 3785692791766625729}
+  _playerTurnAnimator: {fileID: 406856168}
+  _playerTurnText: {fileID: 132484315}
+  _roundsText: {fileID: 590297151}
   _roundsBarView: {fileID: 3785692791766625729}
-  currentRoundText: {fileID: 887922435}
-  rounds: 4
-  currentRound: 0
-  gameOverScreen: {fileID: 1446735163}
-  winnerText: {fileID: 1473413673}
-  restartButton: {fileID: 368616500}
-  specialLinks:
+  _currentRoundText: {fileID: 887922435}
+  _gameOverScreen: {fileID: 1446735163}
+  _winnerText: {fileID: 1473413673}
+  _restartButton: {fileID: 368616500}
+  _specialLinks:
   - linkSize: 10
     SpawnItemView: {fileID: -4054056152294309094, guid: fdb1361f8cfd43d44ab797156f8df444, type: 3}
-  MainCamera: {fileID: 519420031}
 --- !u!4 &1425435797
 Transform:
   m_ObjectHideFlags: 0
@@ -1124,6 +1105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5c55589572f463ba9cf36dd08455106, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _camera: {fileID: 519420031}
   _gameManager: {fileID: 1425435796}
   _gridController: {fileID: 1770781316}
   _playerController: {fileID: 799268482}

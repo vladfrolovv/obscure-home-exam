@@ -81,9 +81,9 @@ namespace ObscureGames.Gameplay.Grid
         public void Select()
         {
             if (GridItemView == null) return;
-            if (!_gameManager.currentPlayer.photonView.IsMine) return;
-            if (_gameManager.currentPlayer.moves <= 0) return;
-            if (_gameManager.playerIndex != PhotonNetwork.LocalPlayer.ActorNumber) return;
+            if (!_gameManager.CurrentPlayer.photonView.IsMine) return;
+            if (_gameManager.CurrentPlayer.moves <= 0) return;
+            if (_gameManager.PlayerIndex != PhotonNetwork.LocalPlayer.ActorNumber) return;
 
             // Rules for linking:
             // 1. Must be adjacent to the last tile in the link sequence (up/down/left/right)

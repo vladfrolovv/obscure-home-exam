@@ -10,6 +10,9 @@ namespace ObscureGames.Installers
     public class GameplaySceneInstaller : MonoInstaller
     {
 
+        [Header("References")]
+        [SerializeField] private Camera _camera;
+
         [Header("Controllers")]
         [SerializeField] private GameManager _gameManager;
         [SerializeField] private GridController _gridController;
@@ -20,6 +23,9 @@ namespace ObscureGames.Installers
 
         public override void InstallBindings()
         {
+
+            Container.BindInstance(_camera).AsSingle();
+
             // controllers
             Container.BindInstance(_gameManager).AsSingle();
             Container.BindInstance(_gridController).AsSingle();
