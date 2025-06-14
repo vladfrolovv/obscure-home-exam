@@ -27,12 +27,12 @@ namespace ObscureGames.Gameplay.Specials
         {
             yield return new WaitForSeconds(delay);
 
-            if (_gameManager.CurrentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayerController.photonView.IsMine)
             {
-                _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
+                _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
             }
 
-            _gameManager.PlayerController.ToastView.SetToast(transform.position, message, textColor);
+            _gameManager.GridPlayerController.ToastView.SetToast(transform.position, message, textColor);
         }
 
     }

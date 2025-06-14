@@ -1,6 +1,5 @@
 using System;
 using Photon.Pun;
-using ObscureGames.Players;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -43,7 +42,7 @@ namespace ObscureGames.Gameplay.Grid
 
         private GameManager _gameManager;
         private GridController _gridController;
-        private PlayerController _playerController;
+        private GridPlayerController _gridPlayerController;
 
         public void SetControlsActive(bool active) => _eventTrigger.enabled = active;
         public void SetConnectorLineActive(bool active) => _connectorLine.SetActive(active);
@@ -52,11 +51,11 @@ namespace ObscureGames.Gameplay.Grid
         public void SetClickSize(float setValue) => _buttonImage.transform.localScale = Vector3.one * setValue;
 
         [Inject]
-        public void Construct(GridController gridController, GameManager gameManager, PlayerController playerController)
+        public void Construct(GridController gridController, GameManager gameManager, GridPlayerController gridPlayerController)
         {
             _gameManager = gameManager;
             _gridController = gridController;
-            _playerController = playerController;
+            _gridPlayerController = gridPlayerController;
         }
 
         public void InstallTileConnections(GridTileView rightItemView, GridTileView leftItemView, GridTileView topItemView, GridTileView bottomItemView)
@@ -81,8 +80,8 @@ namespace ObscureGames.Gameplay.Grid
         public void Select()
         {
             if (GridItemView == null) return;
-            if (!_gameManager.CurrentPlayer.photonView.IsMine) return;
-            if (_gameManager.CurrentPlayer.moves <= 0) return;
+            if (!_gameManager.CurrentPlayerController.photonView.IsMine) return;
+            if (_gameManager.CurrentPlayerController.moves <= 0) return;
             if (_gameManager.PlayerIndex != PhotonNetwork.LocalPlayer.ActorNumber) return;
 
             // Rules for linking:
@@ -95,17 +94,17 @@ namespace ObscureGames.Gameplay.Grid
             // We will use this to check if we are connecting to same type
 
             GridTileView lastTileViewInLink = null;
-            if (_playerController.tileLink.Count > 0) lastTileViewInLink = _playerController.tileLink[_playerController.tileLink.Count - 1];
+            if (_gridPlayerController.tileLink.Count > 0) lastTileViewInLink = _gridPlayerController.tileLink[_gridPlayerController.tileLink.Count - 1];
 
             // If this tile was already added to the link, backtrack to it
-            if (_playerController.tileLink.Contains(this))
+            if (_gridPlayerController.tileLink.Contains(this))
             {
-                _playerController.linkType = GridItemView.GridItemType;
-                _playerController.CheckSelectables();
+                _gridPlayerController.linkType = GridItemView.GridItemType;
+                _gridPlayerController.CheckSelectables();
 
                 // Remove all items in the link after this one
-                Vector2Int gridTilePos = _playerController.GetIndexInGrid(this);
-                _playerController.photonView.RPC("LinkRemoveAfterByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
+                Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
+                _gridPlayerController.photonView.RPC("LinkRemoveAfterByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
             }
@@ -116,15 +115,15 @@ namespace ObscureGames.Gameplay.Grid
             bool goodLink = false;
 
             // If this is the first tile in the link, add it regardless of type match
-            if (_playerController.tileLink.Count == 0)
+            if (_gridPlayerController.tileLink.Count == 0)
             {
-                _playerController.linkType = GridItemView.GridItemType;
-                _playerController.CheckSelectables();
+                _gridPlayerController.linkType = GridItemView.GridItemType;
+                _gridPlayerController.CheckSelectables();
 
                 _connectorLine.SetActive(false);
 
-                Vector2Int gridTilePos = _playerController.GetIndexInGrid(this);
-                _playerController.photonView.RPC("LinkStartByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
+                Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
+                _gridPlayerController.photonView.RPC("LinkStartByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
             }
@@ -187,12 +186,12 @@ namespace ObscureGames.Gameplay.Grid
 
             if (goodLink == true)
             {
-                _playerController.linkType = GridItemView.GridItemType;
+                _gridPlayerController.linkType = GridItemView.GridItemType;
 
-                _playerController.CheckSelectables();
+                _gridPlayerController.CheckSelectables();
 
-                Vector2Int gridTilePos = _playerController.GetIndexInGrid(this);
-                _playerController.photonView.RPC("LinkAddByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
+                Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
+                _gridPlayerController.photonView.RPC("LinkAddByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
             }
         }
 

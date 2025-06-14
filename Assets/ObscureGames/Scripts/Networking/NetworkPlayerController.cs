@@ -1,14 +1,15 @@
-using ObscureGames.Gameplay;
+using ObscureGames.Debug;
 using ObscureGames.Gameplay.UI;
-using ObscureGames.Players;
+using ObscureGames.Gameplay;
+using UnityEngine.UI;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
-using UnityEngine.UI;
-using Zenject;
-
-public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
+namespace ObscureGames.Networking
+{
+    public class NetworkPlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
+
         public ScriptablePlayerProfile playerProfile;
 
         public string playerName = "Player 1";
@@ -99,11 +100,9 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
         public void RPC_Setup()
         {
             nameText.SetText(playerName);
-
             if (playerProfile)
             {
-                avatarImage.sprite = playerProfile.avatarIcon;
-                //booster.SetBoosterProfile(playerProfile.booster);
+                avatarImage.sprite = playerProfile.AvatarIcon;
             }
 
             playerIndex = photonView.OwnerActorNr;
@@ -115,9 +114,6 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
             MovesBarView.Setup(this);
 
             photonView.RPC(nameof(SetBonus), RpcTarget.All, 0);
-
-            //booster.SetItemType(playerIndex - 1);
-            //booster.SetItemTypeIcon(GridManager.instance.itemTypes[playerIndex - 1]);
         }
 
         [PunRPC]
@@ -213,4 +209,6 @@ public class NetworkPlayer : MonoBehaviourPunCallbacks, IPunObservable
             movesAnimator.Play("Bounce");
             movesAnimator.Play("Bounce2");
         }
+
     }
+}

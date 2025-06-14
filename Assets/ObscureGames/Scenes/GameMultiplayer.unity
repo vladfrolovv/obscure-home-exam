@@ -810,8 +810,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e3ac172b8eaf7944a1364cb5a0b93ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _masterPlayerPrefab: {fileID: 8907737864708212280, guid: db892ef1112caa74790c8ca699a24894, type: 3}
-  _remotePlayerPrefab: {fileID: 8907737864708212280, guid: 6772ac4e5c8c4fa4ab5dede1c15fc988, type: 3}
+  _masterPlayerControllerPrefab: {fileID: 8907737864708212280, guid: db892ef1112caa74790c8ca699a24894, type: 3}
+  _remotePlayerControllerPrefab: {fileID: 8907737864708212280, guid: 6772ac4e5c8c4fa4ab5dede1c15fc988, type: 3}
 --- !u!4 &1376420410
 Transform:
   m_ObjectHideFlags: 0
@@ -856,8 +856,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fbdcc64752ccab459bf7f508f267151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <PlayerController>k__BackingField: {fileID: 799268482}
-  <CurrentPlayer>k__BackingField: {fileID: 0}
+  <GridPlayerController>k__BackingField: {fileID: 799268482}
+  <CurrentPlayerController>k__BackingField: {fileID: 0}
   _timerView: {fileID: 3785692791766625729}
   _playerTurnAnimator: {fileID: 406856168}
   _playerTurnText: {fileID: 132484315}
@@ -1108,7 +1108,7 @@ MonoBehaviour:
   _camera: {fileID: 519420031}
   _gameManager: {fileID: 1425435796}
   _gridController: {fileID: 1770781316}
-  _playerController: {fileID: 799268482}
+  _gridPlayerController: {fileID: 799268482}
   _mergeEffectView: {fileID: 9043549434984758022, guid: 6f52e434c70ab5445b5f12ca7c19fb2d, type: 3}
 --- !u!1001 &1210809817494440534
 PrefabInstance:

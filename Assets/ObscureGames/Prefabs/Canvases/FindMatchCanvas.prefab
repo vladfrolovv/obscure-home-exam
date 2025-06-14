@@ -192,7 +192,7 @@ GameObject:
   - component: {fileID: 4558875430911526733}
   - component: {fileID: 4558875430911526706}
   m_Layer: 5
-  m_Name: CanvasFindMatch
+  m_Name: FindMatchCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -230,8 +230,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7442a2d2babdab44a9d5ad5decda10ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FindMatchButton: {fileID: 4558875430365010298}
-  status: {fileID: 4558875431183825685}
+  _findMatchButton: {fileID: 4558875430365010298}
+  _statusText: {fileID: 4558875431183825685}
+  _retryDelay: 5
 --- !u!223 &4558875430911526732
 Canvas:
   m_ObjectHideFlags: 0

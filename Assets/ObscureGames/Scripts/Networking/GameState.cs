@@ -1,4 +1,9 @@
-public enum GameState
+namespace ObscureGames.Networking
 {
-	Init, Play, Finished
+    public enum GameState
+    {
+        Init = 0,
+        Play = 1,
+        Finished = 2,
+    }
 }

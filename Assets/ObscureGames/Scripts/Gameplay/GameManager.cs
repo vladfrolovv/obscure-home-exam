@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.UI;
-using ObscureGames.Players;
+using ObscureGames.Networking;
 using Photon.Pun;
 using Zenject;
 namespace ObscureGames.Gameplay
@@ -16,13 +16,13 @@ namespace ObscureGames.Gameplay
 
         public static GameManager Instance;
 
-        private readonly Dictionary<int, NetworkPlayer> _players = new Dictionary<int, NetworkPlayer>();
+        private readonly Dictionary<int, NetworkPlayerController> _players = new Dictionary<int, NetworkPlayerController>();
 
         [field: SerializeField, Header("Players")]
-        public PlayerController PlayerController { get; private set; }
+        public GridPlayerController GridPlayerController { get; private set; }
 
         [field: SerializeField]
-        public NetworkPlayer CurrentPlayer { get; private set; }
+        public NetworkPlayerController CurrentPlayerController { get; private set; }
 
         [Header("Timers and Rounds")]
         [SerializeField] private ProgressBarView _timerView;
@@ -128,9 +128,9 @@ namespace ObscureGames.Gameplay
                 _timerView.gameObject.SetActive(false);
             }
 
-            if (PlayerController)
+            if (GridPlayerController)
             {
-                PlayerController.LoseControl(0);
+                GridPlayerController.LoseControl(0);
             }
         }
 
@@ -163,7 +163,7 @@ namespace ObscureGames.Gameplay
             }
             else if (_timerIsActive)
             {
-                if (CurrentPlayer.photonView.IsMine)
+                if (CurrentPlayerController.photonView.IsMine)
                 {
                     photonView.RPC(nameof(TimeUp), RpcTarget.All);
                 }
@@ -217,32 +217,32 @@ namespace ObscureGames.Gameplay
 
         public void SetCurrentPlayer()
         {
-            CurrentPlayer = _players[PlayerIndex];
+            CurrentPlayerController = _players[PlayerIndex];
 
             HighlightPlayer();
 
-            CurrentPlayer.SetMoves(_movesPerRound);
-            if (CurrentPlayer.MovesBarView) CurrentPlayer.MovesBarView.SetProgress(_movesPerRound);
+            CurrentPlayerController.SetMoves(_movesPerRound);
+            if (CurrentPlayerController.MovesBarView) CurrentPlayerController.MovesBarView.SetProgress(_movesPerRound);
 
             if (_roundsBarView)
             {
-                _roundsBarView.SetIncrementColor(CurrentPlayer.playerColor);
+                _roundsBarView.SetIncrementColor(CurrentPlayerController.playerColor);
                 _roundsBarView.Bounce();
             }
 
             if (_timerView)
             {
-                _timerView.SetBarColor(CurrentPlayer.playerColor);
+                _timerView.SetBarColor(CurrentPlayerController.playerColor);
             }
 
-            _playerTurnText.SetText(CurrentPlayer.playerName + "'S TURN!");
+            _playerTurnText.SetText(CurrentPlayerController.playerName + "'S TURN!");
             _playerTurnAnimator.Play("Intro");
 
-            _roundsText.SetText(CurrentPlayer.playerName + "'S TURN!");
+            _roundsText.SetText(CurrentPlayerController.playerName + "'S TURN!");
 
-            PlayerController.RegainControl();
+            GridPlayerController.RegainControl();
 
-            if (CurrentPlayer.photonView.IsMine)
+            if (CurrentPlayerController.photonView.IsMine)
             {
                 ResetTime();
                 Invoke(nameof(RPC_StartTimer), 0.5f);
@@ -253,7 +253,7 @@ namespace ObscureGames.Gameplay
         {
             for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
-                if (_players[playerIndex] == CurrentPlayer) LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.white, 0.5f);
+                if (_players[playerIndex] == CurrentPlayerController) LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.white, 0.5f);
                 else LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.gray, 0.5f);
             }
         }
@@ -303,7 +303,7 @@ namespace ObscureGames.Gameplay
         {
             _timerIsActive = false;
 
-            if (CurrentPlayer.photonView.IsMine)
+            if (CurrentPlayerController.photonView.IsMine)
             {
                 CancelInvoke(nameof(RPC_StartTimer));
                 if (delay > 0) Invoke(nameof(RPC_StartTimer), delay);
@@ -336,19 +336,19 @@ namespace ObscureGames.Gameplay
                 _timerView.Shake();
             }
 
-            if (CurrentPlayer.photonView.IsMine)
+            if (CurrentPlayerController.photonView.IsMine)
             {
-                CurrentPlayer.photonView.RPC("SetMoves", RpcTarget.All, 0);
+                CurrentPlayerController.photonView.RPC("SetMoves", RpcTarget.All, 0);
             }
 
-            if (PlayerController) PlayerController.CancelExecuteLink();
+            if (GridPlayerController) GridPlayerController.CancelExecuteLink();
 
             EndTurn();
         }
 
         public void EndTurn()
         {
-            if (CurrentPlayer.photonView.IsMine)
+            if (CurrentPlayerController.photonView.IsMine)
             {
                 photonView.RPC(nameof(NextPlayer), RpcTarget.All);
             }
@@ -380,7 +380,7 @@ namespace ObscureGames.Gameplay
         {
             if (_currentRound > _rounds)
             {
-                NetworkPlayer winner = _players[1];
+                NetworkPlayerController winner = _players[1];
 
                 for (int playerIndex = 1; playerIndex < _players.Count; playerIndex++)
                 {
@@ -444,7 +444,7 @@ namespace ObscureGames.Gameplay
 
             _timerIsActive = false;
 
-            NetworkPlayer winner = _players[1];
+            NetworkPlayerController winner = _players[1];
             for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
                 if (_players[playerIndex].score > winner.score)
@@ -498,11 +498,11 @@ namespace ObscureGames.Gameplay
             _specialLinks[index].LinkSize = linkSize;
         }
 
-        public void AddNewPlayer(int index, NetworkPlayer player)
+        public void AddNewPlayer(int index, NetworkPlayerController playerController)
         {
             if (!_players.ContainsKey(index))
             {
-                _players.Add(index, player);
+                _players.Add(index, playerController);
             }
         }
 

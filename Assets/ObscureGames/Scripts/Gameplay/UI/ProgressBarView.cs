@@ -1,3 +1,4 @@
+using ObscureGames.Networking;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -18,7 +19,7 @@ namespace ObscureGames.Gameplay.UI
         [SerializeField] private bool showText = true;
         [SerializeField] private bool showMax = true;
 
-        public void Setup(NetworkPlayer player)
+        public void Setup(NetworkPlayerController playerController)
         {
             if (progressText)
             {
@@ -44,7 +45,7 @@ namespace ObscureGames.Gameplay.UI
                 Image incrementImage = increment.Find("Full").GetComponent<Image>();
                 Image incrementImageBack = increment.Find("Empty").GetComponent<Image>();
 
-                if (player != null) SetBarColor(incrementImage, incrementImageBack, player.playerColor);
+                if (playerController != null) SetBarColor(incrementImage, incrementImageBack, playerController.playerColor);
 
                 incrementImage.enabled = false;
 

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fe4dd92361dee8429bf74e6c416f045, type: 3}
   m_Name: PlayerRed
   m_EditorClassIdentifier: 
-  playerName: Red
-  avatarIcon: {fileID: 21300000, guid: 48128630d9567894ba9e18baf07509dc, type: 3}
-  booster: {fileID: 11400000, guid: 7ba7cbf16d9d90347bc869c353cf503d, type: 2}
+  <PlayerName>k__BackingField: Player
+  <AvatarIcon>k__BackingField: {fileID: 21300000, guid: 717f054fc3bab5b47af549c09d7dc786, type: 3}
+  <Booster>k__BackingField: {fileID: 11400000, guid: 7996e6485c3c88a49b8f91ffcbb54510, type: 2}

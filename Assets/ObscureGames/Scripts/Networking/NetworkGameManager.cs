@@ -7,11 +7,11 @@ namespace ObscureGames.Networking
     public class NetworkGameManager : MonoBehaviourPunCallbacks
     {
 
-        [SerializeField] private NetworkPlayer _masterPlayerPrefab;
-        [SerializeField] private NetworkPlayer _remotePlayerPrefab;
+        [SerializeField] private NetworkPlayerController _masterPlayerControllerPrefab;
+        [SerializeField] private NetworkPlayerController _remotePlayerControllerPrefab;
 
-        private NetworkPlayer _masterPlayer;
-        private NetworkPlayer _remotePlayer;
+        private NetworkPlayerController _masterPlayerController;
+        private NetworkPlayerController _remotePlayerController;
 
         private DiContainer _diContainer;
 
@@ -30,20 +30,20 @@ namespace ObscureGames.Networking
         {
             if (PhotonNetwork.IsMasterClient)
             {
-                _masterPlayer = CreateNetworkPlayerFrom(_masterPlayerPrefab);
+                _masterPlayerController = CreateNetworkPlayerFrom(_masterPlayerControllerPrefab);
             }
             else
             {
-                _remotePlayer = CreateNetworkPlayerFrom(_remotePlayerPrefab);
+                _remotePlayerController = CreateNetworkPlayerFrom(_remotePlayerControllerPrefab);
             }
         }
 
-        private NetworkPlayer CreateNetworkPlayerFrom(NetworkPlayer prefab)
+        private NetworkPlayerController CreateNetworkPlayerFrom(NetworkPlayerController prefab)
         {
-            NetworkPlayer networkPlayer = PhotonNetwork.Instantiate(prefab.name, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<NetworkPlayer>();
-            _diContainer.Inject(networkPlayer);
+            NetworkPlayerController networkPlayerController = PhotonNetwork.Instantiate(prefab.name, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<NetworkPlayerController>();
+            _diContainer.Inject(networkPlayerController);
 
-            return networkPlayer;
+            return networkPlayerController;
         }
 
     }

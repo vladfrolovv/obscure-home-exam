@@ -1,7 +1,6 @@
 ﻿using ObscureGames.Gameplay;
 using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.Grid.MergeCombos;
-using ObscureGames.Players;
 using ObscureGames.Timers;
 using UnityEngine;
 using Zenject;
@@ -16,7 +15,7 @@ namespace ObscureGames.Installers
         [Header("Controllers")]
         [SerializeField] private GameManager _gameManager;
         [SerializeField] private GridController _gridController;
-        [SerializeField] private PlayerController _playerController;
+        [SerializeField] private GridPlayerController _gridPlayerController;
 
         [Header("Vies")]
         [SerializeField] private MergeEffectView _mergeEffectView;
@@ -28,7 +27,7 @@ namespace ObscureGames.Installers
             // controllers
             Container.BindInstance(_gameManager).AsSingle();
             Container.BindInstance(_gridController).AsSingle();
-            Container.BindInstance(_playerController).AsSingle();
+            Container.BindInstance(_gridPlayerController).AsSingle();
 
             // views
             Container.BindInstance(_mergeEffectView).AsSingle();

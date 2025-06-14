@@ -2,17 +2,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Linq;
-using ObscureGames.Gameplay;
-using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.Grid.MergeCombos;
 using ObscureGames.Gameplay.Grid.Models;
 using ObscureGames.Gameplay.UI;
 using Photon.Pun;
 using Zenject;
 using Random = UnityEngine.Random;
-namespace ObscureGames.Players
+namespace ObscureGames.Gameplay.Grid
 {
-    public class PlayerController : MonoBehaviourPunCallbacks, IPunObservable
+    public class GridPlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         public List<GridTileView> tileLink = new List<GridTileView>();
         internal List<GameObject> executeList = new List<GameObject>();
@@ -98,7 +96,7 @@ namespace ObscureGames.Players
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetButtonUp("Fire1") && _gameManager.CurrentPlayer && _gameManager.CurrentPlayer.photonView.IsMine && _gameManager.CurrentPlayer.moves > 0)
+            if (Input.GetButtonUp("Fire1") && _gameManager.CurrentPlayerController && _gameManager.CurrentPlayerController.photonView.IsMine && _gameManager.CurrentPlayerController.moves > 0)
             {
                 //ExecuteLink();
                 photonView.RPC("ExecuteLink", RpcTarget.All);
@@ -139,7 +137,7 @@ namespace ObscureGames.Players
             tileLink.Add(tileView);
 
 
-            if (_gameManager.CurrentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayerController.photonView.IsMine)
             {
                 if (tileLink.Count > 1)
                     tileView.SetConnectorLineActive(true);
@@ -217,7 +215,7 @@ namespace ObscureGames.Players
             GridTileView tileView = GetTileByGrid(gridX, gridY);
             tileLink.Remove(tileView);
 
-            if (_gameManager.CurrentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayerController.photonView.IsMine)
             {
                 tileView.SetConnectorLineActive(false);
             }
@@ -343,7 +341,7 @@ namespace ObscureGames.Players
             {
                 LeanTween.rotate(tileLink[index].gameObject, Vector3.forward * 0, 0.2f);
 
-                if (_gameManager.CurrentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayerController.photonView.IsMine)
                 {
                     tileLink[index].SetConnectorLineActive(false);
                 }
@@ -360,7 +358,7 @@ namespace ObscureGames.Players
 
                 if (index == tileLink.Count - 1) gridTileView.GridItemView.IsLastInLink = true;
 
-                if (_gameManager.CurrentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayerController.photonView.IsMine)
                 {
                     photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
                 }
@@ -377,15 +375,15 @@ namespace ObscureGames.Players
             executeTotalTime += extraExecuteTime;
 
 
-            if (_gameManager.CurrentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayerController.photonView.IsMine)
             {
-                _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
+                _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
 
                 if (powerupsInLink.Count > 1)
                 {
-                    _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+                    _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
 
-                    _gameManager.PlayerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
+                    _gameManager.GridPlayerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
                 }
 
                 if (powerupsInLink.Count < 1) photonView.RPC(nameof(SpawnSpecial), RpcTarget.All, specialIndex, executeTotalTime);
@@ -428,7 +426,7 @@ namespace ObscureGames.Players
                 gridItemView.IsMerging = true;
             }
 
-            Collect(gridItemView, _gameManager.CurrentPlayer.bonusText.transform, delay, gridTileView);
+            Collect(gridItemView, _gameManager.CurrentPlayerController.bonusText.transform, delay, gridTileView);
 
             gridTileView.GridItemView = null;
         }
@@ -497,9 +495,9 @@ namespace ObscureGames.Players
 
                 _gridController.SpawnItem(gridItemView, tileLink[tileLink.Count - 1], delay);
 
-                if (_gameManager.CurrentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayerController.photonView.IsMine)
                 {
-                    if (tileLink.Count >= _gameManager.GetExtraMoveAtLink()) _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+                    if (tileLink.Count >= _gameManager.GetExtraMoveAtLink()) _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
                 }
 
                 //_gameManager.currentPlayer.ChangeMoves(1);
@@ -554,9 +552,9 @@ namespace ObscureGames.Players
                     if (gridItemView.GridItemType < 0 && powerupsInLink.Count > 1 && gridItemView.CanMerge == true) return;
                 }
 
-                if (_gameManager.CurrentPlayer.photonView.IsMine)
+                if (_gameManager.CurrentPlayerController.photonView.IsMine)
                 {
-                    _gameManager.CurrentPlayer.AddBonus(1, 0.5f);
+                    _gameManager.CurrentPlayerController.AddBonus(1, 0.5f);
                 }
 
                 LeanTween.rotate(gridItemView.gameObject, Vector3.forward * Random.Range(-30, 30), collectTime * 0.7f).setEaseOutSine();
@@ -646,7 +644,7 @@ namespace ObscureGames.Players
         {
             isExecuting = false;
 
-            if (_gameManager.CurrentPlayer.moves == 0)
+            if (_gameManager.CurrentPlayerController.moves == 0)
             {
                 _gameManager.EndTurn();
             }
