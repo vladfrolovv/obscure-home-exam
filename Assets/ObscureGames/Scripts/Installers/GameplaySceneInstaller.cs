@@ -1,4 +1,5 @@
 ﻿using ObscureGames.Gameplay;
+using ObscureGames.Gameplay.DataProxies;
 using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.Grid.MergeCombos;
 using ObscureGames.Timers;
@@ -34,6 +35,13 @@ namespace ObscureGames.Installers
 
             Container.BindInterfacesAndSelfTo<TimeController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MergeCombosController>().AsSingle().NonLazy();
+
+            InstallDataProxies();
+        }
+
+        private void InstallDataProxies()
+        {
+            Container.BindInterfacesAndSelfTo<ScoreDataProxy>().AsSingle().NonLazy();
         }
 
     }

@@ -1,24 +1,25 @@
-using ObscureGames.Debug;
 using ObscureGames.Gameplay.UI;
 using ObscureGames.Gameplay;
+using ObscureGames.Gameplay.DataProxies;
+using ObscureGames.Gameplay.Players;
 using UnityEngine.UI;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
+using Zenject;
 namespace ObscureGames.Networking
 {
     public class NetworkPlayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
 
-        public ScriptablePlayerProfile playerProfile;
+        private const string BounceUpAnimatorProperty = "Bounce";
+        private const string BounceDownAnimatorProperty = "Bounce2";
 
-        public string playerName = "Player 1";
-        public Color playerColor = Color.blue;
+        [SerializeField] private ScriptablePlayerProfile _playerProfile;
+        [SerializeField] private string _playerName = "Player 1";
+        [SerializeField] private Color _playerColor = Color.blue;
+        [SerializeField] private int _playerIndex;
 
-        public Sprite RedCharacterIcon;
-        public int playerIndex;
-
-        public int score = 0;
         public int bonus = 0;
         public float bonusDelay = 0;
 
@@ -38,42 +39,55 @@ namespace ObscureGames.Networking
 
         [SerializeField] private Canvas _playerCanvas;
 
-        public bool canControl = false;
+        private bool _canControl;
+
         public Canvas PlayerCanvas => _playerCanvas;
+        public Color PlayerColor => _playerColor;
+        public string PlayerName => _playerName;
+
+        private ScoreDataProxy _scoreDataProxy;
+        private GameManager _gameManager;
+
+        [Inject]
+        public void Construct(GameManager gameManager, ScoreDataProxy scoreDataProxy)
+        {
+            _gameManager = gameManager;
+            _scoreDataProxy = scoreDataProxy;
+        }
 
         public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
         {
             //sync score
             if (stream.IsWriting)
             {
-                stream.SendNext(score);
-                stream.SendNext(playerName);
+                stream.SendNext(_scoreDataProxy.GetPlayerScore(_playerIndex));
+                stream.SendNext(_playerName);
                 stream.SendNext(bonus);
                 stream.SendNext(bonusDelay);
                 stream.SendNext(moves);
-                stream.SendNext(canControl);
-                stream.SendNext(playerIndex);
+                stream.SendNext(_canControl);
+                stream.SendNext(_playerIndex);
             }
             else
             {
-                score = (int)stream.ReceiveNext();
-                playerName = (string)stream.ReceiveNext();
-                nameText.SetText(playerName);
+                _scoreDataProxy.IncreasePlayerScore(_playerIndex, (int)stream.ReceiveNext());
+                _playerName = (string)stream.ReceiveNext();
+                nameText.SetText(_playerName);
                 bonus = (int)stream.ReceiveNext();
                 bonusDelay = (float)stream.ReceiveNext();
                 moves = (int)stream.ReceiveNext();
                 movesText.SetText(moves.ToString());
-                canControl = (bool)stream.ReceiveNext();
-                playerIndex = (int)stream.ReceiveNext();
+                _canControl = (bool)stream.ReceiveNext();
+                _playerIndex = (int)stream.ReceiveNext();
             }
         }
 
-        private void Awake()
+        private void Start()
         {
-            GameManager.Instance.AddNewPlayer(photonView.OwnerActorNr, this);
-            _playerCanvas.worldCamera = GameManager.Instance.MainCamera;
+            _gameManager.AddNewPlayer(photonView.OwnerActorNr, this);
+            _playerCanvas.worldCamera = _gameManager.MainCamera;
 
-            playerName = PhotonNetwork.LocalPlayer.NickName;
+            _playerName = PhotonNetwork.LocalPlayer.NickName;
             if (photonView.IsMine)
             {
                 photonView.RPC(nameof(RPC_Setup), RpcTarget.All);
@@ -99,15 +113,15 @@ namespace ObscureGames.Networking
         [PunRPC]
         public void RPC_Setup()
         {
-            nameText.SetText(playerName);
-            if (playerProfile)
+            nameText.SetText(_playerName);
+            if (_playerProfile)
             {
-                avatarImage.sprite = playerProfile.AvatarIcon;
+                avatarImage.sprite = _playerProfile.AvatarIcon;
             }
 
-            playerIndex = photonView.OwnerActorNr;
+            _playerIndex = photonView.OwnerActorNr;
 
-            photonView.RPC(nameof(SetScore), RpcTarget.All, score);
+            photonView.RPC(nameof(SetScore), RpcTarget.All, _scoreDataProxy.GetPlayerScore(_playerIndex));
 
             photonView.RPC(nameof(SetMoves), RpcTarget.All, moves);
             MovesBarView.SetProgressMax(moves);
@@ -122,8 +136,8 @@ namespace ObscureGames.Networking
             bonus += addBonus;
             photonView.RPC(nameof(UpdateBonus), RpcTarget.All);
 
-            bonusAnimator.Play("Bounce");
-            bonusAnimator.Play("Bounce2");
+            bonusAnimator.Play(BounceUpAnimatorProperty);
+            bonusAnimator.Play(BounceDownAnimatorProperty);
 
             bonusDelay = setDelay;
         }
@@ -143,13 +157,13 @@ namespace ObscureGames.Networking
         [PunRPC]
         void RPC_ChangeScore(int value)
         {
-            score += value;
+            _scoreDataProxy.IncreasePlayerScore(_playerIndex, value);
             photonView.RPC(nameof(UpdateScore), RpcTarget.All);
         }
 
         public void ChangeScore(int changeValue)
         {
-            score += changeValue;
+            _scoreDataProxy.IncreasePlayerScore(_playerIndex, changeValue);
 
             photonView.RPC(nameof(UpdateScore), RpcTarget.All);
         }
@@ -157,15 +171,14 @@ namespace ObscureGames.Networking
         [PunRPC]
         public void SetScore(int setValue)
         {
-            score = setValue;
-
+            _scoreDataProxy.SetPlayerScore(_playerIndex, setValue);
             photonView.RPC(nameof(UpdateScore), RpcTarget.All);
         }
 
         [PunRPC]
         public void UpdateScore()
         {
-            scoreText.SetText(score.ToString("000"));
+            scoreText.SetText(_scoreDataProxy.GetPlayerScore(_playerIndex).ToString("000"));
         }
 
         [PunRPC]
@@ -181,7 +194,7 @@ namespace ObscureGames.Networking
         {
             bonusText.gameObject.SetActive(bonus > 0);
 
-            bonusText.SetText("+" + bonus.ToString());
+            bonusText.SetText("+" + bonus);
         }
 
         [PunRPC]
@@ -206,8 +219,8 @@ namespace ObscureGames.Networking
         {
             movesText.SetText(moves.ToString());
 
-            movesAnimator.Play("Bounce");
-            movesAnimator.Play("Bounce2");
+            movesAnimator.Play(BounceUpAnimatorProperty);
+            movesAnimator.Play(BounceDownAnimatorProperty);
         }
 
     }

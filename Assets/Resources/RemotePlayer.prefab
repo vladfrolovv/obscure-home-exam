@@ -567,6 +567,7 @@ GameObject:
   - component: {fileID: 6114259422114415372}
   - component: {fileID: 8907737864708212280}
   - component: {fileID: -3030457556436209737}
+  - component: {fileID: 2753845239674537103}
   m_Layer: 0
   m_Name: RemotePlayer
   m_TagString: Untagged
@@ -601,11 +602,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80b5f1bdeb985f64ab214d7edd779c48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerProfile: {fileID: 11400000, guid: 4453af48162c5ac44a4ef269737302d1, type: 2}
-  playerName: Player 1
-  playerColor: {r: 1, g: 0.1764706, b: 0.1764706, a: 1}
-  RedCharacterIcon: {fileID: 0}
-  playerIndex: 0
+  _playerProfile: {fileID: 0}
+  _playerName: Player 1
+  _playerColor: {r: 0, g: 0, b: 1, a: 1}
+  _playerIndex: 0
   score: 0
   bonus: 0
   bonusDelay: 0
@@ -643,6 +643,19 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &2753845239674537103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6252055980604218813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 717a02054ef2699498e6bd4234fd7995, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _containerSource: 2
 --- !u!1 &8202564217425888746
 GameObject:
   m_ObjectHideFlags: 0

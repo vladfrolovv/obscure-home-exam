@@ -45,7 +45,10 @@ namespace ObscureGames.Gameplay.UI
                 Image incrementImage = increment.Find("Full").GetComponent<Image>();
                 Image incrementImageBack = increment.Find("Empty").GetComponent<Image>();
 
-                if (playerController != null) SetBarColor(incrementImage, incrementImageBack, playerController.playerColor);
+                if (playerController != null)
+                {
+                    SetBarColor(incrementImage, incrementImageBack, playerController.PlayerColor);
+                }
 
                 incrementImage.enabled = false;
 

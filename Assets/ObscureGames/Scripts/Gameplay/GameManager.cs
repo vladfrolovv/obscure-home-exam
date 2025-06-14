@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ObscureGames.Gameplay.DataProxies;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -13,8 +14,6 @@ namespace ObscureGames.Gameplay
 {
     public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
     {
-
-        public static GameManager Instance;
 
         private readonly Dictionary<int, NetworkPlayerController> _players = new Dictionary<int, NetworkPlayerController>();
 
@@ -53,6 +52,7 @@ namespace ObscureGames.Gameplay
         private bool _timerIsActive;
         private bool _timeAlmostUp;
 
+        private ScoreDataProxy _scoreDataProxy;
         private GridController _gridController;
         private ScriptableGameplaySettings _gameplaySettings;
 
@@ -62,10 +62,13 @@ namespace ObscureGames.Gameplay
         public SpecialLink[] SpecialLinks => _specialLinks;
 
         [Inject]
-        public void Construct(GridController gridController, ScriptableGameplaySettings gameplaySettings, Camera mainCamera)
+        public void Construct(GridController gridController, ScriptableGameplaySettings gameplaySettings, Camera mainCamera,
+                              ScoreDataProxy scoreDataProxy)
         {
             _gridController = gridController;
             _gameplaySettings = gameplaySettings;
+            _scoreDataProxy = scoreDataProxy;
+
             MainCamera = mainCamera;
         }
 
@@ -226,19 +229,19 @@ namespace ObscureGames.Gameplay
 
             if (_roundsBarView)
             {
-                _roundsBarView.SetIncrementColor(CurrentPlayerController.playerColor);
+                _roundsBarView.SetIncrementColor(CurrentPlayerController.PlayerColor);
                 _roundsBarView.Bounce();
             }
 
             if (_timerView)
             {
-                _timerView.SetBarColor(CurrentPlayerController.playerColor);
+                _timerView.SetBarColor(CurrentPlayerController.PlayerColor);
             }
 
-            _playerTurnText.SetText(CurrentPlayerController.playerName + "'S TURN!");
+            _playerTurnText.SetText(CurrentPlayerController.PlayerName + "'S TURN!");
             _playerTurnAnimator.Play("Intro");
 
-            _roundsText.SetText(CurrentPlayerController.playerName + "'S TURN!");
+            _roundsText.SetText(CurrentPlayerController.PlayerName + "'S TURN!");
 
             GridPlayerController.RegainControl();
 
@@ -384,7 +387,7 @@ namespace ObscureGames.Gameplay
 
                 for (int playerIndex = 1; playerIndex < _players.Count; playerIndex++)
                 {
-                    if (_players[playerIndex].score > winner.score)
+                    if (_scoreDataProxy.GetPlayerScore(playerIndex) > _scoreDataProxy.GetPlayerScore(1))
                     {
                         winner = _players[playerIndex];
                     }
@@ -395,7 +398,7 @@ namespace ObscureGames.Gameplay
 
                 for (int playerIndex = 1; playerIndex < _players.Count; playerIndex++)
                 {
-                    if (_players[playerIndex].score == winner.score)
+                    if (_scoreDataProxy.GetPlayerScore(playerIndex) == _scoreDataProxy.GetPlayerScore(1))
                     {
                         sameScore++;
                     }
@@ -410,7 +413,7 @@ namespace ObscureGames.Gameplay
                 }
                 else
                 {
-                    _winnerText.SetText(winner.playerName + " WINS!");
+                    _winnerText.SetText(winner.PlayerName + " WINS!");
 
                     // FINISH MATCH
                     _gridController.ClearGrid();
@@ -447,13 +450,13 @@ namespace ObscureGames.Gameplay
             NetworkPlayerController winner = _players[1];
             for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
-                if (_players[playerIndex].score > winner.score)
+                if (_scoreDataProxy.GetPlayerScore(playerIndex) > _scoreDataProxy.GetPlayerScore(1))
                 {
                     winner = _players[playerIndex];
                 }
             }
 
-            _winnerText.SetText(winner.playerName + " WINS!");
+            _winnerText.SetText(winner.PlayerName + " WINS!");
 
             _restartButton.onClick.AddListener(Restart);
         }
@@ -503,18 +506,6 @@ namespace ObscureGames.Gameplay
             if (!_players.ContainsKey(index))
             {
                 _players.Add(index, playerController);
-            }
-        }
-
-        private void Awake()
-        {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(gameObject);
             }
         }
 

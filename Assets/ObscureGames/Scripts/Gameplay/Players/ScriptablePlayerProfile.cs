@@ -1,6 +1,6 @@
 using ObscureGames.Gameplay.Boosters;
 using UnityEngine;
-namespace ObscureGames.Debug
+namespace ObscureGames.Gameplay.Players
 {
     [CreateAssetMenu(fileName = "PlayerProfile", menuName = "ScriptableObjects/Player Profile", order = 1)]
     public class ScriptablePlayerProfile : ScriptableObject
