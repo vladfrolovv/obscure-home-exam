@@ -4,13 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
-using ObscureGames.Debug;
 using ObscureGames.Gameplay.Grid;
 using ObscureGames.Gameplay.UI;
 using ObscureGames.Players;
 using Photon.Pun;
 using Zenject;
-
 namespace ObscureGames.Gameplay
 {
     public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
@@ -71,11 +69,14 @@ namespace ObscureGames.Gameplay
             MainCamera = mainCamera;
         }
 
-        [Serializable]
-        public class SpecialLink
+        private void InstallBaseSettings()
         {
-            public int linkSize = 4;
-            public GridItemView SpawnItemView;
+            PlayerIndex = 1;
+            _startDelay = _gameplaySettings.StartDelay;
+            _movesPerRound = _gameplaySettings.MovesPerTurn;
+            _extraMoveAtLink = _gameplaySettings.ExtraMovesPerLink;
+            _timePerRound = _gameplaySettings.TimePerTurn;
+            _rounds = _gameplaySettings.RoundsPerGame;
         }
 
         public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -105,11 +106,11 @@ namespace ObscureGames.Gameplay
             }
         }
 
-        public void Setup()
+        private void Setup()
         {
-            _gameOverScreen.SetActive(false);
-            if (DebugSettings.instance) DebugSettings.instance.AssignSettings();
+            InstallBaseSettings();
 
+            _gameOverScreen.SetActive(false);
             _roundsText.SetText("");
 
             if (_roundsBarView)
@@ -127,13 +128,13 @@ namespace ObscureGames.Gameplay
                 _timerView.gameObject.SetActive(false);
             }
 
-            if (PlayerController) PlayerController.LoseControl(0);
-
-            //players = players.OrderBy(x => Random.value).ToList();
+            if (PlayerController)
+            {
+                PlayerController.LoseControl(0);
+            }
         }
 
-        // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             Setup();
 
@@ -444,7 +445,6 @@ namespace ObscureGames.Gameplay
             _timerIsActive = false;
 
             NetworkPlayer winner = _players[1];
-
             for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
                 if (_players[playerIndex].score > winner.score)
@@ -490,12 +490,12 @@ namespace ObscureGames.Gameplay
 
         public int GetSpecialLink(int index, int linkSize)
         {
-            return _specialLinks[index].linkSize;
+            return _specialLinks[index].LinkSize;
         }
 
         public void SetSpecialLink(int index, int linkSize)
         {
-            _specialLinks[index].linkSize = linkSize;
+            _specialLinks[index].LinkSize = linkSize;
         }
 
         public void AddNewPlayer(int index, NetworkPlayer player)
@@ -514,8 +514,15 @@ namespace ObscureGames.Gameplay
             }
             else
             {
-                Destroy(this.gameObject);
+                Destroy(gameObject);
             }
+        }
+
+        [Serializable]
+        public class SpecialLink
+        {
+            public int LinkSize = 4;
+            public GridItemView SpawnItemView;
         }
 
     }

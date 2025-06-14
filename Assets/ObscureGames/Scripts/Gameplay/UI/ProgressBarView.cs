@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
 namespace ObscureGames.Gameplay.UI
 {
     public class ProgressBarView : MonoBehaviour
@@ -23,14 +22,20 @@ namespace ObscureGames.Gameplay.UI
         {
             if (progressText)
             {
-                if (showText == true)
+                if (showText)
                 {
-                    if (showMax == true) progressText.SetText(progress + "/" + progressMax);
-                    else progressText.SetText(progress.ToString());
+                    if (showMax)
+                    {
+                        progressText.SetText(progress + "/" + progressMax);
+                    }
+                    else
+                    {
+                        progressText.SetText(progress.ToString());
+                    }
                 }
                 else
                 {
-                    progressText.SetText("");
+                    progressText.SetText(string.Empty);
                 }
             }
 

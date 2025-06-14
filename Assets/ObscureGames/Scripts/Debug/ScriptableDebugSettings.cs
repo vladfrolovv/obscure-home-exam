@@ -1,11 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-
 namespace ObscureGames.Debug
 {
-    /*Defines debug settings for game designers (not for release)*/
     [CreateAssetMenu(fileName = "Debug Settings", menuName = "ScriptableObjects/Debug Settings", order = 1)]
     public class ScriptableDebugSettings : ScriptableObject
     {
@@ -22,11 +17,9 @@ namespace ObscureGames.Debug
         public float executeTimeMinimum = 0.05f;
         public float itemDropDelay = 0.05f;
         public float itemDropTime = 0.3f;
-
         public int propellerAtLink = 4;
         public int rocketAtLink = 7;
         public int bombAtLink = 10;
         public int discoAtLink = 13;
     }
-
 }

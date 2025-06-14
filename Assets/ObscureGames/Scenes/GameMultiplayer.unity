@@ -810,8 +810,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e3ac172b8eaf7944a1364cb5a0b93ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MasterPlayer: {fileID: 8907737864708212280, guid: db892ef1112caa74790c8ca699a24894, type: 3}
-  RemotePlayer: {fileID: 8907737864708212280, guid: 6772ac4e5c8c4fa4ab5dede1c15fc988, type: 3}
+  _masterPlayerPrefab: {fileID: 8907737864708212280, guid: db892ef1112caa74790c8ca699a24894, type: 3}
+  _remotePlayerPrefab: {fileID: 8907737864708212280, guid: 6772ac4e5c8c4fa4ab5dede1c15fc988, type: 3}
 --- !u!4 &1376420410
 Transform:
   m_ObjectHideFlags: 0
@@ -868,7 +868,7 @@ MonoBehaviour:
   _winnerText: {fileID: 1473413673}
   _restartButton: {fileID: 368616500}
   _specialLinks:
-  - linkSize: 10
+  - LinkSize: 10
     SpawnItemView: {fileID: -4054056152294309094, guid: fdb1361f8cfd43d44ab797156f8df444, type: 3}
 --- !u!4 &1425435797
 Transform:
@@ -1109,7 +1109,7 @@ MonoBehaviour:
   _gameManager: {fileID: 1425435796}
   _gridController: {fileID: 1770781316}
   _playerController: {fileID: 799268482}
-  _mergeEffectView: {fileID: 0}
+  _mergeEffectView: {fileID: 9043549434984758022, guid: 6f52e434c70ab5445b5f12ca7c19fb2d, type: 3}
 --- !u!1001 &1210809817494440534
 PrefabInstance:
   m_ObjectHideFlags: 0

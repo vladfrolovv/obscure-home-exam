@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: ConfigsInstaller
   m_EditorClassIdentifier: 
   _scriptableMergeCombos: {fileID: 11400000, guid: 14a667b7a6f18a24e84827bdb622654d, type: 2}
+  _scriptableGameplaySettings: {fileID: 11400000, guid: 2fb97c9b151e6754cbee130b1ca20d5c, type: 2}

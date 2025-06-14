@@ -453,7 +453,7 @@ namespace ObscureGames.Players
             // Check any special link size, and create powerups accordingly
             for (int index = 0; index < _gameManager.SpecialLinks.Length; index++)
             {
-                currentLinkSize = _gameManager.SpecialLinks[index].linkSize;
+                currentLinkSize = _gameManager.SpecialLinks[index].LinkSize;
 
                 if (currentLinkSize <= tileLink.Count && currentLinkSize > longestSpecial)
                 {
@@ -469,7 +469,10 @@ namespace ObscureGames.Players
                 {
                     CheckDirection();
                     GridItemView tempGridItemView = _gameManager.SpecialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
-                    if (tempGridItemView != null) _gameManager.SpecialLinks[specialIndex].SpawnItemView = tempGridItemView;
+                    if (tempGridItemView != null)
+                    {
+                        _gameManager.SpecialLinks[specialIndex].SpawnItemView = tempGridItemView;
+                    }
                 }
             }
 

@@ -10,7 +10,6 @@ namespace ObscureGames.Debug
 {
     public class DebugSettings : MonoBehaviour
     {
-        public static DebugSettings instance;
 
         [Header("Game Parameters")]
         [SerializeField] private ScriptableDebugSettings[] rulesets;
@@ -62,31 +61,19 @@ namespace ObscureGames.Debug
             _timeController = timeController;
         }
 
-        private void Awake()
+        private void Start()
         {
-            if (instance == null)
-            {
-                instance = this;
-            }
-            else
-            {
-                Destroy(this.gameObject);
-            }
-        }
+            AssignSettings();
+            UpdateSettings();
 
-        // Start is called before the first frame update
-        void Start()
-        {
             buttonOpen.onClick.AddListener(Open);
             buttonOK.onClick.AddListener(ConfirmAndRestart);
             buttonClose.onClick.AddListener(Close);
 
-            UpdateSettings();
-
             Close();
         }
 
-        public void UpdateSettings()
+        private void UpdateSettings()
         {
             currentRuleSet = rulesets[rulesetIndex];
 
@@ -105,13 +92,13 @@ namespace ObscureGames.Debug
             inputItemDropDelay.text = currentRuleSet.itemDropDelay.ToString();
             inputItemDropTime.text = currentRuleSet.itemDropTime.ToString();
 
-            //if(inputPropellerAtLink) inputPropellerAtLink.text = currentRuleSet.propellerAtLink.ToString();
-            //if(inputRocketAtLink) inputRocketAtLink.text = currentRuleSet.rocketAtLink.ToString();
-            if (inputBombAtLink) inputBombAtLink.text = currentRuleSet.bombAtLink.ToString();
-            //if(inputDiscoAtLink) inputDiscoAtLink.text = currentRuleSet.discoAtLink.ToString();
+            if (inputBombAtLink)
+            {
+                inputBombAtLink.text = currentRuleSet.bombAtLink.ToString();
+            };
         }
 
-        public void AssignSettings()
+        private void AssignSettings()
         {
             currentRuleSet = rulesets[rulesetIndex];
 
@@ -178,7 +165,7 @@ namespace ObscureGames.Debug
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
-        public void Open()
+        private void Open()
         {
             canvasOpen.enabled = false;
             canvasPopup.enabled = true;
@@ -186,7 +173,7 @@ namespace ObscureGames.Debug
             UpdateSettings();
         }
 
-        public void Close()
+        private void Close()
         {
             canvasOpen.enabled = true;
             canvasPopup.enabled = false;

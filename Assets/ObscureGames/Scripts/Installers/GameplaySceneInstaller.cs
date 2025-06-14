@@ -23,7 +23,6 @@ namespace ObscureGames.Installers
 
         public override void InstallBindings()
         {
-
             Container.BindInstance(_camera).AsSingle();
 
             // controllers

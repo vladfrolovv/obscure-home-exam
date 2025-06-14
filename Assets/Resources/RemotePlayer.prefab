@@ -618,7 +618,7 @@ MonoBehaviour:
   movesText: {fileID: 3907667408415752540}
   movesAnimator: {fileID: 464637434307147978}
   MovesBarView: {fileID: 4741987581009534814}
-  PlayerCanvas: {fileID: 3882553674044487793}
+  _playerCanvas: {fileID: 9178566422440665770}
   canControl: 0
 --- !u!114 &-3030457556436209737
 MonoBehaviour:

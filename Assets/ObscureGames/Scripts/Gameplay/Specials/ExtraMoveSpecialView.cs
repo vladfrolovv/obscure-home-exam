@@ -2,6 +2,7 @@ using Photon.Pun;
 using System.Collections;
 using ObscureGames.Gameplay.Grid;
 using UnityEngine;
+using Zenject;
 
 /*Adds an extra move to the player,
 used as a component on a GridItem*/
@@ -14,18 +15,24 @@ namespace ObscureGames.Gameplay.Specials
         [SerializeField] private string message = "EXTRA MOVE!";
         [SerializeField] private Color textColor = Color.white;
 
+        private GameManager _gameManager;
+
+        [Inject]
+        public void Construct(GameManager gameManager)
+        {
+            _gameManager = gameManager;
+        }
+
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
             yield return new WaitForSeconds(delay);
 
-            if (GameManager.Instance.CurrentPlayer.photonView.IsMine)
+            if (_gameManager.CurrentPlayer.photonView.IsMine)
             {
-                GameManager.Instance.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
+                _gameManager.CurrentPlayer.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
             }
 
-            //GameManager.instance.currentPlayer.ChangeMoves(changeValue);
-
-            GameManager.Instance.PlayerController.ToastView.SetToast(transform.position, message, textColor);
+            _gameManager.PlayerController.ToastView.SetToast(transform.position, message, textColor);
         }
 
     }

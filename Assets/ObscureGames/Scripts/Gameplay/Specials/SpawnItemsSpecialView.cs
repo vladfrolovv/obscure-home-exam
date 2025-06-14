@@ -1,6 +1,7 @@
 using System.Collections;
 using ObscureGames.Gameplay.Grid;
 using UnityEngine;
+using Zenject;
 namespace ObscureGames.Gameplay.Specials
 {
     public class SpawnItemsSpecialView : BaseSpecialView
@@ -11,9 +12,17 @@ namespace ObscureGames.Gameplay.Specials
         [SerializeField] private float triggerRate = 0.2f;
         [SerializeField] private bool spawnOnRandomTile = false;
 
+        private GameManager _gameManager;
+
+        [Inject]
+        public void Construct(GameManager gameManager)
+        {
+            _gameManager = gameManager;
+        }
+
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            GameManager.Instance.PlayerController.AddToExecuteList(this.gameObject);
+            _gameManager.PlayerController.AddToExecuteList(this.gameObject);
 
             yield return new WaitForSeconds(delay);
 
@@ -25,15 +34,15 @@ namespace ObscureGames.Gameplay.Specials
                     gridTileView = targetTileView;
                 }
 
-                if (gridTileView.GridItemView != null) GameManager.Instance.PlayerController.CollectItemAtTile(gridTileView, 0);
+                if (gridTileView.GridItemView != null) _gameManager.PlayerController.CollectItemAtTile(gridTileView, 0);
 
                 GridController.SpawnItem(spawns[spawnIndex], gridTileView, 0);
 
-                if (autoTrigger == true) GameManager.Instance.PlayerController.CollectItemAtTile(gridTileView, spawnIndex * triggerRate);
+                if (autoTrigger == true) _gameManager.PlayerController.CollectItemAtTile(gridTileView, spawnIndex * triggerRate);
             }
 
-            GameManager.Instance.PlayerController.RemoveFromExecuteList(this.gameObject);
-            GameManager.Instance.PlayerController.CheckExecuteLink();
+            _gameManager.PlayerController.RemoveFromExecuteList(this.gameObject);
+            _gameManager.PlayerController.CheckExecuteLink();
         }
 
     }

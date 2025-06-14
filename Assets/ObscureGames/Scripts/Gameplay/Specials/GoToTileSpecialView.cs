@@ -1,6 +1,7 @@
 using System.Collections;
 using ObscureGames.Gameplay.Grid;
 using UnityEngine;
+using Zenject;
 namespace ObscureGames.Gameplay.Specials
 {
     public class GoToTileSpecialView : BaseSpecialView
@@ -9,13 +10,21 @@ namespace ObscureGames.Gameplay.Specials
         [SerializeField] private float moveTime = 1;
         [SerializeField] private GridItemView _carryItemView;
 
+        private GameManager _gameManager;
+
+        [Inject]
+        public void Construct(GameManager gameManager)
+        {
+            _gameManager = gameManager;
+        }
+
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
             GridItemView gridItemView = gridTileView.GridItemView;
 
             if (gridItemView == true)
             {
-                GameManager.Instance.PlayerController.AddToExecuteList(this.gameObject);
+                _gameManager.PlayerController.AddToExecuteList(this.gameObject);
 
                 gridItemView.IsClearing = true;
 
@@ -45,7 +54,7 @@ namespace ObscureGames.Gameplay.Specials
                     }
                 }
 
-                GameManager.Instance.PlayerController.CollectItemAtTile(targetTileView, moveTime);
+                _gameManager.PlayerController.CollectItemAtTile(targetTileView, moveTime);
 
                 gridItemView.TryToCollect();
 
@@ -58,14 +67,14 @@ namespace ObscureGames.Gameplay.Specials
                         if (_carryItemView)
                         {
                             GridController.SpawnItem(_carryItemView, targetTileView, 0);
-                            GameManager.Instance.PlayerController.CollectItemAtTile(targetTileView, 0.0f);
+                            _gameManager.PlayerController.CollectItemAtTile(targetTileView, 0.0f);
                         }
 
                         gridItemView.TryToClear();
                         Destroy(gridItemView.gameObject);
 
-                        GameManager.Instance.PlayerController.RemoveFromExecuteList(this.gameObject);
-                        GameManager.Instance.PlayerController.CheckExecuteLink();
+                        _gameManager.PlayerController.RemoveFromExecuteList(this.gameObject);
+                        _gameManager.PlayerController.CheckExecuteLink();
                     });
                 });
 
