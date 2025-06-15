@@ -1,5 +1,4 @@
 using System;
-using Photon.Pun;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -80,9 +79,9 @@ namespace OGClient.Gameplay.Grid
         public void Select()
         {
             if (GridItemView == null) return;
-            if (!_gameManager.CurrentPlayerController.photonView.IsMine) return;
-            if (_gameManager.CurrentPlayerController.moves <= 0) return;
-            if (_gameManager.PlayerIndex != PhotonNetwork.LocalPlayer.ActorNumber) return;
+            // if (!_gameManager.CurrentPlayerController.photonView.IsMine) return;
+            // if (_gameManager.CurrentPlayerController.moves <= 0) return;
+            // if (_gameManager.PlayerIndex != PhotonNetwork.LocalPlayer.ActorNumber) return;
 
             // Rules for linking:
             // 1. Must be adjacent to the last tile in the link sequence (up/down/left/right)
@@ -104,7 +103,7 @@ namespace OGClient.Gameplay.Grid
 
                 // Remove all items in the link after this one
                 Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
-                _gridPlayerController.photonView.RPC("LinkRemoveAfterByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
+                // _gridPlayerController.photonView.RPC("LinkRemoveAfterByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
             }
@@ -123,7 +122,7 @@ namespace OGClient.Gameplay.Grid
                 _connectorLine.SetActive(false);
 
                 Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
-                _gridPlayerController.photonView.RPC("LinkStartByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
+                // _gridPlayerController.photonView.RPC("LinkStartByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
             }
@@ -191,7 +190,7 @@ namespace OGClient.Gameplay.Grid
                 _gridPlayerController.CheckSelectables();
 
                 Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
-                _gridPlayerController.photonView.RPC("LinkAddByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
+                // _gridPlayerController.photonView.RPC("LinkAddByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
             }
         }
 

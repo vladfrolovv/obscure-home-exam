@@ -1,10 +1,8 @@
 using UnityEngine;
-using Photon.Pun;
 using Zenject;
-
 namespace OGClient.Networking
 {
-    public class NetworkGameManager : MonoBehaviourPunCallbacks
+    public class NetworkGameManager : MonoBehaviour
     {
 
         [SerializeField] private NetworkPlayerController _masterPlayerControllerPrefab;
@@ -28,11 +26,11 @@ namespace OGClient.Networking
 
         private void SpawnPlayers()
         {
-            if (PhotonNetwork.IsMasterClient)
+            // if (PhotonNetwork.IsMasterClient)
             {
                 _masterPlayerController = CreateNetworkPlayerFrom(_masterPlayerControllerPrefab);
             }
-            else
+            // else
             {
                 _remotePlayerController = CreateNetworkPlayerFrom(_remotePlayerControllerPrefab);
             }
@@ -40,10 +38,10 @@ namespace OGClient.Networking
 
         private NetworkPlayerController CreateNetworkPlayerFrom(NetworkPlayerController prefab)
         {
-            NetworkPlayerController networkPlayerController = PhotonNetwork.Instantiate(prefab.name, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<NetworkPlayerController>();
-            _diContainer.Inject(networkPlayerController);
+            // NetworkPlayerController networkPlayerController = PhotonNetwork.Instantiate(prefab.name, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<NetworkPlayerController>();
+            // _diContainer.Inject(networkPlayerController);
 
-            return networkPlayerController;
+            return prefab;
         }
 
     }

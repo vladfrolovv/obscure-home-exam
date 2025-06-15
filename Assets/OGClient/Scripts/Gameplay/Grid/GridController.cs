@@ -1,15 +1,17 @@
-using Photon.Pun;
 using System.Collections.Generic;
 using System.Linq;
+using Fusion;
 using OGClient.Gameplay.Grid.Configs;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 namespace OGClient.Gameplay.Grid
 {
-    public class GridController : MonoBehaviourPunCallbacks, IPunObservable
+    public class GridController : SimulationBehaviour
     {
 
+        private const string GridIntroAnimationParam = "Intro";
+        private const string GridShakeAnimationParam = "Shake";
         private const string SelectableAnimationParam = "Selectable";
         private const string HiddenAnimationParam = "Hidden";
         private const string FallAnimationParam = "Fall";
@@ -28,10 +30,11 @@ namespace OGClient.Gameplay.Grid
         [SerializeField] private GridTileView _tileViewPrefab;
 
         [field: SerializeField, Header("Grid Configuration")]
-        public Vector2Int GridSize { get; private set; } = new Vector2Int(7, 7);
+        public Vector2Int GridSize { get; private set; } = new (7, 7);
 
-        [SerializeField] private List<GridTileView> _tiles = new List<GridTileView>();
-        [SerializeField] private List<GridTileView> _randomTiles = new List<GridTileView>();
+        [SerializeField] private List<GridTileView> _tiles = new ();
+        [SerializeField] private List<GridTileView> _randomTiles = new ();
+
         [SerializeField] private int _tileListRandomIndex;
         [SerializeField] private ScriptableGridPattern _overrideGridPattern;
 
@@ -44,8 +47,6 @@ namespace OGClient.Gameplay.Grid
         [SerializeField] private float _itemDropDelay = 0.05f;
         [SerializeField] private float _itemDropTime = 0.05f;
         [SerializeField] private Animator _gridAnimator;
-        [SerializeField] private string _gridIntroAnimationParam = "Intro";
-        [SerializeField] private string _gridShakeAnimationParam = "Shake";
         [SerializeField] private Color _gridTileColor1;
         [SerializeField] private Color _gridTileColor2;
 
@@ -58,33 +59,16 @@ namespace OGClient.Gameplay.Grid
         public bool IsDiagonalsAllowed { get; private set; } = true;
         public IEnumerable<GridTileView> Tiles => _tiles;
 
-        // debug setters
-        public void SetDiagonalsAllowed(bool setValue) => IsDiagonalsAllowed = setValue;
-        public void SetSeedValue(int setValue) => _gridSeed = setValue;
-        public void SetItemDropDelay(float setValue) => _itemDropDelay = setValue;
-        public void SetItemDropTime(float setValue) => _itemDropTime = setValue;
+        [Networked] public int GridSeed { get; set; }
+        [Networked] public int TileListRandomIndex { get; set; }
 
-        public void ShakeBoard() => _gridAnimator.Play(_gridShakeAnimationParam);
+        public void ShakeBoard() => _gridAnimator.Play(GridShakeAnimationParam);
         public void HideGrid() => _gridCanvas.enabled = true;
 
         [Inject]
         public void Construct(DiContainer diContainer)
         {
             _diContainer = diContainer;
-        }
-
-        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-        {
-            if (stream.IsWriting)
-            {
-                stream.SendNext(_gridSeed);
-                stream.SendNext(_tileListRandomIndex);
-            }
-            else
-            {
-                _gridSeed = (int)stream.ReceiveNext();
-                _tileListRandomIndex = (int)stream.ReceiveNext();
-            }
         }
 
         public void SetGridSize(Vector2Int setValue)
@@ -107,7 +91,7 @@ namespace OGClient.Gameplay.Grid
         public void ShowGrid()
         {
             _gridCanvas.enabled = true;
-            _gridAnimator.Play(_gridIntroAnimationParam);
+            _gridAnimator.Play(GridIntroAnimationParam);
         }
 
         public void SpawnItem(int itemIndex, int gridX, int gridY, int offsetY)

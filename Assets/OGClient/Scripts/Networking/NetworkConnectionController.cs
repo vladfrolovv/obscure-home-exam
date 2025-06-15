@@ -1,12 +1,10 @@
 using UnityEngine;
-using Photon.Pun;
-using Photon.Realtime;
 using UnityEngine.UI;
 using TMPro;
 using Random = UnityEngine.Random;
 namespace OGClient.Networking
 {
-    public class NetworkConnectionController : MonoBehaviourPunCallbacks
+    public class NetworkConnectionController : MonoBehaviour
     {
 
         [SerializeField] private Button _findMatchButton;
@@ -18,22 +16,22 @@ namespace OGClient.Networking
 
         private void Awake()
         {
-            PhotonNetwork.AutomaticallySyncScene = true;
+            // PhotonNetwork.AutomaticallySyncScene = true;
         }
 
         private void Start()
         {
-            if (PhotonNetwork.IsConnectedAndReady)
-            {
-                _isConnected = true;
-                _findMatchButton.interactable = true;
-            }
-            else
-            {
-                _retryTimer = 0;
-                _findMatchButton.interactable = false;
-                Connect();
-            }
+            // if (PhotonNetwork.IsConnectedAndReady)
+            // {
+            //     _isConnected = true;
+            //     _findMatchButton.interactable = true;
+            // }
+            // else
+            // {
+            //     _retryTimer = 0;
+            //     _findMatchButton.interactable = false;
+            //     Connect();
+            // }
         }
 
         private void Update()
@@ -45,7 +43,7 @@ namespace OGClient.Networking
             }
             else
             {
-                PhotonNetwork.Disconnect();
+                // PhotonNetwork.Disconnect();
                 Connect();
                 _retryTimer = 0;
             }
@@ -55,7 +53,7 @@ namespace OGClient.Networking
         {
             try
             {
-                PhotonNetwork.ConnectUsingSettings();
+                // PhotonNetwork.ConnectUsingSettings();
             }
             catch (UnityException e)
             {
@@ -66,41 +64,41 @@ namespace OGClient.Networking
         public void FindMatch()
         {
             _findMatchButton.gameObject.SetActive(false);
-            PhotonNetwork.JoinRandomRoom();
+            // PhotonNetwork.JoinRandomRoom();
         }
 
-        public override void OnConnectedToMaster()
-        {
-            _isConnected = true;
-            _findMatchButton.interactable = true;
-        }
+        // public override void OnConnectedToMaster()
+        // {
+        //     _isConnected = true;
+        //     _findMatchButton.interactable = true;
+        // }
 
 
-        public override void OnJoinRandomFailed(short returnCode, string message)
-        {
-            PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 2 });
-        }
+        // public override void OnJoinRandomFailed(short returnCode, string message)
+        // {
+        //     PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 2 });
+        // }
+        //
+        // public override void OnJoinedRoom()
+        // {
+        //     _statusText.SetText("Waiting For other player");
+        //     PhotonNetwork.LocalPlayer.NickName = $"Guest{Random.Range(1000, 9999)}";
+        // }
+        //
+        // public override void OnJoinedLobby()
+        // {
+        //
+        //     _statusText.SetText("Joined lobby");
+        // }
 
-        public override void OnJoinedRoom()
-        {
-            _statusText.SetText("Waiting For other player");
-            PhotonNetwork.LocalPlayer.NickName = $"Guest{Random.Range(1000, 9999)}";
-        }
-
-        public override void OnJoinedLobby()
-        {
-
-            _statusText.SetText("Joined lobby");
-        }
-
-        public override void OnPlayerEnteredRoom(Player newPlayer)
-        {
-            newPlayer.NickName = $"Guest{Random.Range(1000, 9999)}";
-            if (PhotonNetwork.IsMasterClient)
-            {
-                PhotonNetwork.LoadLevel(1);
-            }
-        }
+        // public override void OnPlayerEnteredRoom(Player newPlayer)
+        // {
+        //     newPlayer.NickName = $"Guest{Random.Range(1000, 9999)}";
+        //     if (PhotonNetwork.IsMasterClient)
+        //     {
+        //         PhotonNetwork.LoadLevel(1);
+        //     }
+        // }
     }
 
 }

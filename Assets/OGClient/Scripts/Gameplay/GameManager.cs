@@ -8,11 +8,10 @@ using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.UI;
 using OGClient.Networking;
-using Photon.Pun;
 using Zenject;
 namespace OGClient.Gameplay
 {
-    public class GameManager : MonoBehaviourPunCallbacks, IPunObservable
+    public class GameManager : MonoBehaviour
     {
 
         private readonly Dictionary<int, NetworkPlayerController> _players = new Dictionary<int, NetworkPlayerController>();
@@ -82,33 +81,6 @@ namespace OGClient.Gameplay
             _rounds = _gameplaySettings.RoundsPerGame;
         }
 
-        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-        {
-            if (stream.IsWriting)
-            {
-                stream.SendNext(_gameplaySettings.StartDelay);
-                stream.SendNext(PlayerIndex);
-
-                stream.SendNext(_gameplaySettings.MovesPerTurn);
-                stream.SendNext(_gameplaySettings.ExtraMovesPerLink);
-                stream.SendNext(_gameplaySettings.TimePerTurn);
-                stream.SendNext(_timeLeft);
-                stream.SendNext(_gameplaySettings.RoundsPerGame);
-                stream.SendNext(_currentRound);
-            }
-            else
-            {
-                _startDelay = (float)stream.ReceiveNext();
-                PlayerIndex = (int)stream.ReceiveNext();
-                _movesPerRound = (int)stream.ReceiveNext();
-                _extraMoveAtLink = (int)stream.ReceiveNext();
-                _timePerRound = (float)stream.ReceiveNext();
-                _timeLeft = (float)stream.ReceiveNext();
-                _rounds = (int)stream.ReceiveNext();
-                _currentRound = (int)stream.ReceiveNext();
-            }
-        }
-
         private void Setup()
         {
             InstallBaseSettings();
@@ -141,10 +113,10 @@ namespace OGClient.Gameplay
         {
             Setup();
 
-            if (PhotonNetwork.LocalPlayer.IsMasterClient)
-            {
-                Invoke(nameof(RPC_StartMatch), _startDelay * 0.2f);
-            }
+            // if (PhotonNetwork.LocalPlayer.IsMasterClient)
+            // {
+            //     Invoke(nameof(RPC_StartMatch), _startDelay * 0.2f);
+            // }
         }
 
         private void Update()
@@ -159,26 +131,25 @@ namespace OGClient.Gameplay
                     _timerView.UpdateProgress(0);
                 }
 
-                if (_timeLeft <= 10)
-                {
-                    photonView.RPC(nameof(TimeAlmostUp), RpcTarget.All);
-                }
+                // if (_timeLeft <= 10)
+                // {
+                //     photonView.RPC(nameof(TimeAlmostUp), RpcTarget.All);
+                // }
             }
             else if (_timerIsActive)
             {
-                if (CurrentPlayerController.photonView.IsMine)
-                {
-                    photonView.RPC(nameof(TimeUp), RpcTarget.All);
-                }
+                // if (CurrentPlayerController.photonView.IsMine)
+                // {
+                //     photonView.RPC(nameof(TimeUp), RpcTarget.All);
+                // }
             }
         }
 
         void RPC_StartMatch()
         {
-            photonView.RPC(nameof(StartMatch), RpcTarget.All);
+            // photonView.RPC(nameof(StartMatch), RpcTarget.All);
         }
 
-        [PunRPC]
         public void StartMatch()
         {
             _gridController.FillGrid();
@@ -190,10 +161,9 @@ namespace OGClient.Gameplay
 
         public void RPC_NextPlayer()
         {
-            photonView.RPC(nameof(NextPlayer), RpcTarget.All);
+            // photonView.RPC(nameof(NextPlayer), RpcTarget.All);
         }
 
-        [PunRPC]
         public void NextPlayer()
         {
             if (PlayerIndex < _players.Count)
@@ -215,7 +185,7 @@ namespace OGClient.Gameplay
 
         void RPC_SetCurrentPlayer()
         {
-            photonView.RPC(nameof(SetCurrentPlayer), RpcTarget.All);
+            // photonView.RPC(nameof(SetCurrentPlayer), RpcTarget.All);
         }
 
         public void SetCurrentPlayer()
@@ -245,11 +215,11 @@ namespace OGClient.Gameplay
 
             GridPlayerController.RegainControl();
 
-            if (CurrentPlayerController.photonView.IsMine)
-            {
-                ResetTime();
-                Invoke(nameof(RPC_StartTimer), 0.5f);
-            }
+            // if (CurrentPlayerController.photonView.IsMine)
+            // {
+            //     ResetTime();
+            //     Invoke(nameof(RPC_StartTimer), 0.5f);
+            // }
         }
 
         public void HighlightPlayer()
@@ -291,10 +261,9 @@ namespace OGClient.Gameplay
 
         public void RPC_StartTimer()
         {
-            photonView.RPC(nameof(StartTimer), RpcTarget.All);
+            // photonView.RPC(nameof(StartTimer), RpcTarget.All);
         }
 
-        [PunRPC]
         public void StartTimer()
         {
             _timerIsActive = true;
@@ -306,14 +275,13 @@ namespace OGClient.Gameplay
         {
             _timerIsActive = false;
 
-            if (CurrentPlayerController.photonView.IsMine)
-            {
-                CancelInvoke(nameof(RPC_StartTimer));
-                if (delay > 0) Invoke(nameof(RPC_StartTimer), delay);
-            }
+            // if (CurrentPlayerController.photonView.IsMine)
+            // {
+            //     CancelInvoke(nameof(RPC_StartTimer));
+            //     if (delay > 0) Invoke(nameof(RPC_StartTimer), delay);
+            // }
         }
 
-        [PunRPC]
         public void TimeAlmostUp()
         {
             if (_timeAlmostUp == true) return;
@@ -323,7 +291,6 @@ namespace OGClient.Gameplay
             LeanTween.scale(_timerView.gameObject, Vector3.one * 1.1f, 0.5f).setLoopPingPong().setEaseInBack();
         }
 
-        [PunRPC]
         public void TimeUp()
         {
             if (_timerIsActive == false) return;
@@ -339,10 +306,10 @@ namespace OGClient.Gameplay
                 _timerView.Shake();
             }
 
-            if (CurrentPlayerController.photonView.IsMine)
-            {
-                CurrentPlayerController.photonView.RPC("SetMoves", RpcTarget.All, 0);
-            }
+            // if (CurrentPlayerController.photonView.IsMine)
+            // {
+            //     CurrentPlayerController.photonView.RPC("SetMoves", RpcTarget.All, 0);
+            // }
 
             if (GridPlayerController) GridPlayerController.CancelExecuteLink();
 
@@ -351,15 +318,15 @@ namespace OGClient.Gameplay
 
         public void EndTurn()
         {
-            if (CurrentPlayerController.photonView.IsMine)
-            {
-                photonView.RPC(nameof(NextPlayer), RpcTarget.All);
-            }
+            // if (CurrentPlayerController.photonView.IsMine)
+            // {
+            //     photonView.RPC(nameof(NextPlayer), RpcTarget.All);
+            // }
         }
 
         public void RPC_ResetRounds()
         {
-            photonView.RPC(nameof(ResetRounds), RpcTarget.All);
+            // photonView.RPC(nameof(ResetRounds), RpcTarget.All);
         }
 
         public void ResetRounds()
@@ -419,7 +386,7 @@ namespace OGClient.Gameplay
                     _gridController.ClearGrid();
                     _gridController.HideGrid();
 
-                    Invoke(nameof(GameOver), 0.5f);
+                    // Invoke(nameof(GameOver), 0.5f);
                 }
 
             }
@@ -437,7 +404,7 @@ namespace OGClient.Gameplay
 
         void RPC_GameOver()
         {
-            photonView.RPC(nameof(GameOver), RpcTarget.All);
+            // photonView.RPC(nameof(GameOver), RpcTarget.All);
         }
 
         public void GameOver()

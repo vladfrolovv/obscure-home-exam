@@ -1,4 +1,3 @@
-using Photon.Pun;
 using System.Collections;
 using OGClient.Gameplay.Grid;
 using UnityEngine;
@@ -27,10 +26,10 @@ namespace OGClient.Gameplay.Specials
         {
             yield return new WaitForSeconds(delay);
 
-            if (_gameManager.CurrentPlayerController.photonView.IsMine)
-            {
-                _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
-            }
+            // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+            // {
+            //     _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
+            // }
 
             _gameManager.GridPlayerController.ToastView.SetToast(transform.position, message, textColor);
         }

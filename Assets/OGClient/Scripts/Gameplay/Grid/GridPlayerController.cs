@@ -5,15 +5,14 @@ using System.Linq;
 using OGClient.Gameplay.Grid.MergeCombos;
 using OGClient.Gameplay.Grid.Models;
 using OGClient.Gameplay.UI;
-using Photon.Pun;
 using Zenject;
 using Random = UnityEngine.Random;
 namespace OGClient.Gameplay.Grid
 {
-    public class GridPlayerController : MonoBehaviourPunCallbacks, IPunObservable
+    public class GridPlayerController : MonoBehaviour
     {
-        public List<GridTileView> tileLink = new List<GridTileView>();
-        internal List<GameObject> executeList = new List<GameObject>();
+        public List<GridTileView> tileLink = new ();
+        internal List<GameObject> executeList = new ();
         internal bool isExecuting = false;
 
         internal int linkType = -1; // -1 is any type
@@ -52,54 +51,14 @@ namespace OGClient.Gameplay.Grid
             _mergeCombosController = mergeCombosController;
         }
 
-        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-        {
-            if (stream.IsWriting)
-            {
-                stream.SendNext(isExecuting);
-                stream.SendNext(linkType);
-                stream.SendNext(minimumLinkSize);
-                stream.SendNext(inControl);
-                stream.SendNext(collectTime);
-                stream.SendNext(executeTime);
-                stream.SendNext(executeTimeMultipier);
-                stream.SendNext(executeTimeMinimum);
-                stream.SendNext(executeTotalTime);
-                stream.SendNext(specialIndex);
-                stream.SendNext(direction);
-                stream.SendNext(hasPowerups);
-            }
-            else
-            {
-                isExecuting = (bool)stream.ReceiveNext();
-                linkType = (int)stream.ReceiveNext();
-                minimumLinkSize = (int)stream.ReceiveNext();
-                inControl = (bool)stream.ReceiveNext();
-                collectTime = (float)stream.ReceiveNext();
-                executeTime = (float)stream.ReceiveNext();
-                executeTimeMultipier = (float)stream.ReceiveNext();
-                executeTimeMinimum = (float)stream.ReceiveNext();
-                executeTotalTime = (float)stream.ReceiveNext();
-                specialIndex = (int)stream.ReceiveNext();
-                direction = (Vector2)stream.ReceiveNext();
-                hasPowerups = (bool)stream.ReceiveNext();
-            }
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
-            ToastView = FindObjectOfType<ToastView>();
-            eventSystem = FindObjectOfType<EventSystem>();
-        }
-
-        // Update is called once per frame
         void Update()
         {
-            if (Input.GetButtonUp("Fire1") && _gameManager.CurrentPlayerController && _gameManager.CurrentPlayerController.photonView.IsMine && _gameManager.CurrentPlayerController.moves > 0)
+            if (Input.GetButtonUp("Fire1")
+                // && _gameManager.CurrentPlayerController && _gameManager.CurrentPlayerController.photonView.IsMine && _gameManager.CurrentPlayerController.moves > 0
+                )
             {
                 //ExecuteLink();
-                photonView.RPC("ExecuteLink", RpcTarget.All);
+                // photonView.RPC("ExecuteLink", RpcTarget.All);
                 //();
             }
         }
@@ -117,7 +76,6 @@ namespace OGClient.Gameplay.Grid
             eventSystem.enabled = true;
         }
 
-        [PunRPC]
         public void LinkStartByGrid(int gridX, int gridY)
         {
 
@@ -130,18 +88,17 @@ namespace OGClient.Gameplay.Grid
             LinkAddByGrid(gridX, gridY);
         }
 
-        [PunRPC]
         public void LinkAddByGrid(int gridX, int gridY)
         {
             GridTileView tileView = GetTileByGrid(gridX, gridY);
             tileLink.Add(tileView);
 
 
-            if (_gameManager.CurrentPlayerController.photonView.IsMine)
-            {
-                if (tileLink.Count > 1)
-                    tileView.SetConnectorLineActive(true);
-            }
+            // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+            // {
+            //     if (tileLink.Count > 1)
+            //         tileView.SetConnectorLineActive(true);
+            // }
 
 
             //LeanTween.rotate(tile.GetCurrentItem().gameObject, Vector3.forward * 10, 0.2f);
@@ -215,10 +172,10 @@ namespace OGClient.Gameplay.Grid
             GridTileView tileView = GetTileByGrid(gridX, gridY);
             tileLink.Remove(tileView);
 
-            if (_gameManager.CurrentPlayerController.photonView.IsMine)
-            {
-                tileView.SetConnectorLineActive(false);
-            }
+            // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+            // {
+            //     tileView.SetConnectorLineActive(false);
+            // }
 
             tileView.GridItemView.GetComponent<Canvas>().overrideSorting = false;
 
@@ -230,7 +187,6 @@ namespace OGClient.Gameplay.Grid
             tileView.SetClickSize(1);
         }
 
-        [PunRPC]
         public void LinkRemoveAfterByGrid(int gridX, int gridY)
         {
             GridTileView tileView = GetTileByGrid(gridX, gridY);
@@ -313,7 +269,6 @@ namespace OGClient.Gameplay.Grid
             minimumLinkSize = setValue;
         }
 
-        [PunRPC]
         public void ExecuteLink()
         {
             if (isExecuting == true) return;
@@ -341,10 +296,10 @@ namespace OGClient.Gameplay.Grid
             {
                 LeanTween.rotate(tileLink[index].gameObject, Vector3.forward * 0, 0.2f);
 
-                if (_gameManager.CurrentPlayerController.photonView.IsMine)
-                {
-                    tileLink[index].SetConnectorLineActive(false);
-                }
+                // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+                // {
+                //     tileLink[index].SetConnectorLineActive(false);
+                // }
 
                 GridTileView gridTileView = tileLink[index];
 
@@ -358,10 +313,10 @@ namespace OGClient.Gameplay.Grid
 
                 if (index == tileLink.Count - 1) gridTileView.GridItemView.IsLastInLink = true;
 
-                if (_gameManager.CurrentPlayerController.photonView.IsMine)
-                {
-                    photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
-                }
+                // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+                // {
+                //     photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
+                // }
 
                 if (gridItemView.GridItemType > -1 || powerupsInLink.Count < 2) extraExecuteTime += gridItemView.ExtraExecuteTime;
 
@@ -375,21 +330,21 @@ namespace OGClient.Gameplay.Grid
             executeTotalTime += extraExecuteTime;
 
 
-            if (_gameManager.CurrentPlayerController.photonView.IsMine)
-            {
-                _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
-
-                if (powerupsInLink.Count > 1)
-                {
-                    _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
-
-                    _gameManager.GridPlayerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
-                }
-
-                if (powerupsInLink.Count < 1) photonView.RPC(nameof(SpawnSpecial), RpcTarget.All, specialIndex, executeTotalTime);
-
-                Invoke(nameof(RPC_RemoveFromExecuteList), executeTotalTime);
-            }
+            // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+            // {
+            //     _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
+            //
+            //     if (powerupsInLink.Count > 1)
+            //     {
+            //         _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+            //
+            //         _gameManager.GridPlayerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
+            //     }
+            //
+            //     if (powerupsInLink.Count < 1) photonView.RPC(nameof(SpawnSpecial), RpcTarget.All, specialIndex, executeTotalTime);
+            //
+            //     Invoke(nameof(RPC_RemoveFromExecuteList), executeTotalTime);
+            // }
 
             _gameManager.PauseTime(0);
             LoseControl(0);
@@ -431,7 +386,6 @@ namespace OGClient.Gameplay.Grid
             gridTileView.GridItemView = null;
         }
 
-        [PunRPC]
         public void CollectItemAtGrid(int gridX, int gridY, float delay)
         {
             // Translate from grid index to list/array index
@@ -477,7 +431,6 @@ namespace OGClient.Gameplay.Grid
             return specialIndex;
         }
 
-        [PunRPC]
         public void SpawnSpecial(int index, float delay)
         {
             if (index != -1)
@@ -495,10 +448,10 @@ namespace OGClient.Gameplay.Grid
 
                 _gridController.SpawnItem(gridItemView, tileLink[tileLink.Count - 1], delay);
 
-                if (_gameManager.CurrentPlayerController.photonView.IsMine)
-                {
-                    if (tileLink.Count >= _gameManager.GetExtraMoveAtLink()) _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
-                }
+                // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+                // {
+                //     if (tileLink.Count >= _gameManager.GetExtraMoveAtLink()) _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
+                // }
 
                 //_gameManager.currentPlayer.ChangeMoves(1);
             }
@@ -552,10 +505,10 @@ namespace OGClient.Gameplay.Grid
                     if (gridItemView.GridItemType < 0 && powerupsInLink.Count > 1 && gridItemView.CanMerge == true) return;
                 }
 
-                if (_gameManager.CurrentPlayerController.photonView.IsMine)
-                {
-                    _gameManager.CurrentPlayerController.AddBonus(1, 0.5f);
-                }
+                // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+                // {
+                //     _gameManager.CurrentPlayerController.AddBonus(1, 0.5f);
+                // }
 
                 LeanTween.rotate(gridItemView.gameObject, Vector3.forward * Random.Range(-30, 30), collectTime * 0.7f).setEaseOutSine();
                 LeanTween.move(gridItemView.gameObject, gridItemView.transform.position + randomOffset, collectTime * 0.7f).setEaseOutSine().setOnComplete(() =>
@@ -622,10 +575,9 @@ namespace OGClient.Gameplay.Grid
 
         void RPC_RemoveFromExecuteList()
         {
-            photonView.RPC("RemoveFromExecuteList", RpcTarget.All);
+            // photonView.RPC("RemoveFromExecuteList", RpcTarget.All);
         }
 
-        [PunRPC]
         void RemoveFromExecuteList()
         {
             executeList.Remove(this.gameObject);
