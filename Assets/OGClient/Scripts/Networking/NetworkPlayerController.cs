@@ -122,7 +122,7 @@ namespace OGClient.Networking
             bonus -= removeBonus;
             // photonView.RPC(nameof(UpdateBonus), RpcTarget.All);
         }
-        
+
         void RPC_ChangeScore(int value)
         {
             _scoreDataProxy.IncreasePlayerScore(_playerIndex, value);
