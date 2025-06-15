@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-namespace OGServer.Utils
+namespace OGClient.Utils
 {
     public static class PlayerDataGenerator
     {

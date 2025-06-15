@@ -2,7 +2,7 @@
 using OGShared.Scripts.Gameplay.Grid;
 using UnityEngine;
 using UniRx;
-namespace OGServer.Scripts.Gameplay
+namespace OGServer.Gameplay
 {
     public class GridServerController : SimulationBehaviour
     {

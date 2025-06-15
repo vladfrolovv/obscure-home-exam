@@ -1,5 +1,5 @@
 ﻿using UniRx;
-namespace OGServer.Authentication
+namespace OGClient.Gameplay.Authentication
 {
     public class PlayFabAuthDataProxy
     {

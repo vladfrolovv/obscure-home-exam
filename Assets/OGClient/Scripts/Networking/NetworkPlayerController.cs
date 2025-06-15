@@ -1,3 +1,4 @@
+using Fusion;
 using OGClient.Gameplay;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Players;
@@ -8,7 +9,7 @@ using TMPro;
 using Zenject;
 namespace OGClient.Networking
 {
-    public class NetworkPlayerController : MonoBehaviour
+    public class NetworkPlayerController : NetworkBehaviour
     {
 
         private const string BounceUpAnimatorProperty = "Bounce";

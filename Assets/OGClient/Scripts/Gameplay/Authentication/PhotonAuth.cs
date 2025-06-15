@@ -1,10 +1,10 @@
-﻿using Fusion.Photon.Realtime;
+﻿using UniRx;
 using PlayFab;
-using PlayFab.ClientModels;
-using UniRx;
-using UnityEngine;
 using Zenject;
-namespace OGServer.Authentication
+using UnityEngine;
+using PlayFab.ClientModels;
+using Fusion.Photon.Realtime;
+namespace OGClient.Gameplay.Authentication
 {
     public class PhotonAuth : MonoBehaviour
     {
@@ -12,12 +12,13 @@ namespace OGServer.Authentication
         private const string UsernameParamName = "username";
         private const string TokenParamName = "token";
 
-        public static AuthenticationValues AuthValues { get; private set; }
+        private PhotonAuthDataProxy _photonAuthDataProxy;
         private PlayFabAuthDataProxy _playFabAuthDataProxy;
 
         [Inject]
-        public void Construct(PlayFabAuthDataProxy playFabAuthDataProxy)
+        public void Construct(PlayFabAuthDataProxy playFabAuthDataProxy, PhotonAuthDataProxy photonAuthDataProxy)
         {
+            _photonAuthDataProxy = photonAuthDataProxy;
             _playFabAuthDataProxy = playFabAuthDataProxy;
         }
 
@@ -46,7 +47,7 @@ namespace OGServer.Authentication
             customAuthentication.AddAuthParameter(UsernameParamName, _playFabAuthDataProxy.PlayFabToken.Value);
             customAuthentication.AddAuthParameter(TokenParamName, authenticationTokenResult.PhotonCustomAuthenticationToken);
 
-            AuthValues = customAuthentication;
+            _photonAuthDataProxy.RecordLoginData(customAuthentication);
         }
 
         private static void OnPlayFabError(PlayFabError obj)

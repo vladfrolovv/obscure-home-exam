@@ -1,9 +1,9 @@
-﻿using OGServer.Utils;
+﻿using OGClient.Utils;
 using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine;
 using Zenject;
-namespace OGServer.Authentication
+namespace OGClient.Gameplay.Authentication
 {
     public class PlayFabAuth : MonoBehaviour
     {

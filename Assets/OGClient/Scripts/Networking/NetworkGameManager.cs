@@ -1,47 +1,26 @@
+using Fusion;
 using UnityEngine;
-using Zenject;
 namespace OGClient.Networking
 {
-    public class NetworkGameManager : MonoBehaviour
+    public class NetworkGameManager : SimulationBehaviour, IPlayerJoined, IPlayerLeft
     {
 
-        [SerializeField] private NetworkPlayerController _masterPlayerControllerPrefab;
-        [SerializeField] private NetworkPlayerController _remotePlayerControllerPrefab;
+        [SerializeField] private NetworkPrefabRef _playerPrefab;
 
-        private NetworkPlayerController _masterPlayerController;
-        private NetworkPlayerController _remotePlayerController;
-
-        private DiContainer _diContainer;
-
-        [Inject]
-        public void Construct(DiContainer diContainer)
+        public void PlayerJoined(PlayerRef player)
         {
-            _diContainer = diContainer;
+            if (!Runner.IsServer) return;
+
+            Runner.Spawn(_playerPrefab, Vector3.zero, Quaternion.identity, player);
         }
 
-        private void Start()
+        public void PlayerLeft(PlayerRef player)
         {
-            SpawnPlayers();
-        }
+            if (!Runner.IsServer) return;
+            NetworkObject playerObject = Runner.GetPlayerObject(player);
+            if (playerObject == null) return;
 
-        private void SpawnPlayers()
-        {
-            // if (PhotonNetwork.IsMasterClient)
-            {
-                _masterPlayerController = CreateNetworkPlayerFrom(_masterPlayerControllerPrefab);
-            }
-            // else
-            {
-                _remotePlayerController = CreateNetworkPlayerFrom(_remotePlayerControllerPrefab);
-            }
-        }
-
-        private NetworkPlayerController CreateNetworkPlayerFrom(NetworkPlayerController prefab)
-        {
-            // NetworkPlayerController networkPlayerController = PhotonNetwork.Instantiate(prefab.name, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<NetworkPlayerController>();
-            // _diContainer.Inject(networkPlayerController);
-
-            return prefab;
+            Runner.Despawn(playerObject);
         }
 
     }
