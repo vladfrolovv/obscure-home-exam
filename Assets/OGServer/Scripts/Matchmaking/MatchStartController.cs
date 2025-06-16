@@ -1,16 +1,13 @@
-﻿using System.Linq;
-using Fusion;
+﻿using Fusion;
 using OGClient;
 using UnityEngine;
-using Zenject;
+using System.Linq;
 namespace OGServer.Matchmaking
 {
     public class MatchStartController : NetworkBehaviour, IPlayerJoined
     {
 
         [SerializeField] private SceneRef _gameplayScene;
-
-        [Inject] private NetworkRunner _networkRunner;
 
         public override void Spawned()
         {
@@ -22,15 +19,16 @@ namespace OGServer.Matchmaking
             TryToLoadGame();
         }
 
-        private async void TryToLoadGame()
+        private void TryToLoadGame()
         {
             Debug.Log($"Active players count: {Runner.ActivePlayers.Count()} | Required players: {ConstantsModel.PLAYERS_PER_MATCH}");
             if (!Runner.IsServer) return;
-            if (Runner.ActivePlayers.Count() == ConstantsModel.PLAYERS_PER_MATCH)
-            {
-                Debug.Log($"Trying to load gameplay scene for clients");
-                await Runner.SceneManager.LoadScene(_gameplayScene, new NetworkLoadSceneParameters());
-            }
+            if (Runner.ActivePlayers.Count() != ConstantsModel.PLAYERS_PER_MATCH) return;
+
+            Debug.Log($"Trying to load gameplay scene for clients");
+            // todo
+
+            Runner.LoadScene(_gameplayScene);
         }
 
     }

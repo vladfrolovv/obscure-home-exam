@@ -1,6 +1,7 @@
 ﻿using Fusion;
 using UnityEngine;
 using System.Threading.Tasks;
+using OGShared.Scripts;
 namespace OGClient.Networking.Mathchmaking
 {
     public class MatchmakingController : SimulationBehaviour
@@ -13,10 +14,10 @@ namespace OGClient.Networking.Mathchmaking
                 GameMode = GameMode.Client,
                 SessionName = $"OGRoom",
                 PlayerCount = ConstantsModel.PLAYERS_PER_MATCH,
-                SceneManager = FindObjectOfType<NetworkRunner>().SceneManager,
+                SceneManager = NetworkRunnerController.Instance.SceneManager,
             };
 
-            StartGameResult result = await FindObjectOfType<NetworkRunner>().StartGame(startGameArgs);
+            StartGameResult result = await NetworkRunnerController.Instance.StartGame(startGameArgs);
             if (!result.Ok)
             {
                 Debug.LogError($"Failed to start game: {result.ShutdownReason}");

@@ -38,8 +38,6 @@ namespace OGShared.Scripts
         {
             Debug.Log($"Dedicated Server mode detected. Staying on Bootstrap scene.");
             _networkRunner.ProvideInput = false;
-
-            _diContainer.BindInstance(_networkRunner).AsSingle();
             await _networkRunner.StartGame(new StartGameArgs()
             {
                 GameMode = GameMode.Server,
