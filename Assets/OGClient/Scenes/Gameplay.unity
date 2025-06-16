@@ -885,6 +885,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameOverCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 1210809818738370413, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -901,6 +905,10 @@ PrefabInstance:
     - target: {fileID: 3241918498923648850, guid: 3b4d2d30cafbb614584e1891f338a98b, type: 3}
       propertyPath: m_Name
       value: GridCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 3241918498923648850, guid: 3b4d2d30cafbb614584e1891f338a98b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3241918498923648854, guid: 3b4d2d30cafbb614584e1891f338a98b, type: 3}
       propertyPath: m_Pivot.x
@@ -1056,6 +1064,10 @@ PrefabInstance:
     - target: {fileID: 3785692790318919093, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
       propertyPath: m_Name
       value: GameCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 3785692790318919093, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3785692790318919096, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
       propertyPath: m_Camera
