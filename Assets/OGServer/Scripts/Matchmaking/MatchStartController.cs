@@ -7,6 +7,8 @@ namespace OGServer.Matchmaking
     public class MatchStartController : NetworkBehaviour, IPlayerJoined
     {
 
+        public bool MatchIsRunning { get; private set; } = false;
+
         [SerializeField] private SceneRef _gameplayScene;
 
         public override void Spawned()
@@ -26,8 +28,8 @@ namespace OGServer.Matchmaking
             if (Runner.ActivePlayers.Count() != ConstantsModel.PLAYERS_PER_MATCH) return;
 
             Debug.Log($"Trying to load gameplay scene for clients");
-            // todo
 
+            MatchIsRunning = true;
             Runner.LoadScene(_gameplayScene);
         }
 

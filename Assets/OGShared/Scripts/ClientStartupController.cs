@@ -3,6 +3,7 @@ using Zenject;
 using OGClient;
 using UnityEngine;
 using OGClient.Scenes;
+using OGServer.Gameplay;
 using OGServer.Matchmaking;
 namespace OGShared.Scripts
 {
@@ -10,16 +11,12 @@ namespace OGShared.Scripts
     {
 
         [SerializeField] private NetworkRunner _networkRunnerPrefab;
+
+        [Header("Systems")]
         [SerializeField] private MatchStartController _matchStartControllerPrefab;
+        [SerializeField] private NetworkGameManager _networkGameManager;
 
-        private DiContainer _diContainer;
         private NetworkRunner _networkRunner;
-
-        [Inject]
-        public void Construct(DiContainer diContainer)
-        {
-            _diContainer = diContainer;
-        }
 
         private void Awake()
         {
@@ -60,6 +57,7 @@ namespace OGShared.Scripts
         private void InstallDedicatedServerObjects()
         {
             _networkRunner.Spawn(_matchStartControllerPrefab, Vector3.zero, Quaternion.identity);
+            _networkRunner.Spawn(_networkGameManager, Vector3.zero, Quaternion.identity);
         }
 
         private bool IsDedicatedServer()

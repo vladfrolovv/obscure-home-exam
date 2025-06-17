@@ -216,6 +216,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _networkRunnerPrefab: {fileID: 8773974042105062457, guid: bac2911e6963db6438537c07083698a5, type: 3}
   _matchStartControllerPrefab: {fileID: 2866966558644531537, guid: 73eb70e51df720a42817243c0ecd5e20, type: 3}
+  _networkGameManager: {fileID: 9026450203823346818, guid: dafc1d4c198329842aba2be76cbdbec5, type: 3}
 --- !u!4 &2131269647
 Transform:
   m_ObjectHideFlags: 0
