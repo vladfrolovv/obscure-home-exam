@@ -1,6 +1,7 @@
 ﻿using Fusion;
 using Zenject;
 using OGClient;
+using OGClient.Installers;
 using UnityEngine;
 using OGClient.Scenes;
 using OGServer.Gameplay;
@@ -57,7 +58,11 @@ namespace OGShared.Scripts
         private void InstallDedicatedServerObjects()
         {
             _networkRunner.Spawn(_matchStartControllerPrefab, Vector3.zero, Quaternion.identity);
-            _networkRunner.Spawn(_networkGameManager, Vector3.zero, Quaternion.identity);
+            INetworkRunnerCallbacks networkRunnerCallbacks = _networkRunner.Spawn(_networkGameManager, Vector3.zero, Quaternion.identity);
+            _networkRunner.AddCallbacks(networkRunnerCallbacks);
+
+            ProjectContextInstaller.Instance.Inject(_networkGameManager);
+            ProjectContextInstaller.Instance.Inject(_matchStartControllerPrefab);
         }
 
         private bool IsDedicatedServer()

@@ -381,7 +381,7 @@ namespace OGClient.Gameplay.Grid
                 gridItemView.IsMerging = true;
             }
 
-            Collect(gridItemView, _gameManager.CurrentPlayerController.bonusText.transform, delay, gridTileView);
+            // Collect(gridItemView, _gameManager.CurrentPlayerController.bonusText.transform, delay, gridTileView);
 
             gridTileView.GridItemView = null;
         }
@@ -596,7 +596,7 @@ namespace OGClient.Gameplay.Grid
         {
             isExecuting = false;
 
-            if (_gameManager.CurrentPlayerController.moves == 0)
+            if (_gameManager.CurrentPlayerController.MovesLeft == 0)
             {
                 _gameManager.EndTurn();
             }

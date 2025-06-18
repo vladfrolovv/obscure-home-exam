@@ -1,4 +1,4 @@
-﻿using OGClient.Networking.Mathchmaking;
+﻿using OGClient.Gameplay.Mathchmaking;
 using UnityEngine;
 using Zenject;
 namespace OGClient.Installers

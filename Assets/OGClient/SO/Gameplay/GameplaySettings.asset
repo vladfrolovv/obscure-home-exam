@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <StartDelay>k__BackingField: 3
   <TimePerTurn>k__BackingField: 20
-  <MovesPerTurn>k__BackingField: 2
+  <MovesPerTurn>k__BackingField: 3
   <ExtraMovesPerLink>k__BackingField: 15
   <RoundsPerGame>k__BackingField: 5

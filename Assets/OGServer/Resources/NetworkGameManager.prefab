@@ -49,7 +49,8 @@ MonoBehaviour:
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
-  NetworkedBehaviours: []
+  NetworkedBehaviours:
+  - {fileID: 9026450203823346818}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &9026450203823346818
 MonoBehaviour:
@@ -63,5 +64,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e3ac172b8eaf7944a1364cb5a0b93ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gameplayScene:
+    RawValue: 3
   _playerPrefab:
     RawGuidValue: db892ef1112caa74790c8ca699a24894

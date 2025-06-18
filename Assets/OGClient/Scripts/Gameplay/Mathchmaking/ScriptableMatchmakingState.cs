@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-namespace OGClient.Networking.Mathchmaking
+namespace OGClient.Gameplay.Mathchmaking
 {
     [CreateAssetMenu(fileName = "MatchmakingState", menuName = "ScriptableObjects/Matchmaking State")]
     public class ScriptableMatchmakingState : ScriptableObject

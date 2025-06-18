@@ -1,4 +1,4 @@
-﻿namespace OGClient.Networking.Mathchmaking
+﻿namespace OGClient.Gameplay.Mathchmaking
 {
     public enum MatchmakingState
     {

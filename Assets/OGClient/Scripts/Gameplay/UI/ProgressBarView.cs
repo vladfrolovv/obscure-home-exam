@@ -1,4 +1,4 @@
-using OGClient.Networking;
+using OGClient.Gameplay.Players;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -23,21 +23,8 @@ namespace OGClient.Gameplay.UI
         {
             if (progressText)
             {
-                if (showText)
-                {
-                    if (showMax)
-                    {
-                        progressText.SetText(progress + "/" + progressMax);
-                    }
-                    else
-                    {
-                        progressText.SetText(progress.ToString());
-                    }
-                }
-                else
-                {
-                    progressText.SetText(string.Empty);
-                }
+                string progressTextValue = showText ? showMax ? $"{progress}/{progressMax}" : $"{progress}" : string.Empty;
+                progressText.SetText(progressTextValue);
             }
 
             if (incrementHolder && increment)
@@ -47,7 +34,7 @@ namespace OGClient.Gameplay.UI
 
                 if (playerController != null)
                 {
-                    SetBarColor(incrementImage, incrementImageBack, playerController.PlayerColor);
+                    // SetBarColor(incrementImage, incrementImageBack, playerController.PlayerModel.PlayerColor);
                 }
 
                 incrementImage.enabled = false;

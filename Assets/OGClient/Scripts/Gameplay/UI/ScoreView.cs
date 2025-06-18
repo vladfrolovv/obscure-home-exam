@@ -1,17 +1,20 @@
 ﻿using OGClient.Gameplay.DataProxies;
+using OGClient.Gameplay.Players;
 using TMPro;
 using UniRx;
 using UnityEngine;
 using Zenject;
 namespace OGClient.Gameplay.UI
 {
-    public class ScoreView : MonoBehaviour
+    public class ScoreView : MonoBehaviour, IPlayerIndexSetter
     {
 
-        [SerializeField] private int _playerIndex;
         [SerializeField] private TextMeshProUGUI _scoreText;
 
+        private int _playerIndex;
         private ScoreDataProxy _scoreDataProxy;
+
+        public void SetPlayerIndex(int playerIndex) => _playerIndex = playerIndex;
 
         [Inject]
         public void Construct(ScoreDataProxy scoreDataProxy)

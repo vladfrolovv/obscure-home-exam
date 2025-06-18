@@ -1,4 +1,5 @@
-﻿using UniRx;
+﻿using System.Collections.Generic;
+using UniRx;
 namespace OGClient.Gameplay.DataProxies
 {
     public class ScoreDataProxy
@@ -9,13 +10,9 @@ namespace OGClient.Gameplay.DataProxies
 
         public void IncreasePlayerScore(int playerId, int amount)
         {
-            if (_score.ContainsKey(playerId))
+            if (!_score.TryAdd(playerId, amount))
             {
                 _score[playerId] += amount;
-            }
-            else
-            {
-                _score.Add(playerId, amount);
             }
         }
 

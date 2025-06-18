@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Threading.Tasks;
 using OGShared.Scripts;
-namespace OGClient.Networking.Mathchmaking
+namespace OGClient.Gameplay.Mathchmaking
 {
     public class MatchmakingController : SimulationBehaviour
     {

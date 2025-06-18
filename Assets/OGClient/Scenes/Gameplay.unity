@@ -484,6 +484,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e3ac172b8eaf7944a1364cb5a0b93ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gameplayScene:
+    RawValue: 0
   _playerPrefab:
     RawGuidValue: db892ef1112caa74790c8ca699a24894
 --- !u!4 &1376420410

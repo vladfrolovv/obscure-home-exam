@@ -627,7 +627,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61cd48bd167846c4a99b9eb905552730, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerIndex: 0
   _scoreText: {fileID: 708500291062902358}
 --- !u!114 &708500291062902358
 MonoBehaviour:
@@ -727,6 +726,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2439250992005080613}
+  - component: {fileID: 76759491733419070}
   - component: {fileID: 1492379697589655711}
   - component: {fileID: 9137619452750087112}
   m_Layer: 5
@@ -756,6 +756,21 @@ RectTransform:
   m_AnchoredPosition: {x: -75, y: 124.999954}
   m_SizeDelta: {x: 80, y: 15}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &76759491733419070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2866105292988625510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab25ddcbd3b848f8a102c8d61360c01c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _movesText: {fileID: 3066615307207914288}
+  _movesAnimator: {fileID: 9137619452750087112}
+  _movesBarView: {fileID: 1492379697589655711}
 --- !u!114 &1492379697589655711
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1489,10 +1504,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3341092800430509790}
+  - component: {fileID: 7294774872755253056}
+  - component: {fileID: 8955486403222391466}
   - component: {fileID: 6749844715705119989}
   - component: {fileID: 8767107389428352045}
-  - component: {fileID: 5271334389268848255}
-  - component: {fileID: 7281411950711226423}
   m_Layer: 0
   m_Name: NetworkPlayer
   m_TagString: Untagged
@@ -1516,6 +1531,49 @@ Transform:
   - {fileID: 6848108444809871735}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7294774872755253056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8720079344666262613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 4026404046
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 6749844715705119989}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &8955486403222391466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8720079344666262613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44292acd623249cda6e7f596405a2308, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _playersProfiles: {fileID: 11400000, guid: 6d1b9a4f82475aa429c590c354557d93, type: 2}
+  _nicknameText: {fileID: 5198202632560553952}
+  _avatarImage: {fileID: 4190808839981498900}
+  _playerCanvas: {fileID: 1239722435529613780}
+  _scoreView: {fileID: 5991083040472024612}
+  _avatarRT: {fileID: 7455974115174502535}
+  _avatarImageRT: {fileID: 1012317296022024089}
+  _movesBarRT: {fileID: 2439250992005080613}
+  _scoreRT: {fileID: 7767545812155127285}
+  _avatarOffsetX: 100
+  _movesBarOffsetX: 75
+  _scoreOffsetX: 40
 --- !u!114 &6749844715705119989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1528,22 +1586,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80b5f1bdeb985f64ab214d7edd779c48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerProfile: {fileID: 11400000, guid: 6d1b9a4f82475aa429c590c354557d93, type: 2}
-  _playerName: Player 1
-  _playerColor: {r: 0, g: 0, b: 1, a: 1}
-  _playerIndex: 0
-  bonus: 0
-  bonusDelay: 0
-  moves: 3
-  nameText: {fileID: 5198202632560553952}
-  avatarImage: {fileID: 4190808839981498900}
-  scoreText: {fileID: 708500291062902358}
-  bonusText: {fileID: 8466251594305176768}
-  bonusAnimator: {fileID: 3878553497869426031}
-  movesText: {fileID: 36376691324083707}
-  movesAnimator: {fileID: 6096777600205047611}
-  MovesBarView: {fileID: 1492379697589655711}
-  _playerCanvas: {fileID: 1239722435529613780}
+  _gameplaySettings: {fileID: 11400000, guid: 2fb97c9b151e6754cbee130b1ca20d5c, type: 2}
+  _playersProfiles: {fileID: 11400000, guid: 6d1b9a4f82475aa429c590c354557d93, type: 2}
+  _scoreView: {fileID: 5991083040472024612}
+  _movesView: {fileID: 76759491733419070}
+  _playerView: {fileID: 8955486403222391466}
 --- !u!114 &8767107389428352045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1557,36 +1604,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _containerSource: 2
---- !u!114 &5271334389268848255
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8720079344666262613}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SortKey: 3749424087
-  ObjectInterest: 1
-  Flags: 1
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 6749844715705119989}
-  ForceRemoteRenderTimeframe: 0
---- !u!114 &7281411950711226423
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8720079344666262613}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1541381998, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Guid:
-    RawGuidValue: db892ef1112caa74790c8ca699a24894

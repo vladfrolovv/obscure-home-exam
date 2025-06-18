@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.SceneManagement;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Grid;
+using OGClient.Gameplay.Players;
 using OGClient.Gameplay.UI;
-using OGClient.Networking;
 using Zenject;
 namespace OGClient.Gameplay
 {
@@ -59,6 +58,8 @@ namespace OGClient.Gameplay
         public Camera MainCamera { get; private set; }
 
         public SpecialLink[] SpecialLinks => _specialLinks;
+
+        public void AddNewPlayer(int index, NetworkPlayerController playerController) => _players.TryAdd(index, playerController);
 
         [Inject]
         public void Construct(GridController gridController, ScriptableGameplaySettings gameplaySettings, Camera mainCamera,
@@ -194,24 +195,24 @@ namespace OGClient.Gameplay
 
             HighlightPlayer();
 
-            CurrentPlayerController.SetMoves(_movesPerRound);
-            if (CurrentPlayerController.MovesBarView) CurrentPlayerController.MovesBarView.SetProgress(_movesPerRound);
+            // CurrentPlayerController.SetMoves(_movesPerRound);
+            // if (CurrentPlayerController.MovesBarView) CurrentPlayerController.MovesBarView.SetProgress(_movesPerRound);
 
             if (_roundsBarView)
             {
-                _roundsBarView.SetIncrementColor(CurrentPlayerController.PlayerColor);
+                // _roundsBarView.SetIncrementColor(CurrentPlayerController.PlayerColor);
                 _roundsBarView.Bounce();
             }
 
             if (_timerView)
             {
-                _timerView.SetBarColor(CurrentPlayerController.PlayerColor);
+                // _timerView.SetBarColor(CurrentPlayerController.PlayerColor);
             }
 
-            _playerTurnText.SetText(CurrentPlayerController.PlayerName + "'S TURN!");
+            // _playerTurnText.SetText(CurrentPlayerController.PlayerName + "'S TURN!");
             _playerTurnAnimator.Play("Intro");
 
-            _roundsText.SetText(CurrentPlayerController.PlayerName + "'S TURN!");
+            // _roundsText.SetText(CurrentPlayerController.PlayerName + "'S TURN!");
 
             GridPlayerController.RegainControl();
 
@@ -226,8 +227,8 @@ namespace OGClient.Gameplay
         {
             for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
-                if (_players[playerIndex] == CurrentPlayerController) LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.white, 0.5f);
-                else LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.gray, 0.5f);
+                // if (_players[playerIndex] == CurrentPlayerController) LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.white, 0.5f);
+                // else LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.gray, 0.5f);
             }
         }
 
@@ -243,7 +244,7 @@ namespace OGClient.Gameplay
         {
             for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
-                LeanTween.alphaCanvas(_players[playerIndex].PlayerCanvas.GetComponent<CanvasGroup>(), 1, 0.3f);
+                // LeanTween.alphaCanvas(_players[playerIndex].PlayerCanvas.GetComponent<CanvasGroup>(), 1, 0.3f);
             }
         }
 
@@ -380,7 +381,7 @@ namespace OGClient.Gameplay
                 }
                 else
                 {
-                    _winnerText.SetText(winner.PlayerName + " WINS!");
+                    // _winnerText.SetText(winner.PlayerName + " WINS!");
 
                     // FINISH MATCH
                     _gridController.ClearGrid();
@@ -423,57 +424,13 @@ namespace OGClient.Gameplay
                 }
             }
 
-            _winnerText.SetText(winner.PlayerName + " WINS!");
+            // _winnerText.SetText(winner.PlayerName + " WINS!");
 
             _restartButton.onClick.AddListener(Restart);
         }
 
-        public void Restart()
+        private void Restart()
         {
-            SceneManager.LoadScene("Menu");
-        }
-
-        public void SetRoundsPerMatch(int setValue)
-        {
-            _rounds = setValue;
-        }
-
-        public void SetMovesPerRound(int setValue)
-        {
-            _movesPerRound = setValue;
-        }
-
-        public void SetTimePerRound(float setValue)
-        {
-            _timePerRound = setValue;
-        }
-
-        public void SetExtraMoveAtLink(int setValue)
-        {
-            _extraMoveAtLink = setValue;
-        }
-
-        public int GetExtraMoveAtLink()
-        {
-            return _extraMoveAtLink;
-        }
-
-        public int GetSpecialLink(int index, int linkSize)
-        {
-            return _specialLinks[index].LinkSize;
-        }
-
-        public void SetSpecialLink(int index, int linkSize)
-        {
-            _specialLinks[index].LinkSize = linkSize;
-        }
-
-        public void AddNewPlayer(int index, NetworkPlayerController playerController)
-        {
-            if (!_players.ContainsKey(index))
-            {
-                _players.Add(index, playerController);
-            }
         }
 
         [Serializable]

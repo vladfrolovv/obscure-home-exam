@@ -2,17 +2,17 @@
 using OGClient;
 using UnityEngine;
 using System.Linq;
+using UniRx;
 namespace OGServer.Matchmaking
 {
     public class MatchStartController : NetworkBehaviour, IPlayerJoined
     {
 
-        public bool MatchIsRunning { get; private set; } = false;
-
         [SerializeField] private SceneRef _gameplayScene;
 
         public override void Spawned()
         {
+            base.Spawned();
             TryToLoadGame();
         }
 
@@ -28,8 +28,6 @@ namespace OGServer.Matchmaking
             if (Runner.ActivePlayers.Count() != ConstantsModel.PLAYERS_PER_MATCH) return;
 
             Debug.Log($"Trying to load gameplay scene for clients");
-
-            MatchIsRunning = true;
             Runner.LoadScene(_gameplayScene);
         }
 

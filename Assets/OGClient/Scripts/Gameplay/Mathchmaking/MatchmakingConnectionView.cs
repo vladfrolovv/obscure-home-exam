@@ -4,7 +4,7 @@ using Zenject;
 using UnityEngine;
 using UnityEngine.UI;
 using OGClient.Gameplay.Authentication;
-namespace OGClient.Networking.Mathchmaking
+namespace OGClient.Gameplay.Mathchmaking
 {
     public class MatchmakingConnectionView : MonoBehaviour
     {
@@ -30,8 +30,14 @@ namespace OGClient.Networking.Mathchmaking
         private void Awake()
         {
             _findMatchButton.OnClickAsObservable().Subscribe(_ => JoinMatchmakingQueue()).AddTo(this);
-            _photonAuthDataProxy.PhotonAuthValues.Subscribe(_ => OnAuthenticationCompleted()).AddTo(this);
+            // _photonAuthDataProxy.PhotonAuthValues.Subscribe(_ => OnAuthenticationCompleted()).AddTo(this);
+            // SetAuthenticationState();
 
+            OnAuthenticationCompleted();
+        }
+
+        private void SetAuthenticationState()
+        {
             SetButtonInteractable(false);
             _statusText.text = _scriptableMatchmakingState[MatchmakingState.Authentication];
         }
