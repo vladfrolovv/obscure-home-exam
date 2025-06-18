@@ -1,5 +1,5 @@
 using UnityEngine;
-namespace OGClient.Timers
+namespace OGClient.Gameplay.Timers
 {
     public class TimeController
     {

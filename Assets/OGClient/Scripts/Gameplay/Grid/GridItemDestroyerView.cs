@@ -1,6 +1,6 @@
 using System.Collections;
 using OGClient.Gameplay.Grid.Models;
-using OGClient.Timers;
+using OGClient.Gameplay.Timers;
 using UnityEngine;
 using Zenject;
 namespace OGClient.Gameplay.Grid

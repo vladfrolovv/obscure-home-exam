@@ -1,19 +1,24 @@
 using System;
 using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Players;
 using OGClient.Gameplay.UI;
+using OGClient.Gameplay.UI.GameOver;
+using OGClient.Popups;
+using OGServer.Gameplay;
+using UniRx;
 using Zenject;
 namespace OGClient.Gameplay
 {
     public class GameManager : MonoBehaviour
     {
 
-        private readonly Dictionary<int, NetworkPlayerController> _players = new Dictionary<int, NetworkPlayerController>();
+        private readonly Dictionary<int, NetworkPlayerController> _players = new();
+        private readonly Dictionary<MatchPhase, Action> _matchPhaseActions = new();
 
         [field: SerializeField, Header("Players")]
         public GridPlayerController GridPlayerController { get; private set; }
@@ -23,18 +28,8 @@ namespace OGClient.Gameplay
 
         [Header("Timers and Rounds")]
         [SerializeField] private ProgressBarView _timerView;
-
         [SerializeField] private Animator _playerTurnAnimator;
         [SerializeField] private TextMeshProUGUI _playerTurnText;
-
-        [SerializeField] private TextMeshProUGUI _roundsText;
-        [SerializeField] private ProgressBarView _roundsBarView;
-        [SerializeField] private TextMeshProUGUI _currentRoundText;
-
-        [Header("Game Endings")]
-        [SerializeField] private GameObject _gameOverScreen;
-        [SerializeField] private TextMeshProUGUI _winnerText;
-        [SerializeField] private Button _restartButton;
 
         [Header("Specials")]
         [SerializeField] private SpecialLink[] _specialLinks;
@@ -42,59 +37,47 @@ namespace OGClient.Gameplay
         private float _startDelay;
         private float _timePerRound;
         private float _timeLeft;
-        private int _movesPerRound;
-        private int _extraMoveAtLink;
-        private int _rounds;
-        private int _currentRound;
 
         private bool _timerIsActive;
         private bool _timeAlmostUp;
 
+        private PopupsController _popupsController;
+        private NetworkGameManager _networkGameManager;
         private ScoreDataProxy _scoreDataProxy;
+        private RoundsDataProxy _roundsDataProxy;
         private GridController _gridController;
         private ScriptableGameplaySettings _gameplaySettings;
 
         public int PlayerIndex { get; private set; } = 1;
-        public Camera MainCamera { get; private set; }
 
         public SpecialLink[] SpecialLinks => _specialLinks;
 
         public void AddNewPlayer(int index, NetworkPlayerController playerController) => _players.TryAdd(index, playerController);
 
         [Inject]
-        public void Construct(GridController gridController, ScriptableGameplaySettings gameplaySettings, Camera mainCamera,
-                              ScoreDataProxy scoreDataProxy)
+        public void Construct(GridController gridController, ScriptableGameplaySettings gameplaySettings, ScoreDataProxy scoreDataProxy,
+                              RoundsDataProxy roundsDataProxy, NetworkGameManager networkGameManager, PopupsController popupsController)
         {
+            _popupsController = popupsController;
             _gridController = gridController;
             _gameplaySettings = gameplaySettings;
             _scoreDataProxy = scoreDataProxy;
-
-            MainCamera = mainCamera;
+            _roundsDataProxy = roundsDataProxy;
+            _networkGameManager = networkGameManager;
         }
 
-        private void InstallBaseSettings()
+        private void Awake()
         {
-            PlayerIndex = 1;
-            _startDelay = _gameplaySettings.StartDelay;
-            _movesPerRound = _gameplaySettings.MovesPerTurn;
-            _extraMoveAtLink = _gameplaySettings.ExtraMovesPerLink;
-            _timePerRound = _gameplaySettings.TimePerTurn;
-            _rounds = _gameplaySettings.RoundsPerGame;
+            _matchPhaseActions.Add(MatchPhase.Starting, StartMatch);
+            _matchPhaseActions.Add(MatchPhase.Ending, EndMatch);
+
+            _networkGameManager.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
         }
 
         private void Setup()
         {
-            InstallBaseSettings();
-
-            _gameOverScreen.SetActive(false);
-            _roundsText.SetText("");
-
-            if (_roundsBarView)
-            {
-                _roundsBarView.SetProgress(0);
-                _roundsBarView.SetProgressMax(_rounds);
-                _roundsBarView.Setup(null);
-            }
+            _startDelay = _gameplaySettings.StartDelay;
+            _timePerRound = _gameplaySettings.TimePerTurn;
 
             if (_timerView)
             {
@@ -110,14 +93,11 @@ namespace OGClient.Gameplay
             }
         }
 
-        private void Start()
+        private void OnMatchPhaseChanged(MatchPhase phase)
         {
-            Setup();
-
-            // if (PhotonNetwork.LocalPlayer.IsMasterClient)
-            // {
-            //     Invoke(nameof(RPC_StartMatch), _startDelay * 0.2f);
-            // }
+            Debug.Log($"Match phase changed to: {phase}");
+            _matchPhaseActions.TryGetValue(phase, out Action action);
+            action?.Invoke();
         }
 
         private void Update()
@@ -146,13 +126,10 @@ namespace OGClient.Gameplay
             }
         }
 
-        void RPC_StartMatch()
+        private void StartMatch()
         {
-            // photonView.RPC(nameof(StartMatch), RpcTarget.All);
-        }
+            Setup();
 
-        public void StartMatch()
-        {
             _gridController.FillGrid();
             _gridController.ShowGrid();
 
@@ -177,7 +154,11 @@ namespace OGClient.Gameplay
                 NextRound();
             }
 
-            if (_currentRound <= _rounds) SetCurrentPlayer();
+            if (_roundsDataProxy.CanSetPlayerUp)
+            {
+                // add callback
+                SetCurrentPlayer();
+            }
 
             ResetTime();
             _timerView.ChangeProgress(1000);
@@ -195,14 +176,13 @@ namespace OGClient.Gameplay
 
             HighlightPlayer();
 
+
+            // todo:
             // CurrentPlayerController.SetMoves(_movesPerRound);
             // if (CurrentPlayerController.MovesBarView) CurrentPlayerController.MovesBarView.SetProgress(_movesPerRound);
 
-            if (_roundsBarView)
-            {
-                // _roundsBarView.SetIncrementColor(CurrentPlayerController.PlayerColor);
-                _roundsBarView.Bounce();
-            }
+            _roundsDataProxy.OnPlayerSwitched(
+                new PlayerSwitchModel(CurrentPlayerController.PlayerModel.Color));
 
             if (_timerView)
             {
@@ -231,23 +211,6 @@ namespace OGClient.Gameplay
                 // else LeanTween.color(_players[playerIndex].avatarImage.rectTransform, Color.gray, 0.5f);
             }
         }
-
-        public void HidePlayers()
-        {
-            for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
-            {
-                //players[playerIndex].PlayerCanvas.GetComponent<CanvasGroup>().alpha = 0;
-            }
-        }
-
-        public void ShowPlayers()
-        {
-            for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
-            {
-                // LeanTween.alphaCanvas(_players[playerIndex].PlayerCanvas.GetComponent<CanvasGroup>(), 1, 0.3f);
-            }
-        }
-
 
         public void ResetTime()
         {
@@ -319,102 +282,50 @@ namespace OGClient.Gameplay
 
         public void EndTurn()
         {
-            // if (CurrentPlayerController.photonView.IsMine)
-            // {
-            //     photonView.RPC(nameof(NextPlayer), RpcTarget.All);
-            // }
+            NextPlayer();
         }
 
-        public void RPC_ResetRounds()
+        private void ResetRounds()
         {
-            // photonView.RPC(nameof(ResetRounds), RpcTarget.All);
+            _roundsDataProxy.SetCurrentRound(1);
+            _roundsDataProxy.SetRoundProgress(1);
+
+            OnRoundsUpdate();
         }
 
-        public void ResetRounds()
+        private void NextRound()
         {
-            _currentRound = 1;
-            if (_roundsBarView) _roundsBarView.SetProgress(1);
+            _roundsDataProxy.SetCurrentRound(_roundsDataProxy.CurrentRound.Value + 1);
+            _roundsDataProxy.ChangeRoundProgress(1);
 
-            UpdateRounds();
+            OnRoundsUpdate();
         }
 
-        public void NextRound()
+        private void OnRoundsUpdate()
         {
-            _currentRound++;
-            if (_roundsBarView) _roundsBarView.ChangeProgress(1);
-
-            UpdateRounds();
-        }
-
-
-        public void UpdateRounds()
-        {
-            if (_currentRound > _rounds)
+            if (_roundsDataProxy.CurrentRound.Value > _roundsDataProxy.Rounds.Value)
             {
-                NetworkPlayerController winner = _players[1];
+                _gridController.ClearGrid();
+                _gridController.HideGrid();
 
-                for (int playerIndex = 1; playerIndex < _players.Count; playerIndex++)
-                {
-                    if (_scoreDataProxy.GetPlayerScore(playerIndex) > _scoreDataProxy.GetPlayerScore(1))
-                    {
-                        winner = _players[playerIndex];
-                    }
-                }
-
-                // Check for tie
-                int sameScore = 0;
-
-                for (int playerIndex = 1; playerIndex < _players.Count; playerIndex++)
-                {
-                    if (_scoreDataProxy.GetPlayerScore(playerIndex) == _scoreDataProxy.GetPlayerScore(1))
-                    {
-                        sameScore++;
-                    }
-                }
-
-                if (sameScore > 1)
-                {
-                    _rounds++;
-
-                    _roundsText.SetText("TIEBREAKER!");
-                    _currentRoundText.SetText("TIEBREAKER!");
-                }
-                else
-                {
-                    // _winnerText.SetText(winner.PlayerName + " WINS!");
-
-                    // FINISH MATCH
-                    _gridController.ClearGrid();
-                    _gridController.HideGrid();
-
-                    // Invoke(nameof(GameOver), 0.5f);
-                }
-
+                // todo: make this a server callback
+                EndMatch();
             }
-            else if (_currentRound == _rounds)
+            else if (_roundsDataProxy.CurrentRound.Value == _roundsDataProxy.Rounds.Value)
             {
-                _roundsText.SetText("LAST ROUND!");
-                _currentRoundText.SetText("LAST ROUND!");
+                _roundsDataProxy.OnRoundsTextChanged($"LAST ROUND!");
+                _roundsDataProxy.OnCurrentRoundTextChanged($"LAST ROUND!");
             }
             else
             {
-                _roundsText.SetText("ROUND " + _currentRound + "/" + _rounds);
-                _currentRoundText.SetText("ROUND " + _currentRound);
+                _roundsDataProxy.OnRoundsTextChanged($"ROUND {_roundsDataProxy.CurrentRound.Value}/{_roundsDataProxy.Rounds.Value}");
+                _roundsDataProxy.OnCurrentRoundTextChanged($"ROUND {_roundsDataProxy.CurrentRound.Value}");;
             }
         }
 
-        void RPC_GameOver()
+        private void EndMatch()
         {
-            // photonView.RPC(nameof(GameOver), RpcTarget.All);
-        }
-
-        public void GameOver()
-        {
-            _gameOverScreen.SetActive(true);
-            _restartButton.onClick.AddListener(Restart);
-
             _timerIsActive = false;
-
             NetworkPlayerController winner = _players[1];
             for (int playerIndex = 1; playerIndex <= _players.Count; playerIndex++)
             {
@@ -424,13 +335,7 @@ namespace OGClient.Gameplay
                 }
             }
 
-            // _winnerText.SetText(winner.PlayerName + " WINS!");
-
-            _restartButton.onClick.AddListener(Restart);
-        }
-
-        private void Restart()
-        {
+            _popupsController.ShowPopupByType(PopupType.GameOver, new GameOverPopupModel($"{winner.PlayerModel.Nickname} WINS!"));
         }
 
         [Serializable]

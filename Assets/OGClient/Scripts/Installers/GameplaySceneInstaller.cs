@@ -1,8 +1,10 @@
-﻿using OGClient.Gameplay;
+﻿using System;
+using OGClient.Gameplay;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Grid.MergeCombos;
-using OGClient.Timers;
+using OGClient.Gameplay.Timers;
+using OGClient.Popups;
 using UnityEngine;
 using Zenject;
 namespace OGClient.Installers
@@ -15,6 +17,7 @@ namespace OGClient.Installers
 
         [Header("Controllers")]
         [SerializeField] private GameManager _gameManager;
+        [SerializeField] private PopupsController _popupsController;
         [SerializeField] private GridController _gridController;
         [SerializeField] private GridPlayerController _gridPlayerController;
 
@@ -27,6 +30,7 @@ namespace OGClient.Installers
 
             // controllers
             Container.BindInstance(_gameManager).AsSingle();
+            Container.BindInstance(_popupsController).AsSingle();
             Container.BindInstance(_gridController).AsSingle();
             Container.BindInstance(_gridPlayerController).AsSingle();
 
@@ -43,6 +47,7 @@ namespace OGClient.Installers
         {
             Container.BindInterfacesAndSelfTo<ScoreDataProxy>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MovesDataProxy>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<RoundsDataProxy>().AsSingle().NonLazy();
         }
 
     }

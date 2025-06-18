@@ -513,7 +513,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1425435797}
   - component: {fileID: 1425435796}
-  - component: {fileID: 1425435798}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -538,9 +537,6 @@ MonoBehaviour:
   _timerView: {fileID: 3785692791766625729}
   _playerTurnAnimator: {fileID: 406856168}
   _playerTurnText: {fileID: 132484315}
-  _roundsText: {fileID: 590297151}
-  _roundsBarView: {fileID: 3785692791766625729}
-  _currentRoundText: {fileID: 887922435}
   _gameOverScreen: {fileID: 1446735163}
   _winnerText: {fileID: 1473413673}
   _restartButton: {fileID: 368616500}
@@ -562,29 +558,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1991720309}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1425435798
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1425435795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents:
-  - {fileID: 1425435796}
-  sceneViewId: 2
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!1 &1446735163 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1210809818738370413, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
@@ -701,6 +674,53 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3785692790318919098, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
   m_PrefabInstance: {fileID: 3785692791766625728}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1849119630
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1849119631}
+  - component: {fileID: 1849119632}
+  m_Layer: 0
+  m_Name: PopupsController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1849119631
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1849119630}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1991720309}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1849119632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1849119630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94b4f5a453de435f97dbafeac60dda50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _popupsMap:
+  - <Type>k__BackingField: 0
+    <View>k__BackingField: {fileID: 1210809817494440535}
 --- !u!1 &1991720308
 GameObject:
   m_ObjectHideFlags: 0
@@ -736,6 +756,7 @@ Transform:
   - {fileID: 1376420410}
   - {fileID: 1425435797}
   - {fileID: 1770781317}
+  - {fileID: 1849119631}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1991720310
@@ -784,6 +805,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _camera: {fileID: 519420031}
   _gameManager: {fileID: 1425435796}
+  _popupsController: {fileID: 1849119632}
   _gridController: {fileID: 1770781316}
   _gridPlayerController: {fileID: 799268482}
   _mergeEffectView: {fileID: 9043549434984758022, guid: 6f52e434c70ab5445b5f12ca7c19fb2d, type: 3}
@@ -896,6 +918,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
+--- !u!114 &1210809817494440535 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7885637011961230709, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
+  m_PrefabInstance: {fileID: 1210809817494440534}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1446735163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd89041d57114ddb834f180b01a82606, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3241918499448884521
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1039,6 +1072,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1022553460}
     m_Modifications:
+    - target: {fileID: 2427736121033528481, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
+      propertyPath: _roundsText
+      value: 
+      objectReference: {fileID: 590297151}
+    - target: {fileID: 2427736121033528481, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
+      propertyPath: _currentRoundText
+      value: 
+      objectReference: {fileID: 887922435}
     - target: {fileID: 2472174009463541079, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

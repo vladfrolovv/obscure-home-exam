@@ -47,7 +47,9 @@ namespace OGClient.Gameplay.Players
             _playerIndex = Object.InputAuthority.RawEncoded;
             _isMainPlayer = Object.HasInputAuthority;
 
-            PlayerModel playerModel = new (_playerIndex, isMain: _isMainPlayer, nickname: $"Player {_playerIndex}");
+            PlayerModel playerModel = new (_playerIndex, isMain: _isMainPlayer, nickname: $"Player {_playerIndex}",
+                _playersProfiles.GetColor(_isMainPlayer));
+
             PlayerModel = playerModel;
 
             _scoreView.SetPlayerIndex(_playerIndex);

@@ -4,18 +4,56 @@ using Fusion;
 using UnityEngine;
 using Fusion.Sockets;
 using System.Collections.Generic;
-using OGClient.Gameplay.Players;
 using UnityEngine.SceneManagement;
 namespace OGServer.Gameplay
 {
     public class NetworkGameManager : NetworkBehaviour, INetworkRunnerCallbacks
     {
 
+        private const float MatchStartDelay = 1f;
+
+        [Networked] public PlayerRef CurrentPlayer { get; private set; } = PlayerRef.None;
+
+        [Networked] public int Rounds { get; set; }
+        [Networked] public int CurrentRound { get; set; }
+
+        private MatchPhase _matchPhase;
+
+        private MatchPhase MatchPhase
+        {
+            get => _matchPhase;
+            set
+            {
+                _matchPhase = value;
+                _matchPhaseChanged.OnNext(value);
+            }
+        }
+
         [SerializeField] private SceneRef _gameplayScene;
         [SerializeField] private NetworkPrefabRef _playerPrefab;
 
-        private readonly Subject<Unit> _onMatchStarted = new();
-        public IObservable<Unit> MatchStarted => _onMatchStarted;
+        private readonly Subject<MatchPhase> _matchPhaseChanged = new();
+        public IObservable<MatchPhase> MatchPhaseChanged => _matchPhaseChanged;
+
+        public override void Spawned()
+        {
+            if (!Runner.IsServer) return;
+            MatchPhase = MatchPhase.Waiting;
+        }
+
+        public void OnSceneLoadDone(NetworkRunner runner)
+        {
+            if (!runner.IsServer) return;
+            if (SceneManager.GetActiveScene().buildIndex != _gameplayScene.AsIndex) return;
+
+            SpawnPlayersInMatch(runner);
+            MatchPhase = MatchPhase.Starting;
+
+            Observable.Timer(TimeSpan.FromSeconds(MatchStartDelay)).Subscribe(delegate
+            {
+                MatchPhase = MatchPhase.Playing;
+            }).AddTo(this);
+        }
 
         private void SpawnPlayersInMatch(NetworkRunner runner)
         {
@@ -26,15 +64,8 @@ namespace OGServer.Gameplay
             }
         }
 
-        public void OnSceneLoadDone(NetworkRunner runner)
-        {
-            if (!runner.IsServer) return;
-            if (SceneManager.GetActiveScene().buildIndex != _gameplayScene.AsIndex) return;
 
-            _onMatchStarted?.OnNext(Unit.Default);
-            SpawnPlayersInMatch(runner);
-        }
-
+        #region INetworkRunnerCallbacks Implementation
         public void OnSceneLoadStart(NetworkRunner runner) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
@@ -53,6 +84,6 @@ namespace OGServer.Gameplay
         public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
         public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
         public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
-
+        #endregion
     }
 }
