@@ -13,17 +13,17 @@ namespace OGClient.Gameplay.Specials
         [SerializeField] private float executeDelay = 2;
         [SerializeField] private Transform destroyEffect;
 
-        private GameManager _gameManager;
+        private GridLinksController _gridLinksController;
 
         [Inject]
-        public void Construct(GameManager gameManager)
+        public void Construct(GridLinksController gridLinksController)
         {
-            _gameManager = gameManager;
+            _gridLinksController = gridLinksController;
         }
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            _gameManager.GridPlayerController.AddToExecuteList(this.gameObject);
+            _gridLinksController.AddToExecuteList(this.gameObject);
 
             GridItemView gridItemView = gridTileView.GridItemView;
 
@@ -56,7 +56,7 @@ namespace OGClient.Gameplay.Specials
 
                     Destroy(newGlowLine.gameObject, executeDelay);
 
-                    _gameManager.GridPlayerController.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
+                    _gridLinksController.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
                 }
             }
 
@@ -75,8 +75,8 @@ namespace OGClient.Gameplay.Specials
                 Destroy(gridItemView.gameObject);
             }
 
-            _gameManager.GridPlayerController.RemoveFromExecuteList(this.gameObject);
-            _gameManager.GridPlayerController.CheckExecuteLink();
+            _gridLinksController.RemoveFromExecuteList(this.gameObject);
+            _gridLinksController.CheckExecuteLink();
         }
 
     }

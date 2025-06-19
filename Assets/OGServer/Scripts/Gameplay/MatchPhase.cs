@@ -5,6 +5,7 @@
         Waiting,
         Starting,
         Playing,
+        LastRound,
         Ending,
     }
 }

@@ -1,7 +1,7 @@
-﻿using OGClient.Gameplay.UI;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using OGClient.Gameplay.UI;
 namespace OGClient.Gameplay.Players
 {
     public class PlayerView : MonoBehaviour
@@ -25,8 +25,18 @@ namespace OGClient.Gameplay.Players
         [SerializeField] private float _movesBarOffsetX = 75;
         [SerializeField] private float _scoreOffsetX = 40;
 
+        [Header("Animations")]
+        [SerializeField] private float _highlightSwitchDuration = .32f;
+
+        public PlayerModel PlayerModel { get; private set; }
+
+        public void HighlightPlayer(bool highlight) =>
+            LeanTween.color(_avatarImage.rectTransform, highlight ? Color.white: Color.gray, _highlightSwitchDuration);
+
         public void InstallPlayerView(PlayerModel model)
         {
+            PlayerModel = model;
+
             _nicknameText.text = model.Nickname;
             _avatarImage.sprite = model.IsMain ? _playersProfiles.MainAvatar : _playersProfiles.SideAvatar;
 

@@ -98,7 +98,8 @@ namespace OGClient.Gameplay.Grid
         {
             int listIndex = GridSize.x * gridY + gridX;
 
-            GridItemView newItemView = _diContainer.InstantiatePrefab(_itemViewPrefab, _tiles[listIndex].transform).GetComponent<GridItemView>();
+            GridItemView newItemView =
+                _diContainer.InstantiatePrefab(_itemViewPrefab, _tiles[listIndex].transform).GetComponent<GridItemView>();
             newItemView.SetType(itemIndex);
             newItemView.InstallGridItem(_itemsTypes[itemIndex]);
             newItemView.transform.localScale = Vector3.one;

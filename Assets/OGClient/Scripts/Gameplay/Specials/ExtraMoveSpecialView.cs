@@ -14,12 +14,12 @@ namespace OGClient.Gameplay.Specials
         [SerializeField] private string message = "EXTRA MOVE!";
         [SerializeField] private Color textColor = Color.white;
 
-        private GameManager _gameManager;
+        private GridLinksController _gridLinksController;
 
         [Inject]
-        public void Construct(GameManager gameManager)
+        public void Construct(GridLinksController gridLinksController)
         {
-            _gameManager = gameManager;
+            _gridLinksController = gridLinksController;
         }
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
@@ -31,7 +31,7 @@ namespace OGClient.Gameplay.Specials
             //     _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
             // }
 
-            _gameManager.GridPlayerController.ToastView.SetToast(transform.position, message, textColor);
+            _gridLinksController.ToastView.SetToast(transform.position, message, textColor);
         }
 
     }

@@ -10,12 +10,12 @@ namespace OGClient.Gameplay.Specials
         [SerializeField] private float moveTime = 1;
         [SerializeField] private GridItemView _carryItemView;
 
-        private GameManager _gameManager;
+        private GridLinksController _gridLinksController;
 
         [Inject]
-        public void Construct(GameManager gameManager)
+        public void Construct(GridLinksController gridLinksController)
         {
-            _gameManager = gameManager;
+            _gridLinksController = gridLinksController;
         }
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
@@ -24,7 +24,7 @@ namespace OGClient.Gameplay.Specials
 
             if (gridItemView == true)
             {
-                _gameManager.GridPlayerController.AddToExecuteList(this.gameObject);
+                _gridLinksController.AddToExecuteList(this.gameObject);
 
                 gridItemView.IsClearing = true;
 
@@ -54,7 +54,7 @@ namespace OGClient.Gameplay.Specials
                     }
                 }
 
-                _gameManager.GridPlayerController.CollectItemAtTile(targetTileView, moveTime);
+                _gridLinksController.CollectItemAtTile(targetTileView, moveTime);
 
                 gridItemView.TryToCollect();
 
@@ -67,14 +67,14 @@ namespace OGClient.Gameplay.Specials
                         if (_carryItemView)
                         {
                             GridController.SpawnItem(_carryItemView, targetTileView, 0);
-                            _gameManager.GridPlayerController.CollectItemAtTile(targetTileView, 0.0f);
+                            _gridLinksController.CollectItemAtTile(targetTileView, 0.0f);
                         }
 
                         gridItemView.TryToClear();
                         Destroy(gridItemView.gameObject);
 
-                        _gameManager.GridPlayerController.RemoveFromExecuteList(this.gameObject);
-                        _gameManager.GridPlayerController.CheckExecuteLink();
+                        _gridLinksController.RemoveFromExecuteList(this.gameObject);
+                        _gridLinksController.CheckExecuteLink();
                     });
                 });
 

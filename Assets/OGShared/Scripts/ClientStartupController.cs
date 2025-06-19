@@ -1,27 +1,25 @@
 ﻿using Fusion;
-using Zenject;
 using OGClient;
-using OGClient.Installers;
 using UnityEngine;
 using OGClient.Scenes;
 using OGServer.Gameplay;
 using OGServer.Matchmaking;
-namespace OGShared.Scripts
+namespace OGShared
 {
     public class ClientStartupController : MonoBehaviour
     {
 
         [SerializeField] private NetworkRunner _networkRunnerPrefab;
 
-        [Header("Systems")]
+        [Header("Prefabs")]
         [SerializeField] private MatchStartController _matchStartControllerPrefab;
-        [SerializeField] private NetworkGameManager _networkGameManager;
+        [SerializeField] private NetworkGameManager _networkGameManagerPrefab;
 
         private NetworkRunner _networkRunner;
 
         private void Awake()
         {
-            _networkRunner = Instantiate(_networkRunnerPrefab);
+            InstallNetworkRunner();
             if (IsDedicatedServer())
             {
                 InstallDedicatedServer();
@@ -30,6 +28,13 @@ namespace OGShared.Scripts
             {
                 InstallClient();
             }
+        }
+
+        private void InstallNetworkRunner()
+        {
+            _networkRunner = Instantiate(_networkRunnerPrefab);
+            DontDestroyOnLoad(_networkRunner.gameObject);
+            NetworkRunnerInstance.Instance = _networkRunner;
         }
 
         private async void InstallDedicatedServer()
@@ -52,17 +57,16 @@ namespace OGShared.Scripts
 
             _networkRunner.ProvideInput = true;
             SceneType.MainMenu.LoadScene();
-
         }
 
         private void InstallDedicatedServerObjects()
         {
             _networkRunner.Spawn(_matchStartControllerPrefab, Vector3.zero, Quaternion.identity);
-            INetworkRunnerCallbacks networkRunnerCallbacks = _networkRunner.Spawn(_networkGameManager, Vector3.zero, Quaternion.identity);
-            _networkRunner.AddCallbacks(networkRunnerCallbacks);
+            NetworkGameManager networkGameManager = _networkRunner.Spawn(_networkGameManagerPrefab, Vector3.zero, Quaternion.identity);
+            NetworkGameManager.Instance = networkGameManager;
 
-            ProjectContextInstaller.Instance.Inject(_networkGameManager);
-            ProjectContextInstaller.Instance.Inject(_matchStartControllerPrefab);
+            _networkRunner.AddCallbacks(networkGameManager);
+            DontDestroyOnLoad(networkGameManager.gameObject);
         }
 
         private bool IsDedicatedServer()

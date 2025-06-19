@@ -12,17 +12,17 @@ namespace OGClient.Gameplay.Specials
         [SerializeField] private float triggerRate = 0.2f;
         [SerializeField] private bool spawnOnRandomTile = false;
 
-        private GameManager _gameManager;
+        private GridLinksController _gridLinksController;
 
         [Inject]
-        public void Construct(GameManager gameManager)
+        public void Construct(GridLinksController gridLinksController)
         {
-            _gameManager = gameManager;
+            _gridLinksController = gridLinksController;
         }
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            _gameManager.GridPlayerController.AddToExecuteList(this.gameObject);
+            _gridLinksController.AddToExecuteList(this.gameObject);
 
             yield return new WaitForSeconds(delay);
 
@@ -34,15 +34,15 @@ namespace OGClient.Gameplay.Specials
                     gridTileView = targetTileView;
                 }
 
-                if (gridTileView.GridItemView != null) _gameManager.GridPlayerController.CollectItemAtTile(gridTileView, 0);
+                if (gridTileView.GridItemView != null) _gridLinksController.CollectItemAtTile(gridTileView, 0);
 
                 GridController.SpawnItem(spawns[spawnIndex], gridTileView, 0);
 
-                if (autoTrigger == true) _gameManager.GridPlayerController.CollectItemAtTile(gridTileView, spawnIndex * triggerRate);
+                if (autoTrigger == true) _gridLinksController.CollectItemAtTile(gridTileView, spawnIndex * triggerRate);
             }
 
-            _gameManager.GridPlayerController.RemoveFromExecuteList(this.gameObject);
-            _gameManager.GridPlayerController.CheckExecuteLink();
+            _gridLinksController.RemoveFromExecuteList(this.gameObject);
+            _gridLinksController.CheckExecuteLink();
         }
 
     }

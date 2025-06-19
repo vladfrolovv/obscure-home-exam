@@ -17,3 +17,8 @@ MonoBehaviour:
   <MovesPerTurn>k__BackingField: 3
   <ExtraMovesPerLink>k__BackingField: 15
   <RoundsPerGame>k__BackingField: 5
+  _matchPhaseTexts:
+  - <Type>k__BackingField: 3
+    <Text>k__BackingField: LAST ROUND!
+  - <Type>k__BackingField: 2
+    <Text>k__BackingField: ROUND

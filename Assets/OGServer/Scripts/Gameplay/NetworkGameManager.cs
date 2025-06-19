@@ -10,30 +10,26 @@ namespace OGServer.Gameplay
     public class NetworkGameManager : NetworkBehaviour, INetworkRunnerCallbacks
     {
 
+        public static NetworkGameManager Instance { get; set; }
+
         private const float MatchStartDelay = 1f;
 
-        [Networked] public PlayerRef CurrentPlayer { get; private set; } = PlayerRef.None;
-
-        [Networked] public int Rounds { get; set; }
-        [Networked] public int CurrentRound { get; set; }
-
-        private MatchPhase _matchPhase;
+        [Networked] public int Rounds { get; private set; }
+        [Networked] public int CurrentRound { get; private set; }
 
         private MatchPhase MatchPhase
         {
-            get => _matchPhase;
-            set
-            {
-                _matchPhase = value;
-                _matchPhaseChanged.OnNext(value);
-            }
+            set => _matchPhaseChanged.OnNext(value);
         }
 
         [SerializeField] private SceneRef _gameplayScene;
         [SerializeField] private NetworkPrefabRef _playerPrefab;
 
         private readonly Subject<MatchPhase> _matchPhaseChanged = new();
+        private readonly Subject<(int, int)> _roundChanged = new();
+
         public IObservable<MatchPhase> MatchPhaseChanged => _matchPhaseChanged;
+        public IObservable<(int, int)> RoundChanged => _roundChanged;
 
         public override void Spawned()
         {
@@ -63,7 +59,6 @@ namespace OGServer.Gameplay
                 runner.Spawn(_playerPrefab, Vector3.zero, Quaternion.identity, playerRef);
             }
         }
-
 
         #region INetworkRunnerCallbacks Implementation
         public void OnSceneLoadStart(NetworkRunner runner) { }

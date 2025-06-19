@@ -27,7 +27,7 @@ namespace OGClient.Gameplay.Players
         public int MovesLeft => _movesDataProxy.GetMovesLeft(_playerIndex);
         public int Score => _scoreDataProxy.GetPlayerScore(_playerIndex);
 
-        public PlayerModel PlayerModel { get; private set; }
+        public MovesDataProxy Moves => _movesDataProxy;
 
         [Inject]
         public void Construct(MovesDataProxy movesDataProxy, ScoreDataProxy scoreDataProxy, GameManager gameManager)
@@ -50,13 +50,12 @@ namespace OGClient.Gameplay.Players
             PlayerModel playerModel = new (_playerIndex, isMain: _isMainPlayer, nickname: $"Player {_playerIndex}",
                 _playersProfiles.GetColor(_isMainPlayer));
 
-            PlayerModel = playerModel;
-
             _scoreView.SetPlayerIndex(_playerIndex);
             _movesView.Setup(_playerIndex, _gameplaySettings.MovesPerTurn, _playersProfiles.GetColor(_isMainPlayer), this);
             _playerView.InstallPlayerView(playerModel);
 
             _gameManager.AddNewPlayer(_playerIndex, this);
+            _gameManager.AddNewPlayerView(_playerIndex, _playerView);
 
             _movesDataProxy.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
             _scoreDataProxy.SetPlayerScore(_playerIndex, 0);

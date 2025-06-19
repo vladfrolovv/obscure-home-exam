@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 9185192089591383971}
   - component: {fileID: 3396919926052825885}
   - component: {fileID: 8019396660641461011}
-  - component: {fileID: 4361901178239798929}
   m_Layer: 0
   m_Name: NetworkRunner
   m_TagString: Untagged
@@ -88,15 +87,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DelayIfSceneManagerIsBusy: 1
---- !u!114 &4361901178239798929
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1710143330260697110}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5c9c32d139749c68e3a702739bf0586, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

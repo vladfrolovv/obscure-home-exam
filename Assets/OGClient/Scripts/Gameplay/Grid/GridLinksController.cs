@@ -1,15 +1,19 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Linq;
 using OGClient.Gameplay.Grid.MergeCombos;
 using OGClient.Gameplay.Grid.Models;
+using OGClient.Gameplay.Timers;
 using OGClient.Gameplay.UI;
+using OGServer.Gameplay;
+using UniRx;
 using Zenject;
 using Random = UnityEngine.Random;
 namespace OGClient.Gameplay.Grid
 {
-    public class GridPlayerController : MonoBehaviour
+    public class GridLinksController : MonoBehaviour
     {
         public List<GridTileView> tileLink = new ();
         internal List<GameObject> executeList = new ();
@@ -29,6 +33,10 @@ namespace OGClient.Gameplay.Grid
         [SerializeField] private float executeTotalTime = 0;
         [SerializeField] private int longestSpecial;
         [SerializeField] private int currentLinkSize;
+
+        [SerializeField] private SpecialLink[] _specialLinks;
+
+
         public ToastView ToastView;
 
         public int specialIndex = -1;
@@ -39,28 +47,29 @@ namespace OGClient.Gameplay.Grid
         private MergeComboModel _mergeComboModel;
         public bool hasPowerups = false;
 
-        private GameManager _gameManager;
+        private MatchTimerController _matchTimerController;
         private GridController _gridController;
         private MergeCombosController _mergeCombosController;
 
         [Inject]
-        public void Construct(GridController gridController, GameManager gameManager, MergeCombosController mergeCombosController)
+        public void Construct(GridController gridController, MergeCombosController mergeCombosController, MatchTimerController matchTimerController)
         {
             _gridController = gridController;
-            _gameManager = gameManager;
             _mergeCombosController = mergeCombosController;
+            _matchTimerController = matchTimerController;
         }
 
-        void Update()
+        private void Awake()
         {
-            if (Input.GetButtonUp("Fire1")
-                // && _gameManager.CurrentPlayerController && _gameManager.CurrentPlayerController.photonView.IsMine && _gameManager.CurrentPlayerController.moves > 0
-                )
-            {
-                //ExecuteLink();
-                // photonView.RPC("ExecuteLink", RpcTarget.All);
-                //();
-            }
+            Observable.EveryUpdate().Subscribe(CheckForLmbUp).AddTo(this);
+        }
+
+        private void CheckForLmbUp(long l)
+        {
+            if (!Input.GetMouseButtonUp(0)) return;
+            // !(_gameManager.CurrentPlayerController && _gameManager.CurrentPlayerController.photonView.IsMine && _gameManager.CurrentPlayerController.moves > 0)
+
+            ExecuteLink();
         }
 
         public void LoseControl(float delay)
@@ -346,7 +355,7 @@ namespace OGClient.Gameplay.Grid
             //     Invoke(nameof(RPC_RemoveFromExecuteList), executeTotalTime);
             // }
 
-            _gameManager.PauseTime(0);
+            _matchTimerController.PauseTimerFor(-1);
             LoseControl(0);
         }
 
@@ -403,9 +412,9 @@ namespace OGClient.Gameplay.Grid
             specialIndex = -1;
 
             // Check any special link size, and create powerups accordingly
-            for (int index = 0; index < _gameManager.SpecialLinks.Length; index++)
+            for (int index = 0; index < _specialLinks.Length; index++)
             {
-                currentLinkSize = _gameManager.SpecialLinks[index].LinkSize;
+                currentLinkSize = _specialLinks[index].LinkSize;
 
                 if (currentLinkSize <= tileLink.Count && currentLinkSize > longestSpecial)
                 {
@@ -416,14 +425,14 @@ namespace OGClient.Gameplay.Grid
 
             if (specialIndex != -1)
             {
-                GridItemView gridItemView = _gameManager.SpecialLinks[specialIndex].SpawnItemView;
+                GridItemView gridItemView = _specialLinks[specialIndex].SpawnItemView;
                 if (gridItemView != null && gridItemView.HasOtherOrientations)
                 {
                     CheckDirection();
-                    GridItemView tempGridItemView = _gameManager.SpecialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
+                    GridItemView tempGridItemView = _specialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
                     if (tempGridItemView != null)
                     {
-                        _gameManager.SpecialLinks[specialIndex].SpawnItemView = tempGridItemView;
+                        _specialLinks[specialIndex].SpawnItemView = tempGridItemView;
                     }
                 }
             }
@@ -435,11 +444,11 @@ namespace OGClient.Gameplay.Grid
         {
             if (index != -1)
             {
-                GridItemView gridItemView = _gameManager.SpecialLinks[index].SpawnItemView;
+                GridItemView gridItemView = _specialLinks[index].SpawnItemView;
 
-                /*if ( _gameManager.specialLinks[index].spawnItem.otherOrientations.Length > 0 )
+                /*if ( _specialLinks[index].spawnItem.otherOrientations.Length > 0 )
             {
-                GridItem tempGridItem = _gameManager.specialLinks[index].spawnItem.GetOtherOrientation(direction);
+                GridItem tempGridItem = _specialLinks[index].spawnItem.GetOtherOrientation(direction);
 
                 if (tempGridItem != null) gridItem = tempGridItem;
             }*/
@@ -596,16 +605,17 @@ namespace OGClient.Gameplay.Grid
         {
             isExecuting = false;
 
-            if (_gameManager.CurrentPlayerController.MovesLeft == 0)
-            {
-                _gameManager.EndTurn();
-            }
+            // todo: fix moves
+            // if (_gameManager.CurrentPlayerController.MovesLeft == 0)
+            // {
+            //     _gameManager.EndTurn();
+            // }
 
             tileLink.Clear();
 
             _gridController.CollapseTiles();
 
-            _gameManager.RPC_StartTimer();
+            _matchTimerController.StartTimer();
             RegainControl();
         }
 
@@ -685,6 +695,13 @@ namespace OGClient.Gameplay.Grid
             executeTime = setExecuteTime;
             executeTimeMultipier = setMultiplier;
             executeTimeMinimum = setMinimum;
+        }
+
+        [Serializable]
+        public class SpecialLink
+        {
+            public int LinkSize = 4;
+            public GridItemView SpawnItemView;
         }
 
     }

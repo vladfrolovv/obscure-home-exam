@@ -1,4 +1,5 @@
 ﻿using OGClient.Gameplay.DataProxies;
+using OGClient.Gameplay.Players;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -13,29 +14,33 @@ namespace OGClient.Gameplay.UI
         [SerializeField] private TextMeshProUGUI _roundsText;
         [SerializeField] private TextMeshProUGUI _currentRoundText;
 
-        private ScriptableGameplaySettings _gameplaySettings;
+        private GameManager _gameManager;
         private RoundsDataProxy _roundsDataProxy;
+        private ScriptableGameplaySettings _gameplaySettings;
 
         [Inject]
-        public void Construct(ScriptableGameplaySettings gameplaySettings)
+        public void Construct(ScriptableGameplaySettings gameplaySettings, GameManager gameManager)
         {
+            _gameManager = gameManager;
             _gameplaySettings = gameplaySettings;
         }
 
-        private void RoundsTextChanged(string text) => _roundsText.SetText(text);
-        private void CurrentRoundTextChanged(string text) => _currentRoundText.SetText(text);
-        private void RoundProgressSet(float progress) => _roundsBarView.SetProgress(progress);
-        private void RoundProgressChanged(float changeValue) => _roundsBarView.ChangeProgress(changeValue);
+        public void SetRoundsText(string text) => _roundsText.SetText(text);
+        public void SetCurrentRoundText(string text) => _currentRoundText.SetText(text);
+        public void SetRoundProgress(float progress) => _roundsBarView.SetProgress(progress);
+        public void ChangeRoundProgress(float changeValue) => _roundsBarView.ChangeProgress(changeValue);
 
         private void Awake()
         {
-            Setup();
+            _gameManager.PlayerSwitched.Subscribe(OnPlayerSwitched).AddTo(this);
 
-            _roundsDataProxy.PlayerSwitch.Subscribe(OnPlayerSwitched).AddTo(this);
-            _roundsDataProxy.RoundsTextChanged.Subscribe(RoundsTextChanged).AddTo(this);
-            _roundsDataProxy.CurrentRoundTextChanged.Subscribe(CurrentRoundTextChanged).AddTo(this);
-            _roundsDataProxy.RoundProgressSet.Subscribe(RoundProgressSet).AddTo(this);
-            _roundsDataProxy.RoundProgressChanged.Subscribe(RoundProgressChanged).AddTo(this);
+            Setup();
+        }
+
+        private void OnPlayerSwitched(PlayerView view)
+        {
+            _roundsBarView.SetIncrementColor(view.PlayerModel.Color);
+            _roundsBarView.Bounce();
         }
 
         private void Setup()
@@ -44,12 +49,6 @@ namespace OGClient.Gameplay.UI
             _roundsBarView.SetProgress(0);
             _roundsBarView.SetProgressMax(_gameplaySettings.RoundsPerGame);
             _roundsBarView.Setup(null);
-        }
-
-        private void OnPlayerSwitched(PlayerSwitchModel model)
-        {
-            _roundsBarView.SetIncrementColor(model.NewPlayerColor);
-            _roundsBarView.Bounce();
         }
 
     }

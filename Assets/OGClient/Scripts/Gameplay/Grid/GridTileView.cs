@@ -41,7 +41,7 @@ namespace OGClient.Gameplay.Grid
 
         private GameManager _gameManager;
         private GridController _gridController;
-        private GridPlayerController _gridPlayerController;
+        private GridLinksController _gridLinksController;
 
         public void SetControlsActive(bool active) => _eventTrigger.enabled = active;
         public void SetConnectorLineActive(bool active) => _connectorLine.SetActive(active);
@@ -50,11 +50,11 @@ namespace OGClient.Gameplay.Grid
         public void SetClickSize(float setValue) => _buttonImage.transform.localScale = Vector3.one * setValue;
 
         [Inject]
-        public void Construct(GridController gridController, GameManager gameManager, GridPlayerController gridPlayerController)
+        public void Construct(GridController gridController, GameManager gameManager, GridLinksController gridLinksController)
         {
             _gameManager = gameManager;
             _gridController = gridController;
-            _gridPlayerController = gridPlayerController;
+            _gridLinksController = gridLinksController;
         }
 
         public void InstallTileConnections(GridTileView rightItemView, GridTileView leftItemView, GridTileView topItemView, GridTileView bottomItemView)
@@ -93,16 +93,16 @@ namespace OGClient.Gameplay.Grid
             // We will use this to check if we are connecting to same type
 
             GridTileView lastTileViewInLink = null;
-            if (_gridPlayerController.tileLink.Count > 0) lastTileViewInLink = _gridPlayerController.tileLink[_gridPlayerController.tileLink.Count - 1];
+            if (_gridLinksController.tileLink.Count > 0) lastTileViewInLink = _gridLinksController.tileLink[_gridLinksController.tileLink.Count - 1];
 
             // If this tile was already added to the link, backtrack to it
-            if (_gridPlayerController.tileLink.Contains(this))
+            if (_gridLinksController.tileLink.Contains(this))
             {
-                _gridPlayerController.linkType = GridItemView.GridItemType;
-                _gridPlayerController.CheckSelectables();
+                _gridLinksController.linkType = GridItemView.GridItemType;
+                _gridLinksController.CheckSelectables();
 
                 // Remove all items in the link after this one
-                Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
+                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
                 // _gridPlayerController.photonView.RPC("LinkRemoveAfterByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
@@ -114,14 +114,14 @@ namespace OGClient.Gameplay.Grid
             bool goodLink = false;
 
             // If this is the first tile in the link, add it regardless of type match
-            if (_gridPlayerController.tileLink.Count == 0)
+            if (_gridLinksController.tileLink.Count == 0)
             {
-                _gridPlayerController.linkType = GridItemView.GridItemType;
-                _gridPlayerController.CheckSelectables();
+                _gridLinksController.linkType = GridItemView.GridItemType;
+                _gridLinksController.CheckSelectables();
 
                 _connectorLine.SetActive(false);
 
-                Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
+                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
                 // _gridPlayerController.photonView.RPC("LinkStartByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
@@ -185,11 +185,11 @@ namespace OGClient.Gameplay.Grid
 
             if (goodLink == true)
             {
-                _gridPlayerController.linkType = GridItemView.GridItemType;
+                _gridLinksController.linkType = GridItemView.GridItemType;
 
-                _gridPlayerController.CheckSelectables();
+                _gridLinksController.CheckSelectables();
 
-                Vector2Int gridTilePos = _gridPlayerController.GetIndexInGrid(this);
+                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
                 // _gridPlayerController.photonView.RPC("LinkAddByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
             }
         }

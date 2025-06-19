@@ -194,7 +194,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2131269647}
-  - component: {fileID: 2131269646}
+  - component: {fileID: 2131269648}
   m_Layer: 0
   m_Name: ClientStartupController
   m_TagString: Untagged
@@ -202,21 +202,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2131269646
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2131269645}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a77a4554c7f444c83bdc5f7b192cef1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _networkRunnerPrefab: {fileID: 8773974042105062457, guid: bac2911e6963db6438537c07083698a5, type: 3}
-  _matchStartControllerPrefab: {fileID: 2866966558644531537, guid: 73eb70e51df720a42817243c0ecd5e20, type: 3}
-  _networkGameManager: {fileID: 9026450203823346818, guid: dafc1d4c198329842aba2be76cbdbec5, type: 3}
 --- !u!4 &2131269647
 Transform:
   m_ObjectHideFlags: 0
@@ -232,6 +217,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2131269648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2131269645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 099a8b7ee08a4c7490d8cb9d66f588da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _networkRunnerPrefab: {fileID: 8773974042105062457, guid: bac2911e6963db6438537c07083698a5, type: 3}
+  _matchStartControllerPrefab: {fileID: 2866966558644531537, guid: 73eb70e51df720a42817243c0ecd5e20, type: 3}
+  _networkGameManagerPrefab: {fileID: 9015480906079586957, guid: dafc1d4c198329842aba2be76cbdbec5, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -133,17 +133,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &368616500 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1210809817719336546, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
-  m_PrefabInstance: {fileID: 1210809817494440534}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!95 &406856168 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 3785692792173464616, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
@@ -365,6 +354,7 @@ MonoBehaviour:
   executeTotalTime: 0
   longestSpecial: 0
   currentLinkSize: 0
+  _specialLinks: []
   ToastView: {fileID: 4317119075900152663}
   specialIndex: -1
   powerupsInLink: []
@@ -484,6 +474,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e3ac172b8eaf7944a1364cb5a0b93ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _Rounds: 0
+  _CurrentRound: 0
   _gameplayScene:
     RawValue: 0
   _playerPrefab:
@@ -532,17 +524,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fbdcc64752ccab459bf7f508f267151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <GridPlayerController>k__BackingField: {fileID: 799268482}
-  <CurrentPlayerController>k__BackingField: {fileID: 0}
-  _timerView: {fileID: 3785692791766625729}
-  _playerTurnAnimator: {fileID: 406856168}
-  _playerTurnText: {fileID: 132484315}
-  _gameOverScreen: {fileID: 1446735163}
-  _winnerText: {fileID: 1473413673}
-  _restartButton: {fileID: 368616500}
-  _specialLinks:
-  - LinkSize: 10
-    SpawnItemView: {fileID: -4054056152294309094, guid: fdb1361f8cfd43d44ab797156f8df444, type: 3}
+  _roundsView: {fileID: 0}
+  _playerTurnView: {fileID: 0}
 --- !u!4 &1425435797
 Transform:
   m_ObjectHideFlags: 0
@@ -558,27 +541,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1991720309}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1446735163 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1210809818738370413, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
-  m_PrefabInstance: {fileID: 1210809817494440534}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1446735164 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1210809818738370410, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
   m_PrefabInstance: {fileID: 1210809817494440534}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1473413673 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1210809818757810303, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
-  m_PrefabInstance: {fileID: 1210809817494440534}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1770781315
 GameObject:
   m_ObjectHideFlags: 0
@@ -807,7 +774,7 @@ MonoBehaviour:
   _gameManager: {fileID: 1425435796}
   _popupsController: {fileID: 1849119632}
   _gridController: {fileID: 1770781316}
-  _gridPlayerController: {fileID: 799268482}
+  _gridLinksController: {fileID: 799268482}
   _mergeEffectView: {fileID: 9043549434984758022, guid: 6f52e434c70ab5445b5f12ca7c19fb2d, type: 3}
 --- !u!1001 &1210809817494440534
 PrefabInstance:
@@ -923,7 +890,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7885637011961230709, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
   m_PrefabInstance: {fileID: 1210809817494440534}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1446735163}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd89041d57114ddb834f180b01a82606, type: 3}
@@ -1203,19 +1170,30 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3785692792173464614, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3785692791766625731}
   m_SourcePrefab: {fileID: 100100000, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
---- !u!114 &3785692791766625729 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6135291185859134010, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
+--- !u!1 &3785692791766625730 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3785692792173464614, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
   m_PrefabInstance: {fileID: 3785692791766625728}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+--- !u!114 &3785692791766625731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3785692791766625730}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 510422d3685b57545a6f33204381056a, type: 3}
+  m_Script: {fileID: 11500000, guid: 5ab812c8880b4447801d9b356f2fa2b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerTurnText: {fileID: 132484315}
+  _playerTurnAnimator: {fileID: 406856168}
 --- !u!1001 &4317119075900152661
 PrefabInstance:
   m_ObjectHideFlags: 0

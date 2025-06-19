@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using OGServer.Gameplay;
+using UnityEngine;
 namespace OGClient.Gameplay
 {
     [CreateAssetMenu(fileName = "GameplaySettings", menuName = "ScriptableObjects/Gameplay Settings")]
@@ -19,6 +21,19 @@ namespace OGClient.Gameplay
 
         [field: SerializeField]
         public int RoundsPerGame { get; private set; } = 5;
+
+        [Header("Texts")]
+        [SerializeField] private TextInfo<MatchPhase>[] _matchPhaseTexts;
+
+        public string this[MatchPhase phase] =>
+            Array.Find(_matchPhaseTexts, textInfo => textInfo.Type == phase)?.Text ?? string.Empty;
+
+        [Serializable]
+        public class TextInfo<T>
+        {
+            [field: SerializeField] public T Type { get; private set; }
+            [field: SerializeField] public string Text { get; private set; }
+        }
 
     }
 }
