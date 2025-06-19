@@ -65,8 +65,10 @@ namespace OGClient.Gameplay
 
         private void Start()
         {
-            NetworkGameManager.Instance.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
-            NetworkGameManager.Instance.RoundChanged.Subscribe(RoundUpdate).AddTo(this);
+            _gridController.CreateGrid();
+
+            // NetworkGameManager.Instance.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
+            // NetworkGameManager.Instance.RoundChanged.Subscribe(RoundUpdate).AddTo(this);
         }
 
         private void OnMatchPhaseChanged(MatchPhase phase)
@@ -79,9 +81,6 @@ namespace OGClient.Gameplay
         private void StartMatchPhase()
         {
             _gridLinksController.LoseControl(0);
-
-            _gridController.FillGrid();
-            _gridController.ShowGrid();
 
             ResetRounds();
             SetCurrentPlayer();
@@ -116,6 +115,7 @@ namespace OGClient.Gameplay
 
         private void SetCurrentPlayer()
         {
+            return;
             _currentPlayerController = _players[_playerIndex];
             _currentPlayerController.Moves.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);

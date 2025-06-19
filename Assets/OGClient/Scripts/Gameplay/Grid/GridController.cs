@@ -141,10 +141,9 @@ namespace OGClient.Gameplay.Grid
         }
 
 
-        public void FillGrid()
+        private void FillGrid()
         {
             if (_gridSeed != -1) Random.InitState(_gridSeed);
-
             int arrayIndex = 0;
 
             for (_gridY = 0; _gridY < GridSize.y; _gridY++)
@@ -221,6 +220,7 @@ namespace OGClient.Gameplay.Grid
 
         public void FillGridDrop()
         {
+            Debug.Log($"Fill Grid Drop: {GridSize.x}x{GridSize.y}");
             for (_gridY = 0; _gridY < GridSize.y; _gridY++)
             {
                 for (_gridX = 0; _gridX < GridSize.x; _gridX++)
@@ -312,20 +312,20 @@ namespace OGClient.Gameplay.Grid
                 Random.InitState(_gridSeed);
             }
 
-            CreateGrid();
-
             _randomTiles = _tiles;
             _randomTiles = _randomTiles.OrderBy(x => Random.value).ToList();
 
             _gridCanvas.enabled = false;
         }
 
-        private void CreateGrid()
+        public void CreateGrid()
         {
             _tiles.Clear();
 
             SpawnAllTiles();
             SetConnections();
+            FillGrid();
+            ShowGrid();
         }
 
         private void SpawnAllTiles()
