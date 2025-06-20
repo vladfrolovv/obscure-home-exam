@@ -4,8 +4,10 @@ using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Grid.MergeCombos;
 using OGClient.Gameplay.Timers;
+using OGClient.Gameplay.UI;
 using OGClient.Popups;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Zenject;
 namespace OGClient.Installers
 {
@@ -14,6 +16,7 @@ namespace OGClient.Installers
 
         [Header("References")]
         [SerializeField] private Camera _camera;
+        [SerializeField] private EventSystem _eventSystem;
 
         [Header("Controllers")]
         [SerializeField] private GameManager _gameManager;
@@ -23,10 +26,12 @@ namespace OGClient.Installers
 
         [Header("Vies")]
         [SerializeField] private MergeEffectView _mergeEffectView;
+        [SerializeField] private ToastView _toastView;
 
         public override void InstallBindings()
         {
             Container.BindInstance(_camera).AsSingle();
+            Container.BindInstance(_eventSystem).AsSingle();
 
             // controllers
             Container.BindInstance(_gameManager).AsSingle();
@@ -36,6 +41,7 @@ namespace OGClient.Installers
 
             // views
             Container.BindInstance(_mergeEffectView).AsSingle();
+            Container.BindInstance(_toastView).AsSingle();
 
             Container.BindInterfacesAndSelfTo<TimeController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MatchTimerController>().AsSingle().NonLazy();

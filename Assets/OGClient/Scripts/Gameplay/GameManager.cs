@@ -26,7 +26,6 @@ namespace OGClient.Gameplay
         [SerializeField] private PlayerTurnView _playerTurnView;
 
         private int _playerIndex;
-        private NetworkPlayerController _currentPlayerController;
 
         private GridController _gridController;
         private ScoreDataProxy _scoreDataProxy;
@@ -40,6 +39,9 @@ namespace OGClient.Gameplay
 
         public void AddNewPlayer(int index, NetworkPlayerController playerController) => _players.TryAdd(index, playerController);
         public void AddNewPlayerView(int index, PlayerView playerView) => _playerViews.TryAdd(index, playerView);
+
+        public bool ThisClientIsCurrentPlayer => NetworkPlayerController != null && NetworkPlayerController.HasInputAuthority;
+        public NetworkPlayerController NetworkPlayerController { get; private set; }
 
         [Inject]
         public void Construct(GridController gridController, ScoreDataProxy scoreDataProxy, PopupsController popupsController,
@@ -88,7 +90,7 @@ namespace OGClient.Gameplay
 
         private void StartMatchPhase()
         {
-            _gridLinksController.LoseControl(0);
+            _gridLinksController.LoseControlFor(0);
 
             ResetRounds();
             SetCurrentPlayer();
@@ -123,14 +125,14 @@ namespace OGClient.Gameplay
 
         private void SetCurrentPlayer()
         {
-            _currentPlayerController = _players[_playerIndex];
-            _currentPlayerController.Moves.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
+            NetworkPlayerController = _players[_playerIndex];
+            NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
 
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);
             _roundsView.SetRoundsText($"{_playerViews[_playerIndex].PlayerModel.Nickname + "'S TURN!"}");
 
             _gridLinksController.RegainControl();
-            if (_currentPlayerController.HasInputAuthority)
+            if (ThisClientIsCurrentPlayer)
             {
                 _matchTimerController.ResetTime();
                 _matchTimerController.StartTimer();

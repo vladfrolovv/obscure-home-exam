@@ -1,5 +1,6 @@
 using System.Collections;
 using OGClient.Gameplay.Grid;
+using OGClient.Gameplay.UI;
 using UnityEngine;
 using Zenject;
 
@@ -14,12 +15,14 @@ namespace OGClient.Gameplay.Specials
         [SerializeField] private string message = "EXTRA MOVE!";
         [SerializeField] private Color textColor = Color.white;
 
+        private ToastView _toastView;
         private GridLinksController _gridLinksController;
 
         [Inject]
-        public void Construct(GridLinksController gridLinksController)
+        public void Construct(GridLinksController gridLinksController, ToastView toastView)
         {
             _gridLinksController = gridLinksController;
+            _toastView = toastView;
         }
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
@@ -31,7 +34,7 @@ namespace OGClient.Gameplay.Specials
             //     _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, changeValue);
             // }
 
-            _gridLinksController.ToastView.SetToast(transform.position, message, textColor);
+            _toastView.SetToast(transform.position, message, textColor);
         }
 
     }

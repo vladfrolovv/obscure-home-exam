@@ -1,67 +1,127 @@
 using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using System.Linq;
-using OGClient.Gameplay.Grid.MergeCombos;
-using OGClient.Gameplay.Grid.Models;
-using OGClient.Gameplay.Timers;
-using OGClient.Gameplay.UI;
-using OGServer.Gameplay;
 using UniRx;
-using Zenject;
+using UnityEngine;
+using System.Linq;
+using OGClient.Gameplay.Timers;
+using System.Collections.Generic;
 using Random = UnityEngine.Random;
+using OGClient.Gameplay.Grid.Models;
+using OGClient.Gameplay.Grid.Configs;
+using OGClient.Gameplay.Grid.MergeCombos;
+using UnityEngine.EventSystems;
 namespace OGClient.Gameplay.Grid
 {
-    public class GridLinksController : MonoBehaviour
+    public class GridLinksController : IDisposable
     {
-        public List<GridTileView> tileLink = new ();
-        internal List<GameObject> executeList = new ();
-        internal bool isExecuting = false;
 
-        internal int linkType = -1; // -1 is any type
-        public int minimumLinkSize = 2; // The minimum number of tiles needed in a link to execute it
+        public int LinkType { get; set; } = -1;
 
-        [SerializeField] private EventSystem eventSystem;
+        private readonly List<GridItemView> _powerupsInLink = new ();
+        private readonly List<GameObject> _executeList = new ();
+        private readonly List<GridTileView> _tilesLink = new ();
 
-        private bool inControl = false;
+        private readonly List<SpecialLinkModel> _specialLinks = new();
 
-        [SerializeField] private float collectTime = 0.5f;
-        [SerializeField] private float executeTime = 0.1f;
-        [SerializeField] private float executeTimeMultipier = 0.9f;
-        [SerializeField] private float executeTimeMinimum = 0.01f;
-        [SerializeField] private float executeTotalTime = 0;
-        [SerializeField] private int longestSpecial;
-        [SerializeField] private int currentLinkSize;
-
-        [SerializeField] private SpecialLink[] _specialLinks;
-
-
-        public ToastView ToastView;
-
-        public int specialIndex = -1;
-        public List<GridItemView> powerupsInLink = new List<GridItemView>();
-
-        public Vector2 direction = Vector2.zero;
+        private int _specialIndex = -1;
+        private int _currentLinkSize;
+        private float _executeTotalTime;
+        private bool _isExecuting;
+        private Vector2 _direction = Vector2.zero;
 
         private MergeComboModel _mergeComboModel;
-        public bool hasPowerups = false;
 
-        private MatchTimerController _matchTimerController;
-        private GridController _gridController;
-        private MergeCombosController _mergeCombosController;
+        private readonly GameManager _gameManager;
+        private readonly EventSystem _eventSystem;
+        private readonly ScriptableGridLinkSettings _gridLinkSettings;
+        private readonly MatchTimerController _matchTimerController;
+        private readonly GridController _gridController;
+        private readonly MergeCombosController _mergeCombosController;
 
-        [Inject]
-        public void Construct(GridController gridController, MergeCombosController mergeCombosController, MatchTimerController matchTimerController)
+        private readonly CompositeDisposable _compositeDisposable = new ();
+
+        public IReadOnlyList<GridTileView> TilesLink => _tilesLink;
+
+        public GridLinksController(GridController gridController, MergeCombosController mergeCombosController, MatchTimerController matchTimerController,
+                                   ScriptableGridLinkSettings gridLinkSettings, EventSystem eventSystem, GameManager gameManager)
         {
+            _eventSystem = eventSystem;
             _gridController = gridController;
             _mergeCombosController = mergeCombosController;
             _matchTimerController = matchTimerController;
+            _gridLinkSettings = gridLinkSettings;
+            _gameManager = gameManager;
+
+            _specialLinks.AddRange(_gridLinkSettings.SpecialLinks);
+
+            Observable.EveryUpdate().Subscribe(CheckForLmbUp).AddTo(_compositeDisposable);
         }
 
-        private void Awake()
+        public void Dispose()
         {
-            Observable.EveryUpdate().Subscribe(CheckForLmbUp).AddTo(this);
+            _compositeDisposable?.Dispose();
+        }
+
+        public void LoseControlFor(float delay = -1)
+        {
+            _eventSystem.enabled = false;
+
+            if (delay > 0)
+            {
+                Observable.Timer(TimeSpan.FromSeconds(delay)).Subscribe(_ => RegainControl()).AddTo(_compositeDisposable);
+            }
+        }
+
+        public void RegainControl()
+        {
+            _eventSystem.enabled = true;
+        }
+
+        public void LinkStartByGrid(int gridX, int gridY)
+        {
+
+            _tilesLink.Clear();
+            _powerupsInLink.Clear();
+            _mergeComboModel = null;
+
+            _direction = Vector2.zero;
+
+            LinkAddByGrid(gridX, gridY);
+        }
+
+        public void LinkAddByGrid(int gridX, int gridY)
+        {
+            GridTileView tileView = GetTileByGrid(gridX, gridY);
+            _tilesLink.Add(tileView);
+
+            // if (_gameManager.CurrentPlayerController.photonView.IsMine)
+            // {
+            //     if (tileLink.Count > 1)
+            //         tileView.SetConnectorLineActive(true);
+            // }
+
+            //LeanTween.rotate(tile.GetCurrentItem().gameObject, Vector3.forward * 10, 0.2f);
+
+            tileView.GridItemView.GridItemCanvas.overrideSorting = true;
+
+            tileView.GridItemView.PlayAnimation("LinkAdd");
+
+            if (tileView.GridItemView.GridItemType < 0) _powerupsInLink.Add(tileView.GridItemView);
+
+            CheckSpecial();
+
+            tileView.SetClickSize(0.5f);
+        }
+
+        public void LinkStart(GridTileView tileView)
+        {
+            _tilesLink.Clear();
+            _powerupsInLink.Clear();
+            _mergeComboModel = null;
+            //_gameManager.currentPlayer.booster.EndActivation();
+
+            _direction = Vector2.zero;
+
+            LinkAdd(tileView);
         }
 
         private void CheckForLmbUp(long l)
@@ -72,83 +132,18 @@ namespace OGClient.Gameplay.Grid
             ExecuteLink();
         }
 
-        public void LoseControl(float delay)
+        private void LinkAdd(GridTileView tileView)
         {
-            eventSystem.enabled = false;
+            _tilesLink.Add(tileView);
 
-            CancelInvoke(nameof(RegainControl));
-            if (delay > 0) Invoke(nameof(RegainControl), delay);
-        }
-
-        public void RegainControl()
-        {
-            eventSystem.enabled = true;
-        }
-
-        public void LinkStartByGrid(int gridX, int gridY)
-        {
-
-            tileLink.Clear();
-            powerupsInLink.Clear();
-            _mergeComboModel = null;
-
-            direction = Vector2.zero;
-
-            LinkAddByGrid(gridX, gridY);
-        }
-
-        public void LinkAddByGrid(int gridX, int gridY)
-        {
-            GridTileView tileView = GetTileByGrid(gridX, gridY);
-            tileLink.Add(tileView);
-
-
-            // if (_gameManager.CurrentPlayerController.photonView.IsMine)
-            // {
-            //     if (tileLink.Count > 1)
-            //         tileView.SetConnectorLineActive(true);
-            // }
-
-
-            //LeanTween.rotate(tile.GetCurrentItem().gameObject, Vector3.forward * 10, 0.2f);
-
-            tileView.GridItemView.GridItemCanvas.overrideSorting = true;
-
-            tileView.GridItemView.PlayAnimation("LinkAdd");
-
-            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Add(tileView.GridItemView);
-
-            CheckSpecial();
-
-            tileView.SetClickSize(0.5f);
-        }
-
-        public void LinkStart(GridTileView tileView)
-        {
-            tileLink.Clear();
-            powerupsInLink.Clear();
-            _mergeComboModel = null;
-            //_gameManager.currentPlayer.booster.EndActivation();
-
-            direction = Vector2.zero;
-
-            LinkAdd(tileView);
-        }
-
-
-
-        public void LinkAdd(GridTileView tileView)
-        {
-            tileLink.Add(tileView);
-
-            if (tileLink.Count > 1)
+            if (_tilesLink.Count > 1)
                 tileView.SetConnectorLineActive(true);
 
             tileView.GridItemView.GridItemCanvas.overrideSorting = true;
 
             tileView.GridItemView.PlayAnimation("LinkAdd");
 
-            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Add(tileView.GridItemView);
+            if (tileView.GridItemView.GridItemType < 0) _powerupsInLink.Add(tileView.GridItemView);
 
             CheckSpecial();
 
@@ -157,9 +152,9 @@ namespace OGClient.Gameplay.Grid
 
 
 
-        public void LinkRemove(GridTileView tileView)
+        private void LinkRemove(GridTileView tileView)
         {
-            tileLink.Remove(tileView);
+            _tilesLink.Remove(tileView);
 
             tileView.SetConnectorLineActive(false);
 
@@ -169,17 +164,17 @@ namespace OGClient.Gameplay.Grid
 
             tileView.GridItemView.PlayAnimation("LinkRemove");
 
-            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Remove(tileView.GridItemView);
+            if (tileView.GridItemView.GridItemType < 0) _powerupsInLink.Remove(tileView.GridItemView);
 
             CheckSpecial();
 
             tileView.SetClickSize(1);
         }
 
-        public void LinkRemoveByGrid(int gridX, int gridY)
+        private void LinkRemoveByGrid(int gridX, int gridY)
         {
             GridTileView tileView = GetTileByGrid(gridX, gridY);
-            tileLink.Remove(tileView);
+            _tilesLink.Remove(tileView);
 
             // if (_gameManager.CurrentPlayerController.photonView.IsMine)
             // {
@@ -190,7 +185,7 @@ namespace OGClient.Gameplay.Grid
 
             tileView.GridItemView.PlayAnimation("LinkRemove");
 
-            if (tileView.GridItemView.GridItemType < 0) powerupsInLink.Remove(tileView.GridItemView);
+            if (tileView.GridItemView.GridItemType < 0) _powerupsInLink.Remove(tileView.GridItemView);
 
             CheckSpecial();
             tileView.SetClickSize(1);
@@ -202,10 +197,10 @@ namespace OGClient.Gameplay.Grid
 
             int correctTileIndex = GetIndexInLink(tileView);
 
-            for (int tileIndex = tileLink.Count - 1; tileIndex > correctTileIndex; tileIndex--)
+            for (int tileIndex = _tilesLink.Count - 1; tileIndex > correctTileIndex; tileIndex--)
                 //for (int tileIndex = correctTileIndex; tileIndex < tileLink.Count; tileIndex++)
             {
-                Vector2Int tile1 = GetIndexInGrid(tileLink[tileIndex]);
+                Vector2Int tile1 = GetIndexInGrid(_tilesLink[tileIndex]);
                 // Remove all the tiles after the correct one
                 LinkRemoveByGrid(tile1.x, tile1.y);
             }
@@ -215,20 +210,20 @@ namespace OGClient.Gameplay.Grid
         {
             int correctTileIndex = GetIndexInLink(tileView);
 
-            for (int tileIndex = tileLink.Count - 1; tileIndex > correctTileIndex; tileIndex--)
+            for (int tileIndex = _tilesLink.Count - 1; tileIndex > correctTileIndex; tileIndex--)
                 //for (int tileIndex = correctTileIndex; tileIndex < tileLink.Count; tileIndex++)
             {
                 // Remove all the tiles after the correct one
-                LinkRemove(tileLink[tileIndex]);
+                LinkRemove(_tilesLink[tileIndex]);
             }
         }
 
-        public int GetIndexInLink(GridTileView tileView)
+        private int GetIndexInLink(GridTileView tileView)
         {
-            for (int tileIndex = 0; tileIndex < tileLink.Count; tileIndex++)
+            for (int tileIndex = 0; tileIndex < _tilesLink.Count; tileIndex++)
             {
                 // Get the tile index in the current link of tiles
-                if (tileLink[tileIndex] == tileView)
+                if (_tilesLink[tileIndex] == tileView)
                 {
                     return tileIndex;
                 }
@@ -237,7 +232,7 @@ namespace OGClient.Gameplay.Grid
             return -1;
         }
 
-        public int GetIndexInList(GridTileView tileView)
+        private int GetIndexInList(GridTileView tileView)
         {
             List<GridTileView> tileList = _gridController.Tiles.ToList();
             for (int tileIndex = 0; tileIndex < tileList.Count; tileIndex++)
@@ -263,7 +258,7 @@ namespace OGClient.Gameplay.Grid
             return tileGridIndex;
         }
 
-        public GridTileView GetTileByGrid(int gridX, int gridY)
+        private GridTileView GetTileByGrid(int gridX, int gridY)
         {
             int listIndex = _gridController.GridSize.x * gridY + gridX;
 
@@ -272,73 +267,63 @@ namespace OGClient.Gameplay.Grid
             return gridTileView;
         }
 
-
-        internal void SetMinimumLinkSize(int setValue)
+        private void ExecuteLink()
         {
-            minimumLinkSize = setValue;
-        }
-
-        public void ExecuteLink()
-        {
-            if (isExecuting == true) return;
-            isExecuting = true;
+            if (_isExecuting == true) return;
+            _isExecuting = true;
 
             //if (tileLink.Count > 0)
             ResetSelectables();
 
             // If the link is too short, deselect the tiles
-            if (tileLink.Count < minimumLinkSize)
+            if (_tilesLink.Count < _gridLinkSettings.MinimumLinkSize)
             {
                 CancelExecuteLink();
-                isExecuting = false;
+                _isExecuting = false;
 
                 return;
             }
 
-            AddToExecuteList(this.gameObject);
-
-            float tempExecuteTime = executeTime;
+            float tempExecuteTime = _gridLinkSettings.ExecuteTime;
             float extraExecuteTime = 0;
-            executeTotalTime = 0;
+            _executeTotalTime = 0;
 
-            for (int index = 0; index < tileLink.Count; index++)
+            for (int index = 0; index < _tilesLink.Count; index++)
             {
-                LeanTween.rotate(tileLink[index].gameObject, Vector3.forward * 0, 0.2f);
+                LeanTween.rotate(_tilesLink[index].gameObject, Vector3.forward * 0, 0.2f);
 
                 // if (_gameManager.CurrentPlayerController.photonView.IsMine)
                 // {
                 //     tileLink[index].SetConnectorLineActive(false);
                 // }
 
-                GridTileView gridTileView = tileLink[index];
+                GridTileView gridTileView = _tilesLink[index];
 
                 GridItemView gridItemView = gridTileView.GridItemView;
                 Vector2Int tileGridIndex = GetIndexInGrid(gridTileView);
                 if (gridTileView.GridItemView.GridItemType < 0)
                 {
-                    tempExecuteTime = executeTime;
-                    hasPowerups = true;
+                    tempExecuteTime = _gridLinkSettings.ExecuteTime;
                 }
 
-                if (index == tileLink.Count - 1) gridTileView.GridItemView.IsLastInLink = true;
+                if (index == _tilesLink.Count - 1) gridTileView.GridItemView.IsLastInLink = true;
 
                 // if (_gameManager.CurrentPlayerController.photonView.IsMine)
                 // {
                 //     photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
                 // }
 
-                if (gridItemView.GridItemType > -1 || powerupsInLink.Count < 2) extraExecuteTime += gridItemView.ExtraExecuteTime;
+                if (gridItemView.GridItemType > -1 || _powerupsInLink.Count < 2) extraExecuteTime += gridItemView.ExtraExecuteTime;
 
-                executeTotalTime += tempExecuteTime;
+                _executeTotalTime += tempExecuteTime;
 
-                tempExecuteTime *= executeTimeMultipier;
-
-                tempExecuteTime = Mathf.Clamp(tempExecuteTime, executeTimeMinimum, 999);
+                tempExecuteTime *= _gridLinkSettings.ExecuteTimeMultiplier;
+                tempExecuteTime = Mathf.Clamp(tempExecuteTime, _gridLinkSettings.ExecuteTimeMinimum, 999);
             }
 
-            executeTotalTime += extraExecuteTime;
+            _executeTotalTime += extraExecuteTime;
 
-
+            //
             // if (_gameManager.CurrentPlayerController.photonView.IsMine)
             // {
             //     _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
@@ -356,14 +341,14 @@ namespace OGClient.Gameplay.Grid
             // }
 
             _matchTimerController.PauseTimerFor(-1);
-            LoseControl(0);
+            LoseControlFor(0);
         }
 
         public void CancelExecuteLink()
         {
-            while (tileLink.Count > 0)
+            while (_tilesLink.Count > 0)
             {
-                Vector2Int tile = GetIndexInGrid(tileLink[0]);
+                Vector2Int tile = GetIndexInGrid(_tilesLink[0]);
                 // Remove all the tiles after the correct one
                 LinkRemoveByGrid(tile.x, tile.y);
                 //LinkRemove();
@@ -385,7 +370,7 @@ namespace OGClient.Gameplay.Grid
             if (gridItemView.transform.parent && gridItemView.transform.parent.parent && gridItemView.transform.parent.parent.parent) gridItemView.transform.SetParent(gridItemView.transform.parent.parent.parent);
 
             // Gathering multiple powerups in link
-            if (gridItemView.GridItemType < 0 && powerupsInLink.Count > 1)
+            if (gridItemView.GridItemType < 0 && _powerupsInLink.Count > 1)
             {
                 gridItemView.IsMerging = true;
             }
@@ -405,39 +390,38 @@ namespace OGClient.Gameplay.Grid
             CollectItemAtTile(gridTileView, delay);
         }
 
-        //[PunRPC]
         public int CheckSpecial()
         {
             int longestSpecial = 0;
-            specialIndex = -1;
+            _specialIndex = -1;
 
             // Check any special link size, and create powerups accordingly
-            for (int index = 0; index < _specialLinks.Length; index++)
+            for (int index = 0; index < _specialLinks.Count; index++)
             {
-                currentLinkSize = _specialLinks[index].LinkSize;
+                _currentLinkSize = _specialLinks[index].LinkSize;
 
-                if (currentLinkSize <= tileLink.Count && currentLinkSize > longestSpecial)
+                if (_currentLinkSize <= _tilesLink.Count && _currentLinkSize > longestSpecial)
                 {
-                    longestSpecial = currentLinkSize;
-                    specialIndex = index;
+                    longestSpecial = _currentLinkSize;
+                    _specialIndex = index;
                 }
             }
 
-            if (specialIndex != -1)
+            if (_specialIndex != -1)
             {
-                GridItemView gridItemView = _specialLinks[specialIndex].SpawnItemView;
+                GridItemView gridItemView = _specialLinks[_specialIndex].SpawnItemView;
                 if (gridItemView != null && gridItemView.HasOtherOrientations)
                 {
                     CheckDirection();
-                    GridItemView tempGridItemView = _specialLinks[specialIndex].SpawnItemView.GetOtherOrientation(direction);
+                    GridItemView tempGridItemView = _specialLinks[_specialIndex].SpawnItemView.GetOtherOrientation(_direction);
                     if (tempGridItemView != null)
                     {
-                        _specialLinks[specialIndex].SpawnItemView = tempGridItemView;
+                        _specialLinks[_specialIndex].SpawnItemView = tempGridItemView;
                     }
                 }
             }
 
-            return specialIndex;
+            return _specialIndex;
         }
 
         public void SpawnSpecial(int index, float delay)
@@ -445,7 +429,6 @@ namespace OGClient.Gameplay.Grid
             if (index != -1)
             {
                 GridItemView gridItemView = _specialLinks[index].SpawnItemView;
-
                 /*if ( _specialLinks[index].spawnItem.otherOrientations.Length > 0 )
             {
                 GridItem tempGridItem = _specialLinks[index].spawnItem.GetOtherOrientation(direction);
@@ -455,7 +438,7 @@ namespace OGClient.Gameplay.Grid
 
 
 
-                _gridController.SpawnItem(gridItemView, tileLink[tileLink.Count - 1], delay);
+                _gridController.SpawnItem(gridItemView, _tilesLink[_tilesLink.Count - 1], delay);
 
                 // if (_gameManager.CurrentPlayerController.photonView.IsMine)
                 // {
@@ -466,19 +449,19 @@ namespace OGClient.Gameplay.Grid
             }
         }
 
-        void Collect(GridItemView gridItemView, Transform target, float delay, GridTileView gridTileView)
+        private void Collect(GridItemView gridItemView, Transform target, float delay, GridTileView gridTileView)
         {
             if (gridItemView.IsMerging == false && _mergeComboModel == null) gridItemView.SendMessage("Execute", new ExecuteDataModel(gridTileView, delay), SendMessageOptions.DontRequireReceiver);
 
             // This is here to make sure that combo powerups trigger if the last tile in the link is a powerup
-            if (powerupsInLink.Count > 1 && gridItemView.IsLastInLink == true)
+            if (_powerupsInLink.Count > 1 && gridItemView.IsLastInLink == true)
             {
                 gridItemView.IsClearing = gridItemView.IsMerging = false;
                 //delay = executeTotalTime * 1.2f;
             }
 
             // TODO: fix it
-            // if (gridItemView.isMerging)
+            // if (gridItemView.IsMerging)
             // {
             //     gridItemView.PlayDelayedAnimation("LinkAdd", delay - 0.2f);
             // }
@@ -493,7 +476,7 @@ namespace OGClient.Gameplay.Grid
             Vector3 randomOffset = Random.insideUnitCircle * gridItemView.ThrowDistance;
 
             //LeanTween.cancel(gridItem.gameObject);
-            LeanTween.scale(gridItemView.gameObject, Vector3.one * 1.4f, collectTime * 0.3f).setDelay(delay).setEaseInSine().setOnComplete(() =>
+            LeanTween.scale(gridItemView.gameObject, Vector3.one * 1.4f, _gridLinkSettings.CollectTime * 0.3f).setDelay(delay).setEaseInSine().setOnComplete(() =>
             {
                 if (gridItemView.IsClearing == true) return;
 
@@ -502,16 +485,16 @@ namespace OGClient.Gameplay.Grid
 
                 if (gridItemView.IsMerging == true) return;
 
-                if (powerupsInLink.Count < 2 || gridItemView.GridItemType > -1 || gridItemView.IsLastInLink == false || isExecuting == false)
+                if (_powerupsInLink.Count < 2 || gridItemView.GridItemType > -1 || gridItemView.IsLastInLink == false || _isExecuting == false)
                 {
                     gridItemView.TryToClear();
                 }
 
                 if (gridItemView.IsLastInLink == true)
                 {
-                    ExecuteLastInLink(gridTileView, target, collectTime * 0.3f);
+                    ExecuteLastInLink(gridTileView, target, _gridLinkSettings.CollectTime * 0.3f);
 
-                    if (gridItemView.GridItemType < 0 && powerupsInLink.Count > 1 && gridItemView.CanMerge == true) return;
+                    if (gridItemView.GridItemType < 0 && _powerupsInLink.Count > 1 && gridItemView.CanMerge == true) return;
                 }
 
                 // if (_gameManager.CurrentPlayerController.photonView.IsMine)
@@ -519,48 +502,47 @@ namespace OGClient.Gameplay.Grid
                 //     _gameManager.CurrentPlayerController.AddBonus(1, 0.5f);
                 // }
 
-                LeanTween.rotate(gridItemView.gameObject, Vector3.forward * Random.Range(-30, 30), collectTime * 0.7f).setEaseOutSine();
-                LeanTween.move(gridItemView.gameObject, gridItemView.transform.position + randomOffset, collectTime * 0.7f).setEaseOutSine().setOnComplete(() =>
+                LeanTween.rotate(gridItemView.gameObject, Vector3.forward * Random.Range(-30, 30), _gridLinkSettings.CollectTime * 0.7f).setEaseOutSine();
+                LeanTween.move(gridItemView.gameObject, gridItemView.transform.position + randomOffset, _gridLinkSettings.CollectTime * 0.7f).setEaseOutSine().setOnComplete(() =>
                 {
-                    LeanTween.scale(gridItemView.gameObject, Vector3.one * 0.6f, collectTime * 0.3f).setEaseInSine();
-                    LeanTween.moveX(gridItemView.gameObject, target.position.x, collectTime * 0.3f).setEaseOutSine();
-                    LeanTween.moveY(gridItemView.gameObject, target.position.y, collectTime * 0.3f).setEaseInSine().setOnComplete(() =>
+                    LeanTween.scale(gridItemView.gameObject, Vector3.one * 0.6f, _gridLinkSettings.CollectTime * 0.3f).setEaseInSine();
+                    LeanTween.moveX(gridItemView.gameObject, target.position.x, _gridLinkSettings.CollectTime * 0.3f).setEaseOutSine();
+                    LeanTween.moveY(gridItemView.gameObject, target.position.y, _gridLinkSettings.CollectTime * 0.3f).setEaseInSine().setOnComplete(() =>
                     {
                         //MAJD: Here was the add points after the animation, moved it out for now
-
-                        Destroy(gridItemView.gameObject);
+                        UnityEngine.Object.Destroy(gridItemView.gameObject);
                     });
                 });
             });
         }
 
-        public void ExecuteLastInLink(GridTileView gridTileView, Transform target, float delay)
+        private void ExecuteLastInLink(GridTileView gridTileView, Transform target, float delay)
         {
-            if (isExecuting == false) return;
+            if (_isExecuting == false) return;
 
             // If we have multiple powerups in the link, merge and trigger them
-            if (powerupsInLink.Count > 1)
+            if (_powerupsInLink.Count > 1)
             {
-                for (int powerupIndex = 0; powerupIndex < powerupsInLink.Count; powerupIndex++)
+                for (int powerupIndex = 0; powerupIndex < _powerupsInLink.Count; powerupIndex++)
                 {
-                    powerupsInLink[powerupIndex].IsMerging = false;
-                    powerupsInLink[powerupIndex].IsClearing = false;
+                    _powerupsInLink[powerupIndex].IsMerging = false;
+                    _powerupsInLink[powerupIndex].IsClearing = false;
 
-                    LeanTween.moveX(powerupsInLink[powerupIndex].gameObject, gridTileView.transform.position.x, delay).setEaseInOutSine();
-                    LeanTween.moveY(powerupsInLink[powerupIndex].gameObject, gridTileView.transform.position.y, delay).setEaseInOutQuad();
+                    LeanTween.moveX(_powerupsInLink[powerupIndex].gameObject, gridTileView.transform.position.x, delay).setEaseInOutSine();
+                    LeanTween.moveY(_powerupsInLink[powerupIndex].gameObject, gridTileView.transform.position.y, delay).setEaseInOutQuad();
 
-                    Collect(powerupsInLink[powerupIndex], target, delay * 0.8f, gridTileView);
+                    Collect(_powerupsInLink[powerupIndex], target, delay * 0.8f, gridTileView);
                 }
 
                 _mergeCombosController.MergeEffect(gridTileView.transform.position);
 
-                _mergeComboModel = _mergeCombosController.GetMergeCombo(powerupsInLink);
+                _mergeComboModel = _mergeCombosController.GetMergeCombo(_powerupsInLink);
 
-                powerupsInLink.Clear();
+                _powerupsInLink.Clear();
 
                 if (_mergeComboModel != null)
                 {
-                    GameObject executeObject = Instantiate(_mergeComboModel.ExecuteObject);
+                    GameObject executeObject = UnityEngine.Object.Instantiate(_mergeComboModel.ExecuteObject);
                     executeObject.SendMessage("Execute", new ExecuteDataModel(gridTileView, delay), SendMessageOptions.DontRequireReceiver);
 
                     _mergeComboModel = null;
@@ -570,48 +552,36 @@ namespace OGClient.Gameplay.Grid
 
         public void AddToExecuteList(GameObject addObject)
         {
-            executeList.Add(addObject);
-
-            CancelInvoke(nameof(EndExecuteLink));
+            _executeList.Add(addObject);
+            // CancelInvoke(nameof(EndExecuteLink));
         }
 
         public void RemoveFromExecuteList(GameObject removeObject)
         {
-            executeList.Remove(removeObject);
-
-            CheckExecuteLink();
-        }
-
-        void RPC_RemoveFromExecuteList()
-        {
-            // photonView.RPC("RemoveFromExecuteList", RpcTarget.All);
-        }
-
-        void RemoveFromExecuteList()
-        {
-            executeList.Remove(this.gameObject);
+            _executeList.Remove(removeObject);
 
             CheckExecuteLink();
         }
 
         public void CheckExecuteLink()
         {
-            if (executeList.Count > 0) return;
+            if (_executeList.Count > 0) return;
 
-            Invoke(nameof(EndExecuteLink), 0.3f);
+            Observable.Timer(TimeSpan.FromSeconds(0.3f))
+                .Subscribe(_ => EndExecuteLink()).AddTo(_compositeDisposable);
         }
 
-        public void EndExecuteLink()
+        private void EndExecuteLink()
         {
-            isExecuting = false;
+            _isExecuting = false;
 
-            // todo: fix moves
-            // if (_gameManager.CurrentPlayerController.MovesLeft == 0)
-            // {
-            //     _gameManager.EndTurn();
-            // }
+            // todo: fix end turn callback
+            if (_gameManager.NetworkPlayerController.MovesLeft == 0)
+            {
+                // _gameManager.EndTurn();
+            }
 
-            tileLink.Clear();
+            _tilesLink.Clear();
 
             _gridController.CollapseTiles();
 
@@ -636,14 +606,13 @@ namespace OGClient.Gameplay.Grid
         public void CheckSelectables()
         {
             List<GridTileView> tileList = _gridController.Tiles.ToList();
-
             for (int listIndex = tileList.Count - 1; listIndex >= 0; listIndex--)
             {
                 GridItemView currentItemView = tileList[listIndex].GridItemView;
 
                 if (currentItemView)
                 {
-                    if (currentItemView.GridItemType == linkType || linkType < 0 || currentItemView.GridItemType < 0)
+                    if (currentItemView.GridItemType == LinkType || LinkType < 0 || currentItemView.GridItemType < 0)
                     {
                         currentItemView.SetAnimatorBool("Selectable", true);
                     }
@@ -653,7 +622,7 @@ namespace OGClient.Gameplay.Grid
                     }
 
                     // Set the color of the line based on the tile
-                    if (linkType < 0)
+                    if (LinkType < 0)
                     {
                         tileList[listIndex].SetConnectorAnimator(true);
                         currentItemView.SetGlowAnimator(true);
@@ -669,7 +638,7 @@ namespace OGClient.Gameplay.Grid
             }
         }
 
-        public void ResetSelectables()
+        private void ResetSelectables()
         {
             List<GridTileView> tileList = _gridController.Tiles.ToList();
 
@@ -684,24 +653,11 @@ namespace OGClient.Gameplay.Grid
             }
         }
 
-        public void CheckDirection()
+        private void CheckDirection()
         {
-            if (tileLink.Count < 2) direction = Vector2.zero;
-            else direction = (tileLink[tileLink.Count - 1].transform.position - tileLink[tileLink.Count - 2].transform.position).normalized;
-        }
-
-        public void SetExecuteTime(float setExecuteTime, float setMultiplier, float setMinimum)
-        {
-            executeTime = setExecuteTime;
-            executeTimeMultipier = setMultiplier;
-            executeTimeMinimum = setMinimum;
-        }
-
-        [Serializable]
-        public class SpecialLink
-        {
-            public int LinkSize = 4;
-            public GridItemView SpawnItemView;
+            _direction = _tilesLink.Count < 2
+                ? Vector2.zero
+                : (_tilesLink[^1].transform.position - _tilesLink[^2].transform.position).normalized;
         }
 
     }

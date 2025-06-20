@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -68,37 +69,40 @@ namespace OGClient.Gameplay.Grid
         public void InstallTileView(Color color)
         {
             _tileImage.color = _tileColor = color;
-            // transform.localScale = Vector3.zero;
-            //
-            // LeanTween
-            //     .scale(gameObject, Vector3.one, _appearTime)
-            //     .setDelay(_gridController.GridSize.x * _gridController.GridSize.y * _appearDelayMultiplier)
-            //     .setEaseOutBounce();
+            transform.localScale = Vector3.zero;
+
+            LeanTween
+                .scale(gameObject, Vector3.one, _appearTime)
+                .setDelay(_gridController.GridSize.x * _gridController.GridSize.y * _appearDelayMultiplier)
+                .setEaseOutBounce();
         }
 
-        public void Select()
+
+        /// <summary>
+        /// Rules for linking:
+        /// 1. Must be adjacent to the last tile in the link sequence (up/down/left/right)
+        /// 2. Must be first in link sequence or same type
+        /// 3. Must not already exist in the link
+        /// 4. If we go back to a previous tile in a link, remove it
+        /// </summary>
+        private void TryToLink()
         {
             if (GridItemView == null) return;
-            // if (!_gameManager.CurrentPlayerController.photonView.IsMine) return;
-            // if (_gameManager.CurrentPlayerController.moves <= 0) return;
-            // if (_gameManager.PlayerIndex != PhotonNetwork.LocalPlayer.ActorNumber) return;
-
-            // Rules for linking:
-            // 1. Must be adjacent to the last tile in the link sequence (up/down/left/right)
-            // 2. Must be first in link sequence or same type
-            // 3. Must not already exist in the link
-            // 4. If we go back to a previous tile in a link, remove it
+            if (!_gameManager.ThisClientIsCurrentPlayer) return;
+            if (_gameManager.NetworkPlayerController.MovesLeft <= 0) return;
 
             // Check the last tile in the link sequence.
             // We will use this to check if we are connecting to same type
-
             GridTileView lastTileViewInLink = null;
-            if (_gridLinksController.tileLink.Count > 0) lastTileViewInLink = _gridLinksController.tileLink[_gridLinksController.tileLink.Count - 1];
+            if (_gridLinksController.TilesLink.Count > 0)
+            {
+                lastTileViewInLink = _gridLinksController.TilesLink[^1];
+            }
 
             // If this tile was already added to the link, backtrack to it
-            if (_gridLinksController.tileLink.Contains(this))
+            if (_gridLinksController.TilesLink.Contains(this))
             {
-                _gridLinksController.linkType = GridItemView.GridItemType;
+                _gridLinksController.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
                 // Remove all items in the link after this one
@@ -114,9 +118,9 @@ namespace OGClient.Gameplay.Grid
             bool goodLink = false;
 
             // If this is the first tile in the link, add it regardless of type match
-            if (_gridLinksController.tileLink.Count == 0)
+            if (_gridLinksController.TilesLink.Count == 0)
             {
-                _gridLinksController.linkType = GridItemView.GridItemType;
+                _gridLinksController.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
                 _connectorLine.SetActive(false);
@@ -183,9 +187,9 @@ namespace OGClient.Gameplay.Grid
                 }
             }
 
-            if (goodLink == true)
+            if (goodLink)
             {
-                _gridLinksController.linkType = GridItemView.GridItemType;
+                _gridLinksController.LinkType = GridItemView.GridItemType;
 
                 _gridLinksController.CheckSelectables();
 
@@ -209,36 +213,8 @@ namespace OGClient.Gameplay.Grid
         {
             SetConnectorLineActive(false);
 
-            _eventTrigger.EventTriggerSubscription(EventTriggerType.PointerDown, Select);
-            _eventTrigger.EventTriggerSubscription(EventTriggerType.PointerEnter, Select);
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (_topItemView)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(transform.position, _topItemView.transform.position);
-            }
-
-            if (_bottomItemView)
-            {
-                Gizmos.color = Color.blue;
-                Gizmos.DrawLine(transform.position, _bottomItemView.transform.position);
-            }
-
-            if (_rightItemView)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawLine(transform.position, _rightItemView.transform.position);
-            }
-
-            if (_leftItemView)
-            {
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawLine(transform.position, _leftItemView.transform.position);
-            }
-
+            _eventTrigger.EventTriggerSubscription(EventTriggerType.PointerDown, TryToLink);
+            _eventTrigger.EventTriggerSubscription(EventTriggerType.PointerEnter, TryToLink);
         }
 
     }

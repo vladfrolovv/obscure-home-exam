@@ -1,4 +1,5 @@
 ﻿using OGClient.Gameplay;
+using OGClient.Gameplay.Grid.Configs;
 using OGClient.Gameplay.Grid.MergeCombos;
 using OGClient.Gameplay.Mathchmaking;
 using OGClient.Gameplay.Players;
@@ -14,6 +15,7 @@ namespace OGClient.Installers
         [SerializeField] private ScriptableGameplaySettings _scriptableGameplaySettings;
         [SerializeField] private ScriptableMatchmakingState _scriptableMatchmakingState;
         [SerializeField] private ScriptablePlayersProfiles _scriptablePlayersProfiles;
+        [SerializeField] private ScriptableGridLinkSettings _scriptableGridLinkSettings;
 
         public override void InstallBindings()
         {
@@ -21,6 +23,7 @@ namespace OGClient.Installers
             Container.BindInstance(_scriptableGameplaySettings);
             Container.BindInstance(_scriptableMatchmakingState);
             Container.BindInstance(_scriptablePlayersProfiles);
+            Container.BindInstance(_scriptableGridLinkSettings);
         }
 
     }
