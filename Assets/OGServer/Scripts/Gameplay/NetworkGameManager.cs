@@ -33,6 +33,8 @@ namespace OGServer.Gameplay
 
         public override void Spawned()
         {
+            Debug.Log($"Network Game Manager spawned on {(Runner.IsServer ? "SERVER" : "CLIENT")}.");
+
             if (!Runner.IsServer) return;
             MatchPhase = MatchPhase.Waiting;
         }

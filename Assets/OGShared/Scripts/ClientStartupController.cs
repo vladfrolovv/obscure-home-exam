@@ -9,9 +9,8 @@ namespace OGShared
     public class ClientStartupController : MonoBehaviour
     {
 
-        [SerializeField] private NetworkRunner _networkRunnerPrefab;
-
         [Header("Prefabs")]
+        [SerializeField] private NetworkRunner _networkRunnerPrefab;
         [SerializeField] private MatchStartController _matchStartControllerPrefab;
         [SerializeField] private NetworkGameManager _networkGameManagerPrefab;
 
@@ -40,14 +39,15 @@ namespace OGShared
         private async void InstallDedicatedServer()
         {
             Debug.Log($"Dedicated Server mode detected. Staying on Bootstrap scene.");
+            
             _networkRunner.ProvideInput = false;
-            await _networkRunner.StartGame(new StartGameArgs()
+            await _networkRunner.StartGame(new StartGameArgs
             {
                 GameMode = GameMode.Server,
                 SessionName = ConstantsModel.BASE_ROOM_NAME,
                 SceneManager = _networkRunner.SceneManager,
             });
-
+            
             InstallDedicatedServerObjects();
         }
 
@@ -69,7 +69,7 @@ namespace OGShared
             DontDestroyOnLoad(networkGameManager.gameObject);
         }
 
-        private bool IsDedicatedServer()
+        private static bool IsDedicatedServer()
         {
             return Application.isBatchMode;
         }

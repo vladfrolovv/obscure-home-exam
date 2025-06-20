@@ -11,6 +11,7 @@ using OGClient.Gameplay.Players;
 using System.Collections.Generic;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.UI.GameOver;
+using OGClient.Utils;
 namespace OGClient.Gameplay
 {
     public class GameManager : MonoBehaviour
@@ -67,8 +68,14 @@ namespace OGClient.Gameplay
         {
             _gridController.CreateGrid();
 
-            // NetworkGameManager.Instance.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
-            // NetworkGameManager.Instance.RoundChanged.Subscribe(RoundUpdate).AddTo(this);
+            UniRxUtils.WaitUntilObs(() => NetworkGameManager.Instance != null)
+                .Subscribe(NetworkGameManagerSubscriptions).AddTo(this);
+        }
+
+        private void NetworkGameManagerSubscriptions(Unit unit)
+        {
+            NetworkGameManager.Instance.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
+            NetworkGameManager.Instance.RoundChanged.Subscribe(RoundUpdate).AddTo(this);
         }
 
         private void OnMatchPhaseChanged(MatchPhase phase)
