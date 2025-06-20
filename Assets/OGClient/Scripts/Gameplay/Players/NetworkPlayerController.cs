@@ -54,6 +54,7 @@ namespace OGClient.Gameplay.Players
             _movesView.Setup(_playerIndex, _gameplaySettings.MovesPerTurn, _playersProfiles.GetColor(_isMainPlayer), this);
             _playerView.InstallPlayerView(playerModel);
 
+            Debug.Log($"Installing Player: {_playerIndex}");
             _gameManager.AddNewPlayer(_playerIndex, this);
             _gameManager.AddNewPlayerView(_playerIndex, _playerView);
 

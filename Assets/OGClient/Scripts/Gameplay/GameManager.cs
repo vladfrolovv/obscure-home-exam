@@ -1,6 +1,7 @@
 using UniRx;
 using System;
 using Zenject;
+using OGShared;
 using UnityEngine;
 using OGClient.Utils;
 using OGClient.Popups;
@@ -58,17 +59,16 @@ namespace OGClient.Gameplay
 
         private void Awake()
         {
+            if (NetworkRunnerInstance.Instance.IsServer) return;
+
             _matchPhaseActions.Add(MatchPhase.Starting, StartMatchPhase);
             _matchPhaseActions.Add(MatchPhase.LastRound, LastRoundPhase);
             _matchPhaseActions.Add(MatchPhase.Ending, EndMatchPhase);
 
-            _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(this);
-        }
-
-        private void Start()
-        {
             UniRxUtils.WaitUntilObs(() => NetworkGameManager.Instance != null)
                 .Subscribe(OnNetworkGameManagerInitialized).AddTo(this);
+
+            _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(this);
         }
 
         private void OnNetworkGameManagerInitialized(Unit unit)
@@ -125,6 +125,8 @@ namespace OGClient.Gameplay
 
         private void SetCurrentPlayer()
         {
+            Debug.Log($"Game Manager: Setting current player to index {_playerIndex}");
+
             NetworkPlayerController = _players[_playerIndex];
             NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
 

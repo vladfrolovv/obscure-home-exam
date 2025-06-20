@@ -33,7 +33,7 @@ namespace OGServer.Gameplay
 
         public override void Spawned()
         {
-            Debug.Log($"Network Game Manager spawned on {(Runner.IsServer ? "SERVER" : "CLIENT")}.");
+            Instance = this;
 
             if (!Runner.IsServer) return;
             MatchPhase = MatchPhase.Waiting;
@@ -50,9 +50,9 @@ namespace OGServer.Gameplay
 
         private void OnMatchStarted(NetworkRunner runner)
         {
-            if (!runner.IsServer) return;
             MatchPhase = MatchPhase.Starting;
             Seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            Debug.Log($"SERVER Seed: {Seed}");
 
             foreach (PlayerRef playerRef in runner.ActivePlayers)
             {

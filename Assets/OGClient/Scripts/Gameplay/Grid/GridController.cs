@@ -71,8 +71,6 @@ namespace OGClient.Gameplay.Grid
 
         public void InitializeGrid(int seed = -1)
         {
-            Debug.Log($"Trying to Initialize Grid with seed: {seed}");
-
             _tiles.Clear();
             _gridSeed = seed;
             // _randomTiles = _tiles;
