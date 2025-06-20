@@ -67,8 +67,6 @@ namespace OGClient.Gameplay
 
         private void Start()
         {
-            _gridController.CreateGrid();
-
             UniRxUtils.WaitUntilObs(() => NetworkGameManager.Instance != null)
                 .Subscribe(OnNetworkGameManagerInitialized).AddTo(this);
         }
@@ -77,6 +75,8 @@ namespace OGClient.Gameplay
         {
             NetworkGameManager.Instance.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
             NetworkGameManager.Instance.RoundChanged.Subscribe(RoundUpdate).AddTo(this);
+
+            _gridController.InitializeGrid(NetworkGameManager.Instance.Seed);
 
             OnMatchPhaseChanged(MatchPhase.Starting);
         }

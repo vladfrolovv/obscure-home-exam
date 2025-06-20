@@ -4,6 +4,7 @@ using Fusion;
 using UnityEngine;
 using Fusion.Sockets;
 using System.Collections.Generic;
+using OGClient;
 using UnityEngine.SceneManagement;
 namespace OGServer.Gameplay
 {
@@ -12,8 +13,7 @@ namespace OGServer.Gameplay
 
         public static NetworkGameManager Instance { get; set; }
 
-        private const float MatchStartDelay = 1f;
-
+        [Networked] public int Seed { get; private set; } = -1;
         [Networked] public int Rounds { get; private set; }
         [Networked] public int CurrentRound { get; private set; }
 
@@ -42,24 +42,27 @@ namespace OGServer.Gameplay
         public void OnSceneLoadDone(NetworkRunner runner)
         {
             if (!runner.IsServer) return;
-            if (SceneManager.GetActiveScene().buildIndex != _gameplayScene.AsIndex) return;
-
-            SpawnPlayersInMatch(runner);
-            MatchPhase = MatchPhase.Starting;
-
-            Observable.Timer(TimeSpan.FromSeconds(MatchStartDelay)).Subscribe(delegate
+            if (SceneManager.GetActiveScene().buildIndex == _gameplayScene.AsIndex)
             {
-                MatchPhase = MatchPhase.Playing;
-            }).AddTo(this);
+                OnMatchStarted(runner);
+            }
         }
 
-        private void SpawnPlayersInMatch(NetworkRunner runner)
+        private void OnMatchStarted(NetworkRunner runner)
         {
             if (!runner.IsServer) return;
+            MatchPhase = MatchPhase.Starting;
+            Seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+
             foreach (PlayerRef playerRef in runner.ActivePlayers)
             {
                 runner.Spawn(_playerPrefab, Vector3.zero, Quaternion.identity, playerRef);
             }
+
+            Observable.Timer(TimeSpan.FromSeconds(ConstantsModel.GAME_START_DELAY)).Subscribe(delegate
+            {
+                MatchPhase = MatchPhase.Playing;
+            }).AddTo(this);
         }
 
         #region INetworkRunnerCallbacks Implementation

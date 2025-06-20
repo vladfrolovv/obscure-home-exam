@@ -22,7 +22,6 @@ namespace OGClient.Installers
         [SerializeField] private GameManager _gameManager;
         [SerializeField] private PopupsController _popupsController;
         [SerializeField] private GridController _gridController;
-        [SerializeField] private GridLinksController _gridLinksController;
 
         [Header("Vies")]
         [SerializeField] private MergeEffectView _mergeEffectView;
@@ -37,7 +36,6 @@ namespace OGClient.Installers
             Container.BindInstance(_gameManager).AsSingle();
             Container.BindInstance(_popupsController).AsSingle();
             Container.BindInstance(_gridController).AsSingle();
-            Container.BindInstance(_gridLinksController).AsSingle();
 
             // views
             Container.BindInstance(_mergeEffectView).AsSingle();
@@ -46,6 +44,7 @@ namespace OGClient.Installers
             Container.BindInterfacesAndSelfTo<TimeController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MatchTimerController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MergeCombosController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<GridLinksController>().AsSingle().NonLazy();
 
             InstallDataProxies();
         }

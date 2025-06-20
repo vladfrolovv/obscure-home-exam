@@ -9,6 +9,7 @@ using OGClient.Gameplay.Grid.Models;
 using OGClient.Gameplay.Grid.Configs;
 using OGClient.Gameplay.Grid.MergeCombos;
 using UnityEngine.EventSystems;
+using Zenject;
 namespace OGClient.Gameplay.Grid
 {
     public class GridLinksController : IDisposable
@@ -30,7 +31,7 @@ namespace OGClient.Gameplay.Grid
 
         private MergeComboModel _mergeComboModel;
 
-        private readonly GameManager _gameManager;
+        [Inject] readonly GameManager _gameManager; // circular dependency??
         private readonly EventSystem _eventSystem;
         private readonly ScriptableGridLinkSettings _gridLinkSettings;
         private readonly MatchTimerController _matchTimerController;
@@ -42,14 +43,13 @@ namespace OGClient.Gameplay.Grid
         public IReadOnlyList<GridTileView> TilesLink => _tilesLink;
 
         public GridLinksController(GridController gridController, MergeCombosController mergeCombosController, MatchTimerController matchTimerController,
-                                   ScriptableGridLinkSettings gridLinkSettings, EventSystem eventSystem, GameManager gameManager)
+                                   ScriptableGridLinkSettings gridLinkSettings, EventSystem eventSystem)
         {
             _eventSystem = eventSystem;
             _gridController = gridController;
             _mergeCombosController = mergeCombosController;
             _matchTimerController = matchTimerController;
             _gridLinkSettings = gridLinkSettings;
-            _gameManager = gameManager;
 
             _specialLinks.AddRange(_gridLinkSettings.SpecialLinks);
 

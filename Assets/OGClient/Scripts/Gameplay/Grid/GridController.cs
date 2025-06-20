@@ -19,9 +19,6 @@ namespace OGClient.Gameplay.Grid
         private const string BounceAnimationParam = "Bounce";
         private const string IntroPowerupAnimationParam = "IntroPowerup";
 
-        [Header("Base")]
-        [SerializeField] private int _gridSeed = -1;
-
         [Header("View References")]
         [SerializeField] private Canvas _gridCanvas;
 
@@ -52,6 +49,7 @@ namespace OGClient.Gameplay.Grid
 
         private DiContainer _diContainer;
 
+        private int _gridSeed = -1;
         private int _cellSize;
         private int _gridX;
         private int _gridY;
@@ -63,12 +61,33 @@ namespace OGClient.Gameplay.Grid
         [Networked] public int TileListRandomIndex { get; set; }
 
         public void ShakeBoard() => _gridAnimator.Play(GridShakeAnimationParam);
-        public void HideGrid() => _gridCanvas.enabled = true;
+        public void HideGrid() => _gridCanvas.enabled = false;
 
         [Inject]
         public void Construct(DiContainer diContainer)
         {
             _diContainer = diContainer;
+        }
+
+        public void InitializeGrid(int seed = -1)
+        {
+            Debug.Log($"Trying to Initialize Grid with seed: {seed}");
+
+            _tiles.Clear();
+            _gridSeed = seed;
+            // _randomTiles = _tiles;
+            // _randomTiles = _randomTiles.OrderBy(x => Random.value).ToList();
+
+            // todo: try to move this logic to GridModel or sumn
+            SpawnAllTiles();
+            SetConnections();
+            FillGrid();
+            ShowGrid();
+        }
+
+        private void Awake()
+        {
+            HideGrid();
         }
 
         public void SetGridSize(Vector2Int setValue)
@@ -88,13 +107,13 @@ namespace OGClient.Gameplay.Grid
             _gridLayoutGroup.cellSize = new Vector2Int(_cellSize, _cellSize);
         }
 
-        public void ShowGrid()
+        private void ShowGrid()
         {
             _gridCanvas.enabled = true;
             _gridAnimator.Play(GridIntroAnimationParam);
         }
 
-        public void SpawnItem(int itemIndex, int gridX, int gridY, int offsetY)
+        private void SpawnItem(int itemIndex, int gridX, int gridY, int offsetY)
         {
             int listIndex = GridSize.x * gridY + gridX;
 
@@ -303,29 +322,6 @@ namespace OGClient.Gameplay.Grid
                 GridItemView item = tile.GridItemView;
                 return item?.GridItemType < 0 && !item.IsClearing;
             });
-        }
-
-        private void Awake()
-        {
-            if (_gridSeed == -1)
-            {
-                Random.InitState(_gridSeed);
-            }
-
-            _randomTiles = _tiles;
-            _randomTiles = _randomTiles.OrderBy(x => Random.value).ToList();
-
-            _gridCanvas.enabled = false;
-        }
-
-        public void CreateGrid()
-        {
-            _tiles.Clear();
-
-            SpawnAllTiles();
-            SetConnections();
-            FillGrid();
-            ShowGrid();
         }
 
         private void SpawnAllTiles()
