@@ -2,6 +2,7 @@ using UniRx;
 using System;
 using Zenject;
 using UnityEngine;
+using OGClient.Utils;
 using OGClient.Popups;
 using OGServer.Gameplay;
 using OGClient.Gameplay.UI;
@@ -11,7 +12,6 @@ using OGClient.Gameplay.Players;
 using System.Collections.Generic;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.UI.GameOver;
-using OGClient.Utils;
 namespace OGClient.Gameplay
 {
     public class GameManager : MonoBehaviour
@@ -61,7 +61,6 @@ namespace OGClient.Gameplay
             _matchPhaseActions.Add(MatchPhase.Ending, EndMatchPhase);
 
             _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(this);
-            _matchPhaseActions[MatchPhase.Starting]?.Invoke();
         }
 
         private void Start()
@@ -69,13 +68,15 @@ namespace OGClient.Gameplay
             _gridController.CreateGrid();
 
             UniRxUtils.WaitUntilObs(() => NetworkGameManager.Instance != null)
-                .Subscribe(NetworkGameManagerSubscriptions).AddTo(this);
+                .Subscribe(OnNetworkGameManagerInitialized).AddTo(this);
         }
 
-        private void NetworkGameManagerSubscriptions(Unit unit)
+        private void OnNetworkGameManagerInitialized(Unit unit)
         {
             NetworkGameManager.Instance.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
             NetworkGameManager.Instance.RoundChanged.Subscribe(RoundUpdate).AddTo(this);
+
+            OnMatchPhaseChanged(MatchPhase.Starting);
         }
 
         private void OnMatchPhaseChanged(MatchPhase phase)
@@ -122,22 +123,21 @@ namespace OGClient.Gameplay
 
         private void SetCurrentPlayer()
         {
-            return;
             _currentPlayerController = _players[_playerIndex];
             _currentPlayerController.Moves.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
+
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);
             _roundsView.SetRoundsText($"{_playerViews[_playerIndex].PlayerModel.Nickname + "'S TURN!"}");
+
             _gridLinksController.RegainControl();
+            if (_currentPlayerController.HasInputAuthority)
+            {
+                _matchTimerController.ResetTime();
+                _matchTimerController.StartTimer();
+            }
 
             HighlightPlayer();
             _playerSwitched.OnNext(_playerViews[_playerIndex]);
-
-            // todo: change to fusion 2
-            // if (CurrentPlayerController.photonView.IsMine)
-            // {
-            //     _matchTimerController.ResetTime();
-            //     Invoke(nameof(RPC_StartTimer), 0.5f);
-            // }
         }
 
         private void HighlightPlayer()
@@ -155,12 +155,8 @@ namespace OGClient.Gameplay
             //     CurrentPlayerController.photonView.RPC("SetMoves", RpcTarget.All, 0);
             // }
 
+            Debug.Log($"Time is Up. trying to cancel execution and end turn.");
             _gridLinksController.CancelExecuteLink();
-            EndTurn();
-        }
-
-        private void EndTurn()
-        {
             NextPlayer();
         }
 

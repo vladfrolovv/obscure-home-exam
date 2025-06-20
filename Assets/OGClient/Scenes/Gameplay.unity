@@ -314,79 +314,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &799268481
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 799268483}
-  - component: {fileID: 799268482}
-  - component: {fileID: 799268484}
-  m_Layer: 0
-  m_Name: PlayerController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &799268482
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 799268481}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88ceb5cdd919218498ec9c3462866c08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tileLink: []
-  minimumLinkSize: 2
-  eventSystem: {fileID: 736979974}
-  collectTime: 1
-  executeTime: 0.1
-  executeTimeMultipier: 0.95
-  executeTimeMinimum: 0.05
-  executeTotalTime: 0
-  longestSpecial: 0
-  currentLinkSize: 0
-  _specialLinks: []
-  ToastView: {fileID: 4317119075900152663}
-  specialIndex: -1
-  powerupsInLink: []
-  direction: {x: 0, y: 0}
-  hasPowerups: 0
---- !u!4 &799268483
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 799268481}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.2973025, y: 2.8762167, z: 28.474556}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1991720309}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &799268484
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 799268481}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &887922435 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3785692791580734147, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
@@ -445,6 +372,68 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e694a3bf351f4e32ad5a0a24c87f879c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1409917188
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1409917189}
+  - component: {fileID: 1409917190}
+  m_Layer: 0
+  m_Name: GridLinksController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1409917189
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1409917188}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1435241021}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1409917190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1409917188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88ceb5cdd919218498ec9c3462866c08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileLink: []
+  minimumLinkSize: 2
+  eventSystem: {fileID: 736979974}
+  collectTime: 1
+  executeTime: 0.1
+  executeTimeMultipier: 0.95
+  executeTimeMinimum: 0.05
+  executeTotalTime: 0
+  longestSpecial: 0
+  currentLinkSize: 0
+  _specialLinks:
+  - LinkSize: 10
+    SpawnItemView: {fileID: -4054056152294309094, guid: fdb1361f8cfd43d44ab797156f8df444, type: 3}
+  ToastView: {fileID: 4317119075900152663}
+  specialIndex: -1
+  powerupsInLink: []
+  direction: {x: 0, y: 0}
+  hasPowerups: 0
 --- !u!1 &1425435795
 GameObject:
   m_ObjectHideFlags: 0
@@ -491,6 +480,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1991720309}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1435241020
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1435241021}
+  m_Layer: 0
+  m_Name: Grid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1435241021
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435241020}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1770781317}
+  - {fileID: 1409917189}
+  m_Father: {fileID: 1991720309}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &1446735164 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1210809818738370410, guid: b29c211134a2d034ca99834a87e6b438, type: 3}
@@ -506,7 +528,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1770781317}
   - component: {fileID: 1770781316}
-  - component: {fileID: 1770781318}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -561,20 +582,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1991720309}
+  m_Father: {fileID: 1435241021}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1770781318
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1770781315}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &1773584506 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3785692790318919098, guid: 0eb26d06491aac34a817ab85a410788e, type: 3}
@@ -658,9 +667,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 799268483}
   - {fileID: 1425435797}
-  - {fileID: 1770781317}
+  - {fileID: 1435241021}
   - {fileID: 1849119631}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -712,7 +720,7 @@ MonoBehaviour:
   _gameManager: {fileID: 1425435796}
   _popupsController: {fileID: 1849119632}
   _gridController: {fileID: 1770781316}
-  _gridLinksController: {fileID: 799268482}
+  _gridLinksController: {fileID: 0}
   _mergeEffectView: {fileID: 9043549434984758022, guid: 6f52e434c70ab5445b5f12ca7c19fb2d, type: 3}
 --- !u!1001 &1210809817494440534
 PrefabInstance:
