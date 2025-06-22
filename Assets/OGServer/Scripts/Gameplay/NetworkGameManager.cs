@@ -14,9 +14,9 @@ namespace OGServer.Gameplay
     public class NetworkGameManager : NetworkBehaviour, INetworkRunnerCallbacks
     {
 
-        [Networked] public int Seed { get; private set; }
-        [Networked] public int Rounds { get; private set; }
-        [Networked] public int CurrentRound { get; private set; }
+        [Networked] private int Seed { get; set; }
+        [Networked] private int Rounds { get; set; }
+        [Networked] private int CurrentRound { get; set; }
 
         [SerializeField] private SceneRef _gameplayScene;
         [SerializeField] private NetworkPrefabRef _playerPrefab;
@@ -60,7 +60,11 @@ namespace OGServer.Gameplay
 
             RPC_InitializeSession(Seed, Rounds);
             Observable.Timer(TimeSpan.FromSeconds(BaseConstants.GAME_START_DELAY))
-                .Subscribe(_ => _gameSessionDataProxy.SetMatchPhase(MatchPhase.Playing)).AddTo(this);
+                .Subscribe(_ =>
+                {
+                    _gameSessionDataProxy.SetMatchPhase(MatchPhase.Playing);
+                    Rpc_SetMatchPhase(MatchPhase.Playing);
+                }).AddTo(this);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
@@ -71,6 +75,13 @@ namespace OGServer.Gameplay
             _gameSessionDataProxy.RaiseInitialized();
 
             Debug.Log($"[CLIENT] Session init: seed={seed}, rounds={rounds}");
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
+        private void Rpc_SetMatchPhase(MatchPhase phase)
+        {
+            _gameSessionDataProxy.SetMatchPhase(phase);
+            Debug.Log($"[CLIENT] Match phase set to {phase}");
         }
 
         #region INetworkRunnerCallbacks Implementation

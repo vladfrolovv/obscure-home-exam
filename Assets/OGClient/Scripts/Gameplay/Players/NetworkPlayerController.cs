@@ -2,6 +2,7 @@ using Fusion;
 using OGClient.Gameplay.DataProxies;
 using UnityEngine;
 using OGClient.Gameplay.UI;
+using OGShared.Gameplay;
 using Zenject;
 namespace OGClient.Gameplay.Players
 {

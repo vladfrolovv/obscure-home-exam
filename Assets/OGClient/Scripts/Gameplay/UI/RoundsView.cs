@@ -1,5 +1,6 @@
 ﻿using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Players;
+using OGShared.Gameplay;
 using TMPro;
 using UniRx;
 using UnityEngine;

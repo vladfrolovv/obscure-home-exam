@@ -1,9 +1,9 @@
-﻿using OGClient.Gameplay;
-using OGClient.Gameplay.Grid.Configs;
+﻿using OGClient.Gameplay.Grid.Configs;
 using OGClient.Gameplay.Grid.MergeCombos;
 using OGClient.Gameplay.Mathchmaking;
 using OGClient.Gameplay.Players;
 using OGServer.Gameplay;
+using OGShared.Gameplay;
 using UnityEngine;
 using Zenject;
 namespace OGClient.Installers

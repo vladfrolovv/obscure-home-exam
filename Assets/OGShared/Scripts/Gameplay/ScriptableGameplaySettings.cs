@@ -1,7 +1,7 @@
 ﻿using System;
 using OGShared.Gameplay;
 using UnityEngine;
-namespace OGClient.Gameplay
+namespace OGShared.Gameplay
 {
     [CreateAssetMenu(fileName = "GameplaySettings", menuName = "ScriptableObjects/Gameplay Settings")]
     public class ScriptableGameplaySettings : ScriptableObject

@@ -31,7 +31,7 @@ namespace OGClient.Gameplay
         private GridController _gridController;
         private ScoreDataProxy _scoreDataProxy;
         private PopupsController _popupsController;
-        private GridLinksController _gridLinksController;
+        private GridLinksDataProxy _gridLinksDataProxy;
         private MatchTimerController _matchTimerController;
         private ScriptableGameplaySettings _gameplaySettings;
         private GameSessionDataProxy _gameSessionDataProxy;
@@ -46,13 +46,13 @@ namespace OGClient.Gameplay
         [Inject]
         public void Construct(GridController gridController, ScoreDataProxy scoreDataProxy, PopupsController popupsController,
                               MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
-                              GridLinksController gridLinksController, GameSessionDataProxy gameSessionDataProxy)
+                              GameSessionDataProxy gameSessionDataProxy, GridLinksDataProxy gridLinksDataProxy)
         {
             _gridController = gridController;
             _scoreDataProxy = scoreDataProxy;
             _gameplaySettings = gameplaySettings;
             _popupsController = popupsController;
-            _gridLinksController = gridLinksController;
+            _gridLinksDataProxy = gridLinksDataProxy;
             _matchTimerController = matchTimerController;
             _gameSessionDataProxy = gameSessionDataProxy;
         }
@@ -97,7 +97,7 @@ namespace OGClient.Gameplay
 
         private void StartMatchPhase()
         {
-            _gridLinksController.LoseControlFor(0);
+            _gridLinksDataProxy.ChangeControlState(false);
         }
 
         private void PlayingMatchPhase()
@@ -136,14 +136,13 @@ namespace OGClient.Gameplay
         private void SetCurrentPlayer()
         {
             Debug.Log($"Game Manager: Setting current player to index {_playerIndex}");
-
             NetworkPlayerController = _players[_playerIndex];
             NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
 
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);
             _roundsView.SetRoundsText($"{_playerViews[_playerIndex].PlayerModel.Nickname + "'S TURN!"}");
 
-            _gridLinksController.RegainControl();
+            _gridLinksDataProxy.ChangeControlState(true);
             if (ThisClientIsCurrentPlayer)
             {
                 _matchTimerController.ResetTime();
@@ -170,7 +169,7 @@ namespace OGClient.Gameplay
             // }
 
             Debug.Log($"Time is Up. trying to cancel execution and end turn.");
-            _gridLinksController.CancelExecuteLink();
+            _gridLinksDataProxy.ChangeControlState(true);
             NextPlayer();
         }
 

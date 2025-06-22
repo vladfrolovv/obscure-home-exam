@@ -54,6 +54,7 @@ namespace OGClient.Installers
             Container.BindInterfacesAndSelfTo<ScoreDataProxy>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MovesDataProxy>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<RoundsDataProxy>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<GridLinksDataProxy>().AsSingle().NonLazy();
         }
 
     }
