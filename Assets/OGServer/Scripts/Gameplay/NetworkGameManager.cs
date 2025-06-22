@@ -5,38 +5,36 @@ using UnityEngine;
 using Fusion.Sockets;
 using System.Collections.Generic;
 using OGClient;
+using OGShared.DataProxies;
+using OGShared.Gameplay;
 using UnityEngine.SceneManagement;
+using Zenject;
 namespace OGServer.Gameplay
 {
     public class NetworkGameManager : NetworkBehaviour, INetworkRunnerCallbacks
     {
 
-        public static NetworkGameManager Instance { get; set; }
-
-        [Networked] public int Seed { get; private set; } = -1;
+        [Networked] public int Seed { get; private set; }
         [Networked] public int Rounds { get; private set; }
         [Networked] public int CurrentRound { get; private set; }
-
-        private MatchPhase MatchPhase
-        {
-            set => _matchPhaseChanged.OnNext(value);
-        }
 
         [SerializeField] private SceneRef _gameplayScene;
         [SerializeField] private NetworkPrefabRef _playerPrefab;
 
-        private readonly Subject<MatchPhase> _matchPhaseChanged = new();
-        private readonly Subject<(int, int)> _roundChanged = new();
+        private GameSessionDataProxy _gameSessionDataProxy;
+        private ScriptableGameSessionSettings _gameSessionSettings;
 
-        public IObservable<MatchPhase> MatchPhaseChanged => _matchPhaseChanged;
-        public IObservable<(int, int)> RoundChanged => _roundChanged;
+        [Inject]
+        public void Construct(GameSessionDataProxy gameSessionDataProxy, ScriptableGameSessionSettings scriptableGameSessionSettings)
+        {
+            _gameSessionDataProxy = gameSessionDataProxy;
+            _gameSessionSettings = scriptableGameSessionSettings;
+        }
 
         public override void Spawned()
         {
-            Instance = this;
-
             if (!Runner.IsServer) return;
-            MatchPhase = MatchPhase.Waiting;
+            _gameSessionDataProxy.SetMatchPhase(MatchPhase.Waiting);
         }
 
         public void OnSceneLoadDone(NetworkRunner runner)
@@ -50,19 +48,29 @@ namespace OGServer.Gameplay
 
         private void OnMatchStarted(NetworkRunner runner)
         {
-            MatchPhase = MatchPhase.Starting;
-            Seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-            Debug.Log($"SERVER Seed: {Seed}");
+            _gameSessionDataProxy.SetMatchPhase(MatchPhase.Starting);
+
+            Seed = UnityEngine.Random.Range(0, int.MaxValue);
+            Rounds = _gameSessionSettings.Rounds;
 
             foreach (PlayerRef playerRef in runner.ActivePlayers)
             {
                 runner.Spawn(_playerPrefab, Vector3.zero, Quaternion.identity, playerRef);
             }
 
-            Observable.Timer(TimeSpan.FromSeconds(ConstantsModel.GAME_START_DELAY)).Subscribe(delegate
-            {
-                MatchPhase = MatchPhase.Playing;
-            }).AddTo(this);
+            RPC_InitializeSession(Seed, Rounds);
+            Observable.Timer(TimeSpan.FromSeconds(BaseConstants.GAME_START_DELAY))
+                .Subscribe(_ => _gameSessionDataProxy.SetMatchPhase(MatchPhase.Playing)).AddTo(this);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
+        private void RPC_InitializeSession(int seed, int rounds)
+        {
+            _gameSessionDataProxy.SetSeed(seed);
+            _gameSessionDataProxy.SetRounds(rounds);
+            _gameSessionDataProxy.RaiseInitialized();
+
+            Debug.Log($"[CLIENT] Session init: seed={seed}, rounds={rounds}");
         }
 
         #region INetworkRunnerCallbacks Implementation

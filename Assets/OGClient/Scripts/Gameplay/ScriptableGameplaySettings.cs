@@ -1,5 +1,5 @@
 ﻿using System;
-using OGServer.Gameplay;
+using OGShared.Gameplay;
 using UnityEngine;
 namespace OGClient.Gameplay
 {

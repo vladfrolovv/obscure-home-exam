@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: ConfigsInstaller
   m_EditorClassIdentifier: 
   _scriptableMergeCombos: {fileID: 11400000, guid: 14a667b7a6f18a24e84827bdb622654d, type: 2}
+  _scriptablePlayersProfiles: {fileID: 11400000, guid: 6d1b9a4f82475aa429c590c354557d93, type: 2}
   _scriptableGameplaySettings: {fileID: 11400000, guid: 2fb97c9b151e6754cbee130b1ca20d5c, type: 2}
   _scriptableMatchmakingState: {fileID: 11400000, guid: 1a19a9e35faf2e94182303c111c77028, type: 2}
-  _scriptablePlayersProfiles: {fileID: 11400000, guid: 6d1b9a4f82475aa429c590c354557d93, type: 2}
   _scriptableGridLinkSettings: {fileID: 11400000, guid: 92586a57f59bb4f41994f47bcd7bc1d7, type: 2}
+  _scriptableGameSessionSettings: {fileID: 11400000, guid: a0c28d4457f94344fa7c23549e134627, type: 2}

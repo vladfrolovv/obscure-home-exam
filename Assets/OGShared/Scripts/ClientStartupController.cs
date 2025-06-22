@@ -44,7 +44,7 @@ namespace OGShared
             await _networkRunner.StartGame(new StartGameArgs
             {
                 GameMode = GameMode.Server,
-                SessionName = ConstantsModel.BASE_ROOM_NAME,
+                SessionName = BaseConstants.BASE_ROOM_NAME,
                 SceneManager = _networkRunner.SceneManager,
             });
             
@@ -63,7 +63,7 @@ namespace OGShared
         {
             _networkRunner.Spawn(_matchStartControllerPrefab, Vector3.zero, Quaternion.identity);
             NetworkGameManager networkGameManager = _networkRunner.Spawn(_networkGameManagerPrefab, Vector3.zero, Quaternion.identity);
-            NetworkGameManager.Instance = networkGameManager;
+            // NetworkGameManager.Instance = networkGameManager;
 
             _networkRunner.AddCallbacks(networkGameManager);
             DontDestroyOnLoad(networkGameManager.gameObject);

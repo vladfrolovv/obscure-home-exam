@@ -22,9 +22,9 @@ namespace OGServer.Matchmaking
 
         private void TryToLoadGame()
         {
-            Debug.Log($"Active players count: {Runner.ActivePlayers.Count()} | Required players: {ConstantsModel.PLAYERS_PER_MATCH}");
+            Debug.Log($"Active players count: {Runner.ActivePlayers.Count()} | Required players: {BaseConstants.PLAYERS_PER_MATCH}");
             if (!Runner.IsServer) return;
-            if (Runner.ActivePlayers.Count() != ConstantsModel.PLAYERS_PER_MATCH) return;
+            if (Runner.ActivePlayers.Count() != BaseConstants.PLAYERS_PER_MATCH) return;
 
             Debug.Log($"Trying to load gameplay scene for clients");
             Runner.LoadScene(_gameplayScene);

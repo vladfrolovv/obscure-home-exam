@@ -12,8 +12,8 @@ namespace OGClient.Gameplay.Mathchmaking
             StartGameArgs startGameArgs = new()
             {
                 GameMode = GameMode.Client,
-                SessionName = ConstantsModel.BASE_ROOM_NAME,
-                PlayerCount = ConstantsModel.PLAYERS_PER_MATCH,
+                SessionName = BaseConstants.BASE_ROOM_NAME,
+                PlayerCount = BaseConstants.PLAYERS_PER_MATCH,
                 SceneManager = NetworkRunnerInstance.Instance.SceneManager,
             };
 

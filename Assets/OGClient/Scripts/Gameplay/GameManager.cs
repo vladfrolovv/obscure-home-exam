@@ -3,9 +3,7 @@ using System;
 using Zenject;
 using OGShared;
 using UnityEngine;
-using OGClient.Utils;
 using OGClient.Popups;
-using OGServer.Gameplay;
 using OGClient.Gameplay.UI;
 using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Timers;
@@ -13,6 +11,8 @@ using OGClient.Gameplay.Players;
 using System.Collections.Generic;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.UI.GameOver;
+using OGShared.DataProxies;
+using OGShared.Gameplay;
 namespace OGClient.Gameplay
 {
     public class GameManager : MonoBehaviour
@@ -34,12 +34,11 @@ namespace OGClient.Gameplay
         private GridLinksController _gridLinksController;
         private MatchTimerController _matchTimerController;
         private ScriptableGameplaySettings _gameplaySettings;
+        private GameSessionDataProxy _gameSessionDataProxy;
 
+        // todo: remove, use GameSessionDataProxy instead
         private readonly Subject<PlayerView> _playerSwitched = new();
         public IObservable<PlayerView> PlayerSwitched => _playerSwitched;
-
-        public void AddNewPlayer(int index, NetworkPlayerController playerController) => _players.TryAdd(index, playerController);
-        public void AddNewPlayerView(int index, PlayerView playerView) => _playerViews.TryAdd(index, playerView);
 
         public bool ThisClientIsCurrentPlayer => NetworkPlayerController != null && NetworkPlayerController.HasInputAuthority;
         public NetworkPlayerController NetworkPlayerController { get; private set; }
@@ -47,7 +46,7 @@ namespace OGClient.Gameplay
         [Inject]
         public void Construct(GridController gridController, ScoreDataProxy scoreDataProxy, PopupsController popupsController,
                               MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
-                              GridLinksController gridLinksController)
+                              GridLinksController gridLinksController, GameSessionDataProxy gameSessionDataProxy)
         {
             _gridController = gridController;
             _scoreDataProxy = scoreDataProxy;
@@ -55,6 +54,15 @@ namespace OGClient.Gameplay
             _popupsController = popupsController;
             _gridLinksController = gridLinksController;
             _matchTimerController = matchTimerController;
+            _gameSessionDataProxy = gameSessionDataProxy;
+        }
+
+        public void AddNewPlayer(int index, NetworkPlayerController playerController, PlayerView playerView)
+        {
+            int absoluteIndex = _players.Count;
+
+            _players.TryAdd(absoluteIndex, playerController);
+            _playerViews.TryAdd(absoluteIndex, playerView);
         }
 
         private void Awake()
@@ -62,21 +70,20 @@ namespace OGClient.Gameplay
             if (NetworkRunnerInstance.Instance.IsServer) return;
 
             _matchPhaseActions.Add(MatchPhase.Starting, StartMatchPhase);
+            _matchPhaseActions.Add(MatchPhase.Playing, PlayingMatchPhase);
             _matchPhaseActions.Add(MatchPhase.LastRound, LastRoundPhase);
             _matchPhaseActions.Add(MatchPhase.Ending, EndMatchPhase);
 
-            UniRxUtils.WaitUntilObs(() => NetworkGameManager.Instance != null)
-                .Subscribe(OnNetworkGameManagerInitialized).AddTo(this);
-
+            _gameSessionDataProxy.Initialized.Subscribe(_ => OnGameSessionDataInitialized()).AddTo(this);
             _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(this);
         }
 
-        private void OnNetworkGameManagerInitialized(Unit unit)
+        private void OnGameSessionDataInitialized()
         {
-            NetworkGameManager.Instance.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
-            NetworkGameManager.Instance.RoundChanged.Subscribe(RoundUpdate).AddTo(this);
+            _gameSessionDataProxy.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
+            _gameSessionDataProxy.CurrentRound.Subscribe(RoundUpdate).AddTo(this);
 
-            _gridController.InitializeGrid(NetworkGameManager.Instance.Seed);
+            _gridController.InitializeGrid(_gameSessionDataProxy.Seed);
 
             OnMatchPhaseChanged(MatchPhase.Starting);
         }
@@ -91,7 +98,10 @@ namespace OGClient.Gameplay
         private void StartMatchPhase()
         {
             _gridLinksController.LoseControlFor(0);
+        }
 
+        private void PlayingMatchPhase()
+        {
             ResetRounds();
             SetCurrentPlayer();
         }
@@ -114,7 +124,7 @@ namespace OGClient.Gameplay
         private void NextPlayer()
         {
             _playerIndex = _playerIndex < _players.Count ? _playerIndex + 1 : 0;
-            if (NetworkGameManager.Instance.CurrentRound <= NetworkGameManager.Instance.Rounds)
+            if (_gameSessionDataProxy.CurrentRound.Value <= _gameSessionDataProxy.Rounds.Value)
             {
                 SetCurrentPlayer();
             }
@@ -178,11 +188,9 @@ namespace OGClient.Gameplay
             // todo: update rounds view; set current round "_roundsDataProxy.CurrentRound.Value + 1"
         }
 
-        private void RoundUpdate((int, int) roundInfo)
+        private void RoundUpdate(int currentRound)
         {
-            (int currentRound, int rounds) = roundInfo;
-
-            _roundsView.SetRoundsText($"{_gameplaySettings[MatchPhase.Playing]} {currentRound}/{rounds}");
+            _roundsView.SetRoundsText($"{_gameplaySettings[MatchPhase.Playing]} {currentRound}/{_gameSessionDataProxy.Rounds.Value}");
             _roundsView.SetCurrentRoundText($"{_gameplaySettings[MatchPhase.Playing]} {currentRound}");;
         }
 

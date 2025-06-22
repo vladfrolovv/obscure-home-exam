@@ -1,4 +1,4 @@
-﻿namespace OGServer.Gameplay
+﻿namespace OGShared.Gameplay
 {
     public enum MatchPhase
     {
