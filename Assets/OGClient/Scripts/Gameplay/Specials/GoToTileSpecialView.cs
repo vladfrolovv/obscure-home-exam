@@ -24,7 +24,7 @@ namespace OGClient.Gameplay.Specials
 
             if (gridItemView == true)
             {
-                _gridLinksController.AddToExecuteList(this.gameObject);
+                _gridLinksController.Model.AddToExecuteList(this.gameObject);
 
                 gridItemView.IsClearing = true;
 
@@ -36,25 +36,25 @@ namespace OGClient.Gameplay.Specials
 
                 Vector3 randomOffset = UnityEngine.Random.insideUnitCircle * 0.5f;
 
-                GridTileView targetTileView = GridController.GetPowerupTile();
+                GridTileView targetTileView = GridController.Model.GetPowerupTile();
 
                 //if ( targetTile == null ) targetTile = GridManager.instance.GetBoosterTile();
 
                 if (targetTileView == null)
                 {
-                    targetTileView = GridController.GetRandomTile();
+                    targetTileView = GridController.Model.GetRandomTile();
 
                     int timeout = 20;
 
                     while (timeout > 0 && targetTileView.GridItemView == null)
                     {
-                        targetTileView = GridController.GetRandomTile();
+                        targetTileView = GridController.Model.GetRandomTile();
 
                         timeout--;
                     }
                 }
 
-                _gridLinksController.CollectItemAtTile(targetTileView, moveTime);
+                _gridLinksController.Model.CollectItemAtTile(targetTileView, moveTime);
 
                 gridItemView.TryToCollect();
 
@@ -66,15 +66,15 @@ namespace OGClient.Gameplay.Specials
                     {
                         if (_carryItemView)
                         {
-                            GridController.SpawnItem(_carryItemView, targetTileView, 0);
-                            _gridLinksController.CollectItemAtTile(targetTileView, 0.0f);
+                            GridController.CreateGridItem(_carryItemView, targetTileView, 0);
+                            _gridLinksController.Model.CollectItemAtTile(targetTileView, 0.0f);
                         }
 
                         gridItemView.TryToClear();
                         Destroy(gridItemView.gameObject);
 
-                        _gridLinksController.RemoveFromExecuteList(this.gameObject);
-                        _gridLinksController.CheckExecuteLink();
+                        _gridLinksController.Model.RemoveFromExecuteList(this.gameObject);
+                        _gridLinksController.Model.CheckExecuteLink();
                     });
                 });
 

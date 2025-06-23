@@ -10,12 +10,13 @@ using OGClient.Gameplay.Timers;
 using OGClient.Gameplay.Players;
 using System.Collections.Generic;
 using OGClient.Gameplay.DataProxies;
+using OGClient.Gameplay.Mathchmaking;
 using OGClient.Gameplay.UI.GameOver;
 using OGShared.DataProxies;
 using OGShared.Gameplay;
 namespace OGClient.Gameplay
 {
-    public class GameManager : MonoBehaviour
+    public class GameManager : MonoBehaviour, IMatchPhasable
     {
 
         private readonly Dictionary<MatchPhase, Action> _matchPhaseActions = new();
@@ -28,7 +29,6 @@ namespace OGClient.Gameplay
 
         private int _playerIndex;
 
-        private GridController _gridController;
         private ScoreDataProxy _scoreDataProxy;
         private PopupsController _popupsController;
         private GridLinksDataProxy _gridLinksDataProxy;
@@ -48,7 +48,6 @@ namespace OGClient.Gameplay
                               MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
                               GameSessionDataProxy gameSessionDataProxy, GridLinksDataProxy gridLinksDataProxy)
         {
-            _gridController = gridController;
             _scoreDataProxy = scoreDataProxy;
             _gameplaySettings = gameplaySettings;
             _popupsController = popupsController;
@@ -65,6 +64,21 @@ namespace OGClient.Gameplay
             _playerViews.TryAdd(absoluteIndex, playerView);
         }
 
+        public void OnMatchPhaseChanged(MatchPhase phase)
+        {
+            Debug.Log($"Match phase changed to: {phase}");
+            _matchPhaseActions.TryGetValue(phase, out Action action);
+            action?.Invoke();
+        }
+
+        public void OnGameSessionDataInitialized()
+        {
+            _gameSessionDataProxy.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
+            _gameSessionDataProxy.CurrentRound.Subscribe(RoundUpdate).AddTo(this);
+
+            OnMatchPhaseChanged(MatchPhase.Starting);
+        }
+
         private void Awake()
         {
             if (NetworkRunnerInstance.Instance.IsServer) return;
@@ -76,23 +90,6 @@ namespace OGClient.Gameplay
 
             _gameSessionDataProxy.Initialized.Subscribe(_ => OnGameSessionDataInitialized()).AddTo(this);
             _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(this);
-        }
-
-        private void OnGameSessionDataInitialized()
-        {
-            _gameSessionDataProxy.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
-            _gameSessionDataProxy.CurrentRound.Subscribe(RoundUpdate).AddTo(this);
-
-            _gridController.InitializeGrid(_gameSessionDataProxy.Seed);
-
-            OnMatchPhaseChanged(MatchPhase.Starting);
-        }
-
-        private void OnMatchPhaseChanged(MatchPhase phase)
-        {
-            Debug.Log($"Match phase changed to: {phase}");
-            _matchPhaseActions.TryGetValue(phase, out Action action);
-            action?.Invoke();
         }
 
         private void StartMatchPhase()
@@ -114,9 +111,6 @@ namespace OGClient.Gameplay
 
         private void EndMatchPhase()
         {
-            _gridController.ClearGrid();
-            _gridController.HideGrid();
-
             _matchTimerController.PauseTimerFor(-1);
             _popupsController.ShowPopupByType(PopupType.GameOver, new GameOverPopupModel($"{GetMatchWinner().PlayerModel.Nickname} WINS!"));
         }

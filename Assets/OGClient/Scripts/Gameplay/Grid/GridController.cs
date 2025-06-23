@@ -1,151 +1,74 @@
-using System.Collections.Generic;
-using System.Linq;
-using Fusion;
-using OGClient.Gameplay.Grid.Configs;
-using UnityEngine;
-using UnityEngine.UI;
+using UniRx;
+using System;
 using Zenject;
+using UnityEngine;
+using OGShared.Gameplay;
+using OGShared.DataProxies;
+using System.Collections.Generic;
+using Random = UnityEngine.Random;
+using OGClient.Gameplay.Grid.Models;
+using OGClient.Gameplay.Mathchmaking;
+using OGClient.Gameplay.Grid.Configs;
 namespace OGClient.Gameplay.Grid
 {
-    public class GridController : SimulationBehaviour
+    public class GridController : IDisposable, IMatchPhasable
     {
 
-        private const string GridIntroAnimationParam = "Intro";
-        private const string GridShakeAnimationParam = "Shake";
-        private const string SelectableAnimationParam = "Selectable";
-        private const string HiddenAnimationParam = "Hidden";
         private const string FallAnimationParam = "Fall";
         private const string OutroAnimationParam = "Outro";
+        private const string HiddenAnimationParam = "Hidden";
         private const string BounceAnimationParam = "Bounce";
+        private const string SelectableAnimationParam = "Selectable";
         private const string IntroPowerupAnimationParam = "IntroPowerup";
 
-        [Header("View References")]
-        [SerializeField] private Canvas _gridCanvas;
+        private readonly Dictionary<MatchPhase, Action> _matchPhaseActions = new();
+        private readonly CompositeDisposable _compositeDisposable = new();
 
-        [SerializeField] private Transform _gridHolder;
-        [SerializeField] private GridLayoutGroup _gridLayoutGroup;
-        [SerializeField] private GridTileView _tileViewPrefab;
+        private int _tileListRandomIndex;
 
-        [field: SerializeField, Header("Grid Configuration")]
-        public Vector2Int GridSize { get; private set; } = new (7, 7);
+        private readonly GridView _gridView;
+        private readonly GridHolderView _gridHolderView;
+        private readonly DiContainer _diContainer;
+        private readonly GameSessionDataProxy _gameSessionDataProxy;
+        private readonly ScriptableGridSettings _gridSettings;
 
-        [SerializeField] private List<GridTileView> _tiles = new ();
-        [SerializeField] private List<GridTileView> _randomTiles = new ();
+        public GridModel Model { get; private set; }
 
-        [SerializeField] private int _tileListRandomIndex;
-        [SerializeField] private ScriptableGridPattern _overrideGridPattern;
-
-        [Header("Grid Items")]
-        [SerializeField] private GridItemView _itemViewPrefab;
-        [SerializeField] private ScriptableGridItem[] _itemsTypes;
-        [SerializeField] private GridItemView[] _itemsPowerUps;
-
-        [Header("Animations")]
-        [SerializeField] private float _itemDropDelay = 0.05f;
-        [SerializeField] private float _itemDropTime = 0.05f;
-        [SerializeField] private Animator _gridAnimator;
-        [SerializeField] private Color _gridTileColor1;
-        [SerializeField] private Color _gridTileColor2;
-
-        private DiContainer _diContainer;
-
-        private int _gridSeed = -1;
-        private int _cellSize;
-        private int _gridX;
-        private int _gridY;
-
-        public bool IsDiagonalsAllowed { get; private set; } = true;
-        public IEnumerable<GridTileView> Tiles => _tiles;
-
-        [Networked] public int GridSeed { get; set; }
-        [Networked] public int TileListRandomIndex { get; set; }
-
-        public void ShakeBoard() => _gridAnimator.Play(GridShakeAnimationParam);
-        public void HideGrid() => _gridCanvas.enabled = false;
-
-        [Inject]
-        public void Construct(DiContainer diContainer)
+        public GridController(DiContainer diContainer, GameSessionDataProxy gameSessionDataProxy, GridView gridView,
+                              ScriptableGridSettings gridSettings, GridHolderView gridHolderView)
         {
+            _gridView = gridView;
+            _gridHolderView = gridHolderView;
             _diContainer = diContainer;
+            _gameSessionDataProxy = gameSessionDataProxy;
+            _gridSettings = gridSettings;
+
+            _matchPhaseActions.Add(MatchPhase.Ending, EndingMatchPhase);
+
+            _gameSessionDataProxy.Initialized.Subscribe(_ => OnGameSessionDataInitialized()).AddTo(_compositeDisposable);
+            _gameSessionDataProxy.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(_compositeDisposable);
         }
 
-        public void InitializeGrid(int seed = -1)
+        public void Dispose()
         {
-            _tiles.Clear();
-            _gridSeed = seed;
-            // _randomTiles = _tiles;
-            // _randomTiles = _randomTiles.OrderBy(x => Random.value).ToList();
-
-            // todo: try to move this logic to GridModel or sumn
-            SpawnAllTiles();
-            SetConnections();
-            FillGrid();
-            ShowGrid();
+            _compositeDisposable?.Dispose();
         }
 
-        private void Awake()
+        public void OnGameSessionDataInitialized()
         {
-            HideGrid();
+            InitializeGrid(_gameSessionDataProxy.GridSize, _gameSessionDataProxy.Seed);
         }
 
-        public void SetGridSize(Vector2Int setValue)
+        public void OnMatchPhaseChanged(MatchPhase phase)
         {
-            GridSize = setValue;
-
-            bool useColumns = setValue.x > setValue.y;
-            int constraintCount = useColumns ? setValue.x : setValue.y;
-
-            _gridLayoutGroup.constraint = useColumns
-                ? GridLayoutGroup.Constraint.FixedColumnCount
-                : GridLayoutGroup.Constraint.FixedRowCount;
-
-            _gridLayoutGroup.constraintCount = constraintCount;
-
-            _cellSize = (270 - constraintCount) / constraintCount;
-            _gridLayoutGroup.cellSize = new Vector2Int(_cellSize, _cellSize);
+            Debug.Log($"Match phase changed to: {phase}");
+            _matchPhaseActions.TryGetValue(phase, out Action action);
+            action?.Invoke();
         }
 
-        private void ShowGrid()
-        {
-            _gridCanvas.enabled = true;
-            _gridAnimator.Play(GridIntroAnimationParam);
-        }
-
-        private void SpawnItem(int itemIndex, int gridX, int gridY, int offsetY)
-        {
-            int listIndex = GridSize.x * gridY + gridX;
-
-            GridItemView newItemView =
-                _diContainer.InstantiatePrefab(_itemViewPrefab, _tiles[listIndex].transform).GetComponent<GridItemView>();
-            newItemView.SetType(itemIndex);
-            newItemView.InstallGridItem(_itemsTypes[itemIndex]);
-            newItemView.transform.localScale = Vector3.one;
-
-            _tiles[listIndex].GridItemView = newItemView;
-
-            if (offsetY > 0)
-            {
-                newItemView.GetComponent<RectTransform>().anchoredPosition += Vector2.up * offsetY;
-
-                float dropDelay = _itemDropDelay * (GridSize.y - gridY);
-                float dropTime = _itemDropTime * 2;
-
-                _tiles[listIndex].GridItemView.PlayDelayedAnimation(BounceAnimationParam, dropDelay + dropTime);
-
-                newItemView.IsSpawning = true;
-
-                LeanTween.move(newItemView.gameObject, _tiles[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay).setOnComplete(() =>
-                {
-                    newItemView.IsSpawning = false;
-                    newItemView.transform.position = _tiles[listIndex].transform.position;
-                });
-            }
-        }
-
-        public void SpawnItem(GridItemView spawnItemView, GridTileView parentTileView, float delay)
+        public void CreateGridItem(GridItemView spawnItemView, GridTileView parentTileView, float delay)
         {
             GridItemView newItemView = _diContainer.InstantiatePrefab(spawnItemView, parentTileView.transform).GetComponent<GridItemView>();
-
             newItemView.transform.localScale = Vector3.one;
 
             if (delay > 0)
@@ -157,203 +80,187 @@ namespace OGClient.Gameplay.Grid
             parentTileView.GridItemView = newItemView;
         }
 
-
-        private void FillGrid()
+        public void EnableGrid()
         {
-            if (_gridSeed != -1) Random.InitState(_gridSeed);
-            int arrayIndex = 0;
-
-            for (_gridY = 0; _gridY < GridSize.y; _gridY++)
+            for (int listIndex = 0; listIndex < Model.Count; listIndex++)
             {
-                for (_gridX = 0; _gridX < GridSize.x; _gridX++)
-                {
-                    int randomItem = Random.Range(0, _itemsTypes.Length);
+                GridItemView gridItemView = Model[listIndex].GridItemView;
+                Model[listIndex].SetControlsActive(true);
 
-                    if (_overrideGridPattern)
-                    {
-                        Vector2Int gridIndex = new Vector2Int(arrayIndex % GridSize.x, arrayIndex / GridSize.y);
-
-                        if (_overrideGridPattern.Items[arrayIndex] < 0)
-                        {
-                            SpawnItem(_itemsPowerUps[_overrideGridPattern.Items[arrayIndex] * -1 - 1], _tiles[arrayIndex], 0);
-                        }
-                        else
-                        {
-                            SpawnItem(_overrideGridPattern.Items[arrayIndex], gridIndex.x, gridIndex.y, 0);
-                        }
-
-                        arrayIndex++;
-
-                        if (arrayIndex >= GridSize.x * GridSize.y) return;
-                    }
-                    else
-                    {
-                        SpawnItem(randomItem, _gridX, _gridY, 0);
-                    }
-                }
-            }
-        }
-
-        public void CollapseTiles()
-        {
-            // Check from bottom right to top left (from end of list to start)
-            for (int listIndex = _tiles.Count - 1; listIndex >= 0; listIndex--)
-            {
-                GridItemView gridItemView = _tiles[listIndex].GridItemView;
-
-                // If this grid tile is empty (has no item), check upwards until we find an item, and take it
-                if (gridItemView == null)
-                {
-                    int checkIndex = listIndex;
-
-                    while (checkIndex >= GridSize.x)
-                    {
-                        checkIndex -= GridSize.x;
-
-                        // If we found an item in this tile, drop it to the tile below
-                        if (_tiles[checkIndex].GridItemView)
-                        {
-                            _tiles[listIndex].GridItemView = _tiles[checkIndex].GridItemView;
-                            _tiles[checkIndex].GridItemView = null;
-
-                            _tiles[listIndex].GridItemView.transform.SetParent(_tiles[listIndex].transform);
-
-                            float dropDelay = _itemDropDelay * (GridSize.x - (float)checkIndex / GridSize.x);
-                            float dropTime = _itemDropTime;
-
-                            _tiles[listIndex].GridItemView.PlayDelayedAnimation(FallAnimationParam, dropDelay);
-                            _tiles[listIndex].GridItemView.PlayDelayedAnimation(BounceAnimationParam, dropDelay + dropTime);
-
-                            LeanTween.move(_tiles[listIndex].GridItemView.gameObject, _tiles[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay);
-
-                            break;
-                        }
-                    }
-                }
-            }
-
-            Invoke(nameof(FillGridDrop), 0.01f * GridSize.y);
-        }
-
-        public void FillGridDrop()
-        {
-            Debug.Log($"Fill Grid Drop: {GridSize.x}x{GridSize.y}");
-            for (_gridY = 0; _gridY < GridSize.y; _gridY++)
-            {
-                for (_gridX = 0; _gridX < GridSize.x; _gridX++)
-                {
-                    int listIndex = GridSize.x * _gridY + _gridX;
-                    if (_tiles[listIndex].GridItemView == null)
-                    {
-                        int randomItem = Random.Range(0, _itemsTypes.Length);
-                        SpawnItem(randomItem, _gridX, _gridY, GridSize.y * _cellSize);
-                    }
-                }
-            }
-        }
-
-        public void ClearGrid()
-        {
-            for (int listIndex = 0; listIndex < _tiles.Count; listIndex++)
-            {
-                GridItemView gridItemView = _tiles[listIndex].GridItemView;
-
-                _tiles[listIndex].SetControlsActive(false);
-
-                if (gridItemView)
-                {
-                    gridItemView.PlayDelayedAnimation(OutroAnimationParam, listIndex * 0.02f);
-                }
+                gridItemView?.SetAnimatorBool(SelectableAnimationParam, true);
             }
         }
 
         public void DisableGrid()
         {
-            for (int listIndex = 0; listIndex < _tiles.Count; listIndex++)
+            for (int listIndex = 0; listIndex < Model.Count; listIndex++)
             {
-                GridItemView gridItemView = _tiles[listIndex].GridItemView;
+                GridItemView gridItemView = Model[listIndex].GridItemView;
+                Model[listIndex].SetControlsActive(false);
 
-                _tiles[listIndex].SetControlsActive(false);
+                gridItemView?.SetAnimatorBool(SelectableAnimationParam, false);
+            }
+        }
 
-                if (gridItemView)
+        public void CollapseTiles()
+        {
+            for (int listIndex = Model.Count - 1; listIndex >= 0; listIndex--)
+            {
+                GridItemView gridItemView = Model[listIndex].GridItemView;
+
+                if (gridItemView != null) continue;
+                int checkIndex = listIndex;
+
+                while (checkIndex >= Model.GridSize.x)
                 {
-                    gridItemView.SetAnimatorBool(SelectableAnimationParam, false);
+                    checkIndex -= Model.GridSize.x;
+
+                    if (!Model[checkIndex].GridItemView) break;
+                    Model[listIndex].GridItemView = Model[checkIndex].GridItemView;
+                    Model[checkIndex].GridItemView = null;
+                    Model[listIndex].GridItemView.transform.SetParent(Model[listIndex].transform);
+
+                    float dropDelay = _gridSettings.ItemDropDelay * (Model.GridSize.x - (float)checkIndex / Model.GridSize.x);
+                    float dropTime = _gridSettings.ItemDropTime;
+
+                    Model[listIndex].GridItemView.PlayDelayedAnimation(FallAnimationParam, dropDelay);
+                    Model[listIndex].GridItemView.PlayDelayedAnimation(BounceAnimationParam, dropDelay + dropTime);
+
+                    LeanTween.move(Model[listIndex].GridItemView.gameObject,
+                        Model[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay);
+                }
+            }
+
+            Observable.Timer(TimeSpan.FromSeconds(0.01f * Model.GridSize.y))
+                .Subscribe(_ => FillGridDrop()).AddTo(_compositeDisposable);
+        }
+
+        private void FillGridDrop()
+        {
+            for (int y = 0; y < Model.GridSize.y; y++)
+            {
+                for (int x = 0; x < Model.GridSize.x; x++)
+                {
+                    int listIndex = Model.GridSize.x * y + x;
+                    if (Model[listIndex].GridItemView != null) continue;
+
+                    int randomItem = Random.Range(0, _gridSettings.ItemsTypes.Length);
+                    CreateGridItem(randomItem, x, y, Model.GridSize.y * _gridView.CellSize);
                 }
             }
         }
 
-        public void EnableGrid()
+                private void InitializeGrid(Vector2Int gridSize, int seed = -1)
         {
-            for (int listIndex = 0; listIndex < _tiles.Count; listIndex++)
+            Model = new GridModel(gridSize, seed);
+
+            SpawnTiles();
+            FillGrid();
+
+            _gridView.ShowGrid();
+            _gridView.SetGridSize(gridSize);
+
+            Model.InitializeGrid();
+        }
+
+        private void SpawnTiles()
+        {
+            for (int y = 0; y < Model.GridSize.y; y++)
             {
-                GridItemView gridItemView = _tiles[listIndex].GridItemView;
-
-                _tiles[listIndex].SetControlsActive(true);
-
-                if (gridItemView)
+                for (int x = 0; x < Model.GridSize.x; x++)
                 {
-                    gridItemView.SetAnimatorBool(SelectableAnimationParam, true);
+                    GridTileView newTileView = _diContainer.InstantiatePrefab(_gridSettings.TileViewPrefab, _gridHolderView.transform).GetComponent<GridTileView>();
+                    newTileView.InstallTileView(
+                        (x + y) % 2 == 0 ? _gridSettings.EvenTileColor : _gridSettings.OddTileColor);
+
+                    Model.AddTile(newTileView);
                 }
             }
         }
 
-        public GridTileView GetRandomTile()
+        private void FillGrid()
         {
-            GridTileView randomTileView = _randomTiles[_tileListRandomIndex];
-
-            if (_tileListRandomIndex < _randomTiles.Count - 1)
+            if (Model.Seed != -1)
             {
-                _tileListRandomIndex++;
-            }
-            else
-            {
-                _tileListRandomIndex = 0;
+                Random.InitState(Model.Seed);
             }
 
-            return randomTileView;
-        }
-
-        public GridTileView GetPowerupTile()
-        {
-            return _randomTiles.FirstOrDefault(tile =>
+            int arrayIndex = 0;
+            for (int y = 0; y < Model.GridSize.y; y++)
             {
-                GridItemView item = tile.GridItemView;
-                return item?.GridItemType < 0 && !item.IsClearing;
-            });
-        }
-
-        private void SpawnAllTiles()
-        {
-            for (_gridY = 0; _gridY < GridSize.y; _gridY++)
-            {
-                for (_gridX = 0; _gridX < GridSize.x; _gridX++)
+                for (int x = 0; x < Model.GridSize.x; x++)
                 {
-                    GridTileView newTileView = _diContainer.InstantiatePrefab(_tileViewPrefab, _gridHolder).GetComponent<GridTileView>();
-                    newTileView.InstallTileView((_gridX + _gridY) % 2 == 0 ? _gridTileColor1 : _gridTileColor2);
+                    int randomItem = Random.Range(0, _gridSettings.ItemsTypes.Length);
+                    if (_gridSettings.OverrideGridPattern)
+                    {
+                        Vector2Int gridIndex = new(arrayIndex % Model.GridSize.x, arrayIndex / Model.GridSize.y);
+                        if (_gridSettings.OverrideGridPattern.Items[arrayIndex] < 0)
+                        {
+                            CreateGridItem(_gridSettings.PowerUpItems[_gridSettings.OverrideGridPattern.Items[arrayIndex] * -1 - 1], Model[arrayIndex], 0);
+                        }
+                        else
+                        {
+                            CreateGridItem(_gridSettings.OverrideGridPattern.Items[arrayIndex], gridIndex.x, gridIndex.y, 0);
+                        }
 
-                    _tiles.Add(newTileView);
+                        arrayIndex++;
+
+                        if (arrayIndex >= Model.GridSize.x * Model.GridSize.y) return;
+                    }
+                    else
+                    {
+                        CreateGridItem(randomItem, x, y, 0);
+                    }
                 }
             }
         }
 
-        private void SetConnections()
+        private void CreateGridItem(int itemIndex, int gridX, int gridY, int offsetY)
         {
-            int width  = GridSize.x;
-            int height = GridSize.y;
-            int count  = _tiles.Count;
+            int listIndex = Model.GridSize.x * gridY + gridX;
 
-            for (int i = 0; i < count; i++)
+            GridItemView newItemView =
+                _diContainer.InstantiatePrefab(_gridSettings.ItemViewPrefab, Model[listIndex].transform).GetComponent<GridItemView>();
+            newItemView.SetType(itemIndex);
+            newItemView.InstallGridItem(_gridSettings.ItemsTypes[itemIndex]);
+            newItemView.transform.localScale = Vector3.one;
+
+            Model[listIndex].GridItemView = newItemView;
+
+            if (offsetY > 0)
             {
-                int x = i % width;
-                int y = i / width;
+                newItemView.GetComponent<RectTransform>().anchoredPosition += Vector2.up * offsetY;
 
-                GridTileView left = x > 0 ? _tiles[i - 1] : null;
-                GridTileView right = x < width - 1 ? _tiles[i + 1] : null;
-                GridTileView top = y > 0 ? _tiles[i - width] : null;
-                GridTileView bottom = y < height - 1 ? _tiles[i + width] : null;
+                float dropDelay = _gridSettings.ItemDropDelay * (Model.GridSize.y - gridY);
+                float dropTime = _gridSettings.ItemDropTime * 2;
 
-                _tiles[i].InstallTileConnections(right, left, top, bottom);
+                Model[listIndex].GridItemView.PlayDelayedAnimation(BounceAnimationParam, dropDelay + dropTime);
+
+                newItemView.IsSpawning = true;
+
+                LeanTween.move(newItemView.gameObject, Model[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay).setOnComplete(() =>
+                {
+                    newItemView.IsSpawning = false;
+                    newItemView.transform.position = Model[listIndex].transform.position;
+                });
             }
+        }
+
+        private void ClearGrid()
+        {
+            for (int listIndex = 0; listIndex < Model.Count; listIndex++)
+            {
+                GridItemView gridItemView = Model[listIndex].GridItemView;
+                Model[listIndex].SetControlsActive(false);
+
+                gridItemView?.PlayDelayedAnimation(OutroAnimationParam, listIndex * 0.02f);
+            }
+        }
+
+        private void EndingMatchPhase()
+        {
+            ClearGrid();
+            _gridView.HideGrid();
         }
 
     }

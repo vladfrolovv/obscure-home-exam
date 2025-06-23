@@ -16,6 +16,14 @@ namespace OGClient.Gameplay.DataProxies
             _hasControl.Value = hasControl;
         }
 
+        public void TryToExecuteLink()
+        {
+            if (_hasControl.Value)
+            {
+                _tryTyExecute.OnNext(Unit.Default);
+            }
+        }
+
         public void Reset()
         {
             _hasControl.Value = false;

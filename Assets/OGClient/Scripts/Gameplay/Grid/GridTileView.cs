@@ -73,7 +73,7 @@ namespace OGClient.Gameplay.Grid
 
             LeanTween
                 .scale(gameObject, Vector3.one, _appearTime)
-                .setDelay(_gridController.GridSize.x * _gridController.GridSize.y * _appearDelayMultiplier)
+                .setDelay(_gridController.Model.GridSize.x * _gridController.Model.GridSize.y * _appearDelayMultiplier)
                 .setEaseOutBounce();
         }
 
@@ -94,19 +94,19 @@ namespace OGClient.Gameplay.Grid
             // Check the last tile in the link sequence.
             // We will use this to check if we are connecting to same type
             GridTileView lastTileViewInLink = null;
-            if (_gridLinksController.TilesLink.Count > 0)
+            if (_gridLinksController.Model.Count > 0)
             {
-                lastTileViewInLink = _gridLinksController.TilesLink[^1];
+                lastTileViewInLink = _gridLinksController.Model[^1];
             }
 
             // If this tile was already added to the link, backtrack to it
-            if (_gridLinksController.TilesLink.Contains(this))
+            if (_gridLinksController.Model.Contains(this))
             {
-                _gridLinksController.LinkType = GridItemView.GridItemType;
+                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
                 // Remove all items in the link after this one
-                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
+                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
                 // _gridPlayerController.photonView.RPC("LinkRemoveAfterByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
@@ -118,14 +118,14 @@ namespace OGClient.Gameplay.Grid
             bool goodLink = false;
 
             // If this is the first tile in the link, add it regardless of type match
-            if (_gridLinksController.TilesLink.Count == 0)
+            if (_gridLinksController.Model.Count == 0)
             {
-                _gridLinksController.LinkType = GridItemView.GridItemType;
+                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
                 _connectorLine.SetActive(false);
 
-                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
+                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
                 // _gridPlayerController.photonView.RPC("LinkStartByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
 
                 return;
@@ -158,7 +158,7 @@ namespace OGClient.Gameplay.Grid
 
                     _connector.localEulerAngles = Vector3.forward * 0;
                 }
-                else if (_gridController.IsDiagonalsAllowed) // Check diagonal connections
+                else if (/*_gridController.IsDiagonalsAllowed*/ true) // Check diagonal connections
                 {
                     if (_topItemView && _topItemView._rightItemView && _topItemView._rightItemView == lastTileViewInLink) // Connect FROM top right tile
                     {
@@ -189,11 +189,10 @@ namespace OGClient.Gameplay.Grid
 
             if (goodLink)
             {
-                _gridLinksController.LinkType = GridItemView.GridItemType;
-
+                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
-                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
+                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
                 // _gridPlayerController.photonView.RPC("LinkAddByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
             }
         }

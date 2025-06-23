@@ -13,17 +13,19 @@ namespace OGClient.Gameplay.Specials
         [SerializeField] private float executeDelay = 2;
         [SerializeField] private Transform destroyEffect;
 
+        private GridView _gridView;
         private GridLinksController _gridLinksController;
 
         [Inject]
-        public void Construct(GridLinksController gridLinksController)
+        public void Construct(GridLinksController gridLinksController, GridView gridView)
         {
+            _gridView = gridView;
             _gridLinksController = gridLinksController;
         }
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            _gridLinksController.AddToExecuteList(this.gameObject);
+            _gridLinksController.Model.AddToExecuteList(this.gameObject);
 
             GridItemView gridItemView = gridTileView.GridItemView;
 
@@ -35,7 +37,7 @@ namespace OGClient.Gameplay.Specials
 
             for (int destroyIndex = 0; destroyIndex < destroyCount; destroyIndex++)
             {
-                GridTileView targetTileView = GridController.GetRandomTile();
+                GridTileView targetTileView = GridController.Model.GetRandomTile();
 
                 GridItemView targetItemView = targetTileView.GridItemView;
 
@@ -56,7 +58,7 @@ namespace OGClient.Gameplay.Specials
 
                     Destroy(newGlowLine.gameObject, executeDelay);
 
-                    _gridLinksController.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
+                    _gridLinksController.Model.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
                 }
             }
 
@@ -66,7 +68,7 @@ namespace OGClient.Gameplay.Specials
 
             if (destroyEffect) Instantiate(destroyEffect, gridTileView.transform.position, Quaternion.identity);
 
-            GridController.ShakeBoard();
+            _gridView.ShakeBoard();
 
             if (gridItemView)
             {
@@ -75,8 +77,8 @@ namespace OGClient.Gameplay.Specials
                 Destroy(gridItemView.gameObject);
             }
 
-            _gridLinksController.RemoveFromExecuteList(this.gameObject);
-            _gridLinksController.CheckExecuteLink();
+            _gridLinksController.Model.RemoveFromExecuteList(this.gameObject);
+            _gridLinksController.Model.CheckExecuteLink();
         }
 
     }

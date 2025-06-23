@@ -14,6 +14,7 @@ namespace OGServer.Gameplay
     public class NetworkGameManager : NetworkBehaviour, INetworkRunnerCallbacks
     {
 
+        [Networked] private Vector2Int GridSize { get; set; }
         [Networked] private int Seed { get; set; }
         [Networked] private int Rounds { get; set; }
         [Networked] private int CurrentRound { get; set; }
@@ -50,6 +51,7 @@ namespace OGServer.Gameplay
         {
             _gameSessionDataProxy.SetMatchPhase(MatchPhase.Starting);
 
+            GridSize = _gameSessionSettings.GridSize;
             Seed = UnityEngine.Random.Range(0, int.MaxValue);
             Rounds = _gameSessionSettings.Rounds;
 
@@ -58,7 +60,7 @@ namespace OGServer.Gameplay
                 runner.Spawn(_playerPrefab, Vector3.zero, Quaternion.identity, playerRef);
             }
 
-            RPC_InitializeSession(Seed, Rounds);
+            RPC_InitializeSession(GridSize, Seed, Rounds);
             Observable.Timer(TimeSpan.FromSeconds(BaseConstants.GAME_START_DELAY))
                 .Subscribe(_ =>
                 {
@@ -68,8 +70,9 @@ namespace OGServer.Gameplay
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
-        private void RPC_InitializeSession(int seed, int rounds)
+        private void RPC_InitializeSession(Vector2Int size, int seed, int rounds)
         {
+            _gameSessionDataProxy.SetGridSize(size);
             _gameSessionDataProxy.SetSeed(seed);
             _gameSessionDataProxy.SetRounds(rounds);
             _gameSessionDataProxy.RaiseInitialized();

@@ -3,6 +3,7 @@ using OGClient.Gameplay;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Grid.MergeCombos;
+using OGClient.Gameplay.Players;
 using OGClient.Gameplay.Timers;
 using OGClient.Gameplay.UI;
 using OGClient.Popups;
@@ -21,11 +22,12 @@ namespace OGClient.Installers
         [Header("Controllers")]
         [SerializeField] private GameManager _gameManager;
         [SerializeField] private PopupsController _popupsController;
-        [SerializeField] private GridController _gridController;
 
         [Header("Vies")]
         [SerializeField] private MergeEffectView _mergeEffectView;
         [SerializeField] private ToastView _toastView;
+        [SerializeField] private GridView _gridView;
+        [SerializeField] private GridHolderView _gridHolderView;
 
         public override void InstallBindings()
         {
@@ -35,16 +37,18 @@ namespace OGClient.Installers
             // controllers
             Container.BindInstance(_gameManager).AsSingle();
             Container.BindInstance(_popupsController).AsSingle();
-            Container.BindInstance(_gridController).AsSingle();
 
             // views
             Container.BindInstance(_mergeEffectView).AsSingle();
             Container.BindInstance(_toastView).AsSingle();
+            Container.BindInstance(_gridView).AsSingle();
 
             Container.BindInterfacesAndSelfTo<TimeController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MatchTimerController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MergeCombosController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<GridController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<GridLinksController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PlayerLinkingController>().AsSingle().NonLazy();
 
             InstallDataProxies();
         }
