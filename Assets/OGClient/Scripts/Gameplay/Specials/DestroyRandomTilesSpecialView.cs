@@ -25,7 +25,7 @@ namespace OGClient.Gameplay.Specials
 
         protected override IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            _gridLinksController.Model.AddToExecuteList(this.gameObject);
+            _gridLinksController.AddToExecuteList(this.gameObject);
 
             GridItemView gridItemView = gridTileView.GridItemView;
 
@@ -58,7 +58,7 @@ namespace OGClient.Gameplay.Specials
 
                     Destroy(newGlowLine.gameObject, executeDelay);
 
-                    _gridLinksController.Model.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
+                    _gridLinksController.CollectItemAtTile(targetTileView, executeDelay * 0.9f);
                 }
             }
 
@@ -77,8 +77,8 @@ namespace OGClient.Gameplay.Specials
                 Destroy(gridItemView.gameObject);
             }
 
-            _gridLinksController.Model.RemoveFromExecuteList(this.gameObject);
-            _gridLinksController.Model.CheckExecuteLink();
+            _gridLinksController.RemoveFromExecuteList(this.gameObject);
+            _gridLinksController.CheckExecuteLink();
         }
 
     }

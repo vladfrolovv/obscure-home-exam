@@ -36,21 +36,21 @@ namespace OGClient.Gameplay.Grid
 
         private IEnumerator ExecutePatternCoroutine(GridTileView gridTileView, float delay)
         {
-            _gridLinksController.Model.AddToExecuteList(gameObject);
+            _gridLinksController.AddToExecuteList(gameObject);
 
             yield return new WaitForSeconds(delay + _executeDelay);
 
             _timeController.SlowMotion(0.2f, 0.1f);
 
             Vector2Int gridSize = _gridController.GridModel.GridSize;
-            Vector2Int tileGridIndex = _gridLinksController.Model.GetIndexInGrid(gridTileView);
+            Vector2Int tileGridIndex = _gridLinksController.GetIndexInGrid(gridTileView);
 
             for (_patternIndex = 0; _patternIndex < _destroyPatternModel.Directions.Count; _patternIndex++)
             {
                 int tileX = Mathf.Clamp(tileGridIndex.x + _destroyPatternModel.Directions[_patternIndex].x, 0, gridSize.x - 1);
                 int tileY = Mathf.Clamp(tileGridIndex.y + _destroyPatternModel.Directions[_patternIndex].y, 0, gridSize.y - 1);
 
-                _gridLinksController.Model.CollectItemAtGrid(tileX, tileY, _destroyPatternModel.Delay);
+                _gridLinksController.CollectItemAtGrid(tileX, tileY, _destroyPatternModel.Delay);
             }
 
             yield return new WaitForSeconds(0.2f);
@@ -59,8 +59,8 @@ namespace OGClient.Gameplay.Grid
 
             _gridView.ShakeBoard();
 
-            _gridLinksController.Model.RemoveFromExecuteList(this.gameObject);
-            _gridLinksController.Model.CheckExecuteLink();
+            _gridLinksController.RemoveFromExecuteList(this.gameObject);
+            _gridLinksController.CheckExecuteLink();
         }
     }
 }

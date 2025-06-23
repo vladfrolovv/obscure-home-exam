@@ -39,9 +39,6 @@ namespace OGClient.Gameplay.Grid
         public IObservable<Unit> GridCleared => _gridCleared;
 
         public GridModel GridModel { get; private set; }
-        public GridLinksModel GridLinksModel { get; private set; }
-
-        public bool AllowDiagonals => _gridSettings.AllowDiagonals;
 
         public GridController(GameSessionDataProxy gameSessionDataProxy, ScriptableGridSettings gridSettings, GridHolderView gridHolderView, DiContainer diContainer,
                               ScriptableGridLinkSettings gridLinkSettings)
@@ -162,7 +159,6 @@ namespace OGClient.Gameplay.Grid
         private void InitializeGrid(Vector2Int gridSize, int seed = -1)
         {
             GridModel = new GridModel(gridSize, seed);
-            GridLinksModel = new GridLinksModel(GridModel, _gridLinkSettings);
 
             SpawnTiles();
             FillGrid();

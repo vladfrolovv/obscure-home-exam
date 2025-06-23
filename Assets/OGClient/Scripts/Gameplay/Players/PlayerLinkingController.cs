@@ -1,5 +1,6 @@
 ﻿using System;
 using OGClient.Gameplay.DataProxies;
+using OGShared.Gameplay.Grid;
 using UniRx;
 using UnityEngine;
 namespace OGClient.Gameplay.Players
@@ -7,19 +8,21 @@ namespace OGClient.Gameplay.Players
     public class PlayerLinkingController : IDisposable
     {
 
+        private readonly GridLinkingDataProxy _gridLinkingDataProxy;
+        private readonly PlayerLinkingDataProxy _playerLinkingDataProxy;
         private readonly GameManager _gameManager;
-        private readonly GridLinksDataProxy _gridLinksDataProxy;
 
         private IDisposable _disposableInput;
         private readonly CompositeDisposable _compositeDisposable = new();
 
-        public PlayerLinkingController(GridLinksDataProxy gridLinksDataProxy, GameManager gameManager)
+        public PlayerLinkingController(GameManager gameManager, PlayerLinkingDataProxy playerLinkingDataProxy, GridLinkingDataProxy gridLinkingDataProxy)
         {
             _gameManager = gameManager;
-            _gridLinksDataProxy = gridLinksDataProxy;
+            _gridLinkingDataProxy = gridLinkingDataProxy;
+            _playerLinkingDataProxy = playerLinkingDataProxy;
 
             InstallInput();
-            gridLinksDataProxy.HasControl.Subscribe(OnInputStateSwitched).AddTo(_compositeDisposable);
+            playerLinkingDataProxy.HasControl.Subscribe(OnInputStateSwitched).AddTo(_compositeDisposable);
         }
 
         public void Dispose()
@@ -48,9 +51,9 @@ namespace OGClient.Gameplay.Players
         private void OnInputUpdate(long l)
         {
             if (!_gameManager.ThisClientIsCurrentPlayer || _gameManager.CurrentPlayerMovesLeft <= 0) return;
-            if (!Input.GetMouseButtonUp(0) || !_gridLinksDataProxy.HasControl.Value) return;
+            if (!Input.GetMouseButtonUp(0) || !_playerLinkingDataProxy.HasControl.Value) return;
 
-            _gridLinksDataProxy.TryToExecuteLink();
+            _gridLinkingDataProxy.OnLinkExecuted();
         }
 
     }

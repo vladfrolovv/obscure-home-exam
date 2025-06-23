@@ -60,7 +60,7 @@ namespace OGClient.Installers
         private void InstallDataProxies()
         {
             Container.BindInterfacesAndSelfTo<ScoreDataProxy>().AsSingle().NonLazy();
-            Container.BindInterfacesAndSelfTo<GridLinksDataProxy>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PlayerLinkingDataProxy>().AsSingle().NonLazy();
         }
 
     }

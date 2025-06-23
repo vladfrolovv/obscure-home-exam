@@ -32,19 +32,19 @@ namespace OGClient.Gameplay
         private readonly PlayerTurnView _playerTurnView;
         private readonly ScoreDataProxy _scoreDataProxy;
         private readonly PopupsController _popupsController;
-        private readonly GridLinksDataProxy _gridLinksDataProxy;
         private readonly MovesDataProxy _movesDataProxy;
         private readonly MatchTimerController _matchTimerController;
         private readonly ScriptableGameplaySettings _gameplaySettings;
         private readonly GameSessionDataProxy _gameSessionDataProxy;
         private readonly GridLinksController _gridLinksController;
+        private readonly PlayerLinkingDataProxy _playerLinkingDataProxy;
 
         public bool ThisClientIsCurrentPlayer => _currentNetworkController != null && _currentNetworkController.HasInputAuthority;
         public int CurrentPlayerMovesLeft => _movesDataProxy.GetMovesLeft(_playerIndex);
 
         public GameManager(ScoreDataProxy scoreDataProxy, PopupsController popupsController, MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
-                           GameSessionDataProxy gameSessionDataProxy, GridLinksDataProxy gridLinksDataProxy, RoundsView roundsView, PlayerTurnView playerTurnView,
-                           GridLinksController gridLinksController, ToastView toastView, MovesDataProxy movesDataProxy)
+                           GameSessionDataProxy gameSessionDataProxy, RoundsView roundsView, PlayerTurnView playerTurnView,
+                           GridLinksController gridLinksController, ToastView toastView, MovesDataProxy movesDataProxy, PlayerLinkingDataProxy playerLinkingDataProxy)
         {
             if (NetworkRunnerInstance.Instance.IsServer) return;
 
@@ -55,10 +55,10 @@ namespace OGClient.Gameplay
             _scoreDataProxy = scoreDataProxy;
             _gameplaySettings = gameplaySettings;
             _popupsController = popupsController;
-            _gridLinksDataProxy = gridLinksDataProxy;
             _matchTimerController = matchTimerController;
             _gameSessionDataProxy = gameSessionDataProxy;
             _gridLinksController = gridLinksController;
+            _playerLinkingDataProxy = playerLinkingDataProxy;
 
             _matchPhaseActions.Add(MatchPhase.Starting, StartMatchPhase);
             _matchPhaseActions.Add(MatchPhase.Playing, PlayingMatchPhase);
@@ -102,20 +102,20 @@ namespace OGClient.Gameplay
         private void OnLinkExecuted(Unit unit)
         {
             _movesDataProxy.TriggerSpendMoveRequest(-1);
-            if (_gridLinksController.Model.PowerupsInLinkCount > 1)
+            if (_gridLinksController.PowerupsInLink.Count > 1)
             {
                 _movesDataProxy.TriggerSpendMoveRequest(1);
-                _toastView.SetToast(_gridLinksController.Model[^1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
+                _toastView.SetToast(_gridLinksController.TilesLink[^1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
             }
 
             _matchTimerController.PauseTimerFor(-1);
-            _gridLinksDataProxy.ChangeControlState(false);
+            _playerLinkingDataProxy.ChangeControlState(false);
         }
 
         private void StartMatchPhase()
         {
-            _gridLinksDataProxy.ChangeControlState(false);
-            _gridLinksController.Model.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
+            _playerLinkingDataProxy.ChangeControlState(false);
+            // _gridLinksController.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
         }
 
         private void PlayingMatchPhase()
@@ -155,7 +155,7 @@ namespace OGClient.Gameplay
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);
             _roundsView.SetRoundsText($"{_playerViews[_playerIndex].PlayerModel.Nickname + "'S TURN!"}");
 
-            _gridLinksDataProxy.ChangeControlState(true);
+            _playerLinkingDataProxy.ChangeControlState(true);
             if (ThisClientIsCurrentPlayer)
             {
                 _matchTimerController.ResetTime();
@@ -181,7 +181,7 @@ namespace OGClient.Gameplay
             {
                 _movesDataProxy.TriggerSpendMoveRequest(0);
             }
-            _gridLinksDataProxy.ChangeControlState(true);
+            _playerLinkingDataProxy.ChangeControlState(true);
             // NextPlayer();
         }
 

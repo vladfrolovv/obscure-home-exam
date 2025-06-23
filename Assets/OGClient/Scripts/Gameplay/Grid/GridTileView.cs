@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
+using OGClient.Gameplay.Grid.Configs;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Zenject;
-using OGClient.Utils;
 namespace OGClient.Gameplay.Grid
 {
     public class GridTileView : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler
@@ -42,6 +42,7 @@ namespace OGClient.Gameplay.Grid
 
         private GameManager _gameManager;
         private GridController _gridController;
+        private ScriptableGridSettings _gridSettings;
         private GridLinksController _gridLinksController;
 
         public void SetControlsActive(bool active) => _eventTrigger.enabled = active;
@@ -51,11 +52,12 @@ namespace OGClient.Gameplay.Grid
         public void SetClickSize(float setValue) => _buttonImage.transform.localScale = Vector3.one * setValue;
 
         [Inject]
-        public void Construct(GridController gridController, GameManager gameManager, GridLinksController gridLinksController)
+        public void Construct(GridController gridController, GameManager gameManager, GridLinksController gridLinksController, ScriptableGridSettings gridSettings)
         {
             _gameManager = gameManager;
             _gridController = gridController;
             _gridLinksController = gridLinksController;
+            _gridSettings = gridSettings;
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -114,15 +116,15 @@ namespace OGClient.Gameplay.Grid
             GridTileView lastTileViewInLink = FindLastTileViewInLink();
             bool goodLink = false;
             // If this is the first tile in the link, add it regardless of type match
-            if (_gridLinksController.Model.Count == 0)
+            if (_gridLinksController.TilesLink.Count == 0)
             {
-                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
+                _gridLinksController.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
                 _connectorLine.SetActive(false);
 
-                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
-                _gridController.GridLinksModel.LinkStartByGrid(gridTilePos.x, gridTilePos.y);
+                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
+                _gridLinksController.LinkStartByGrid(gridTilePos.x, gridTilePos.y);
                 return;
             }
 
@@ -150,7 +152,7 @@ namespace OGClient.Gameplay.Grid
                     goodLink = true;
                     _connector.localEulerAngles = Vector3.forward * 0;
                 }
-                else if (_gridController.AllowDiagonals) // Check diagonal connections
+                else if (_gridSettings.AllowDiagonals) // Check diagonal connections
                 {
                     if (_topItemView && _topItemView._rightItemView && _topItemView._rightItemView == lastTileViewInLink) // Connect FROM top right tile
                     {
@@ -177,23 +179,25 @@ namespace OGClient.Gameplay.Grid
 
             if (goodLink)
             {
-                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
+                _gridLinksController.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
                 // todo: make this RPC
-                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
-                _gridController.GridLinksModel.LinkAddByGrid(gridTilePos.x, gridTilePos.y);
+                Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
+                _gridLinksController.LinkAddByGrid(gridTilePos.x, gridTilePos.y);
             }
         }
 
+        /// <summary>
+        /// Check the last tile in the link sequence.
+        /// We will use this to check if we are connecting to same type
+        /// </summary>
         private GridTileView FindLastTileViewInLink()
         {
-            // Check the last tile in the link sequence.
-            // We will use this to check if we are connecting to same type
             GridTileView lastTileViewInLink = null;
-            if (_gridLinksController.Model.Count > 0)
+            if (_gridLinksController.TilesLink.Count > 0)
             {
-                lastTileViewInLink = _gridLinksController.Model[^1];
+                lastTileViewInLink = _gridLinksController.TilesLink[^1];
             }
 
             return lastTileViewInLink;
@@ -210,13 +214,12 @@ namespace OGClient.Gameplay.Grid
 
         private bool TryToBacktrackLinking()
         {
-            if (!_gridLinksController.Model.Contains(this)) return false;
-            _gridLinksController.Model.LinkType = GridItemView.GridItemType;
+            if (!_gridLinksController.TilesLink.Contains(this)) return false;
+            _gridLinksController.LinkType = GridItemView.GridItemType;
             _gridLinksController.CheckSelectables();
 
-            // Remove all items in the link after this one
-            Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
-            _gridController.GridLinksModel.LinkRemoveAfterByGrid(gridTilePos.x, gridTilePos.y);
+            Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
+            _gridLinksController.LinkRemoveAfterByGrid(gridTilePos.x, gridTilePos.y);
             return true;
         }
 

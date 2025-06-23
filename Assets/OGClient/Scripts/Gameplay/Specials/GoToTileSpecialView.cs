@@ -24,7 +24,7 @@ namespace OGClient.Gameplay.Specials
 
             if (gridItemView == true)
             {
-                _gridLinksController.Model.AddToExecuteList(this.gameObject);
+                _gridLinksController.AddToExecuteList(this.gameObject);
 
                 gridItemView.IsClearing = true;
 
@@ -54,7 +54,7 @@ namespace OGClient.Gameplay.Specials
                     }
                 }
 
-                _gridLinksController.Model.CollectItemAtTile(targetTileView, moveTime);
+                _gridLinksController.CollectItemAtTile(targetTileView, moveTime);
 
                 gridItemView.TryToCollect();
 
@@ -67,14 +67,14 @@ namespace OGClient.Gameplay.Specials
                         if (_carryItemView)
                         {
                             GridController.CreateGridItem(_carryItemView, targetTileView, 0);
-                            _gridLinksController.Model.CollectItemAtTile(targetTileView, 0.0f);
+                            _gridLinksController.CollectItemAtTile(targetTileView, 0.0f);
                         }
 
                         gridItemView.TryToClear();
                         Destroy(gridItemView.gameObject);
 
-                        _gridLinksController.Model.RemoveFromExecuteList(this.gameObject);
-                        _gridLinksController.Model.CheckExecuteLink();
+                        _gridLinksController.RemoveFromExecuteList(this.gameObject);
+                        _gridLinksController.CheckExecuteLink();
                     });
                 });
 
