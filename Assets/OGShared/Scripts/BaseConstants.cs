@@ -1,4 +1,4 @@
-﻿namespace OGClient
+﻿namespace OGShared
 {
     public static class BaseConstants
     {

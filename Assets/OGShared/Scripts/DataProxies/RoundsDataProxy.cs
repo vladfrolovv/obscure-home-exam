@@ -1,7 +1,6 @@
 ﻿using System;
 using UniRx;
-using UnityEngine;
-namespace OGClient.Gameplay.DataProxies
+namespace OGShared.DataProxies
 {
     public class RoundsDataProxy
     {

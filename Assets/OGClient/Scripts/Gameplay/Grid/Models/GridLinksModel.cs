@@ -2,6 +2,7 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using OGClient.Gameplay.Grid.Configs;
 using Random = UnityEngine.Random;
 using OGClient.Gameplay.Grid.MergeCombos;
@@ -37,7 +38,9 @@ namespace OGClient.Gameplay.Grid.Models
 
         private int _currentLinkSize;
         private bool _isExecuting;
-        private bool _thisClientIsCurrentPlayer;
+
+        // todo: add switch
+        private bool _thisClientIsCurrentPlayer = true;
         private Vector2 _direction = Vector2.zero;
 
         public int LinkType { get; set; } = -1;
@@ -131,6 +134,8 @@ namespace OGClient.Gameplay.Grid.Models
 
             _collectedItems?.OnNext(itemsCollected);
             _linkExecuted?.OnNext(Unit.Default);
+
+            Debug.Log($"Trying to execute link: {string.Join(", ", _tilesLink.Select(x => x.gameObject.name))}");
             return true;
         }
 
@@ -217,6 +222,7 @@ namespace OGClient.Gameplay.Grid.Models
             tileView.SetClickSize(1);
         }
 
+        // todo make this RPC
         public void LinkRemoveAfterByGrid(int gridX, int gridY)
         {
             GridTileView tileView = GetTileByGrid(gridX, gridY);

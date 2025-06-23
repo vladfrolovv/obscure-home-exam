@@ -1,14 +1,15 @@
 using UniRx;
 using System;
+using Zenject;
 using Fusion;
 using UnityEngine;
 using Fusion.Sockets;
 using System.Collections.Generic;
-using OGClient;
+using OGClient.Utils;
+using OGShared;
 using OGShared.DataProxies;
 using OGShared.Gameplay;
 using UnityEngine.SceneManagement;
-using Zenject;
 namespace OGServer.Gameplay
 {
     public class NetworkGameManager : NetworkBehaviour, INetworkRunnerCallbacks
@@ -16,26 +17,38 @@ namespace OGServer.Gameplay
 
         [Networked] private Vector2Int GridSize { get; set; }
         [Networked] private int Seed { get; set; }
+
         [Networked] private int Rounds { get; set; }
         [Networked] private int CurrentRound { get; set; }
 
+        [Header("Networking Info")]
         [SerializeField] private SceneRef _gameplayScene;
         [SerializeField] private NetworkPrefabRef _playerPrefab;
 
+        [Header("Controllers")]
+        [SerializeField] private MovesNetworkController _movesNetworkController;
+
         private GameSessionDataProxy _gameSessionDataProxy;
         private ScriptableGameSessionSettings _gameSessionSettings;
+        private ClientsAvailabilityController _availabilityController;
+
+        private readonly bool _allClientsAreReady = true;
 
         [Inject]
-        public void Construct(GameSessionDataProxy gameSessionDataProxy, ScriptableGameSessionSettings scriptableGameSessionSettings)
+        public void Construct(GameSessionDataProxy gameSessionDataProxy, ScriptableGameSessionSettings scriptableGameSessionSettings,
+                              ClientsAvailabilityController availabilityController)
         {
             _gameSessionDataProxy = gameSessionDataProxy;
             _gameSessionSettings = scriptableGameSessionSettings;
+            _availabilityController = availabilityController;
         }
 
         public override void Spawned()
         {
             if (!Runner.IsServer) return;
+
             _gameSessionDataProxy.SetMatchPhase(MatchPhase.Waiting);
+            // _availabilityController.ClientsReady.Subscribe(_ => _allClientsAreReady = true).AddTo(this);
         }
 
         public void OnSceneLoadDone(NetworkRunner runner)
@@ -61,10 +74,18 @@ namespace OGServer.Gameplay
             }
 
             RPC_InitializeSession(GridSize, Seed, Rounds);
+            UniRxUtils.WaitUntilObs(() => _allClientsAreReady)
+                .Subscribe(_ => InitializeMatchWithDelay()).AddTo(this);
+        }
+
+        private void InitializeMatchWithDelay()
+        {
             Observable.Timer(TimeSpan.FromSeconds(BaseConstants.GAME_START_DELAY))
                 .Subscribe(_ =>
                 {
+                    _movesNetworkController.InitializeMovesController();
                     _gameSessionDataProxy.SetMatchPhase(MatchPhase.Playing);
+
                     Rpc_SetMatchPhase(MatchPhase.Playing);
                 }).AddTo(this);
         }

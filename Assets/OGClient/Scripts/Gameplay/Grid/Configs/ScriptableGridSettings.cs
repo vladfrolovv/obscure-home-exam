@@ -17,6 +17,9 @@ namespace OGClient.Gameplay.Grid.Configs
         [field: SerializeField]
         public float ItemDropTime { get; private set; } = 0.05f;
 
+        [field: SerializeField]
+        public bool AllowDiagonals { get; private set; } = true;
+
         [field: SerializeField, Header("Other Configs")]
         public ScriptableGridPattern OverrideGridPattern { get; private set; }
 

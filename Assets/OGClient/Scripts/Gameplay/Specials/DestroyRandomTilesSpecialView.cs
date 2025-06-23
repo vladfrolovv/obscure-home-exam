@@ -37,7 +37,7 @@ namespace OGClient.Gameplay.Specials
 
             for (int destroyIndex = 0; destroyIndex < destroyCount; destroyIndex++)
             {
-                GridTileView targetTileView = GridController.Model.GetRandomTile();
+                GridTileView targetTileView = GridController.GridModel.GetRandomTile();
 
                 GridItemView targetItemView = targetTileView.GridItemView;
 

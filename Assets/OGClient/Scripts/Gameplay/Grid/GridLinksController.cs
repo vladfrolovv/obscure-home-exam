@@ -5,6 +5,7 @@ using OGClient.Gameplay.Timers;
 using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Grid.Configs;
 using OGClient.Gameplay.Grid.Models;
+using OGClient.Utils;
 using UnityEngine.EventSystems;
 namespace OGClient.Gameplay.Grid
 {
@@ -19,7 +20,7 @@ namespace OGClient.Gameplay.Grid
         private readonly GridController _gridController;
         private readonly CompositeDisposable _compositeDisposable = new ();
 
-        public GridLinksModel Model { get; private set; }
+        public GridLinksModel Model => _gridController.GridLinksModel;
 
         public GridLinksController(GridController gridController, MatchTimerController matchTimerController, ScriptableGridLinkSettings gridLinkSettings, EventSystem eventSystem,
                                    GridLinksDataProxy gridLinksDataProxy)
@@ -28,10 +29,15 @@ namespace OGClient.Gameplay.Grid
             _gridController = gridController;
 
             matchTimerController.TimeUp.Subscribe(_ => OnControlStateChanged(false)).AddTo(_compositeDisposable);
-            gridLinksDataProxy.HasControl.Subscribe(OnControlStateChanged).AddTo(_compositeDisposable);
 
-            Model = new GridLinksModel(gridController.Model, gridLinkSettings);
-            Model.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
+            gridLinksDataProxy.HasControl.Subscribe(OnControlStateChanged).AddTo(_compositeDisposable);
+            gridLinksDataProxy.TryToExecute.Subscribe(_ => Model.TryToExecuteLink()).AddTo(_compositeDisposable);
+
+            UniRxUtils.WaitUntilObs(() => Model != null)
+                .Subscribe(delegate
+                {
+                    Model.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
+                }).AddTo(_compositeDisposable);
         }
 
         public void Dispose()
@@ -42,7 +48,6 @@ namespace OGClient.Gameplay.Grid
         private void OnControlStateChanged(bool hasControl)
         {
             Debug.Log($"Control state changed: {hasControl}");
-
             _eventSystem.enabled = hasControl;
             if (hasControl)
             {
@@ -75,9 +80,9 @@ namespace OGClient.Gameplay.Grid
 
         public void CheckSelectables()
         {
-            for (int listIndex = _gridController.Model.Count - 1; listIndex >= 0; listIndex--)
+            for (int listIndex = _gridController.GridModel.Count - 1; listIndex >= 0; listIndex--)
             {
-                GridItemView currentItemView = _gridController.Model[listIndex].GridItemView;
+                GridItemView currentItemView = _gridController.GridModel[listIndex].GridItemView;
 
                 if (currentItemView)
                 {
@@ -93,13 +98,13 @@ namespace OGClient.Gameplay.Grid
                     // Set the color of the line based on the tile
                     if (Model.LinkType < 0)
                     {
-                        _gridController.Model[listIndex].SetConnectorAnimator(true);
+                        _gridController.GridModel[listIndex].SetConnectorAnimator(true);
                         currentItemView.SetGlowAnimator(true);
                     }
                     else
                     {
-                        _gridController.Model[listIndex].SetConnectorLineColor(currentItemView.Color);
-                        _gridController.Model[listIndex].SetConnectorAnimator(false);
+                        _gridController.GridModel[listIndex].SetConnectorLineColor(currentItemView.Color);
+                        _gridController.GridModel[listIndex].SetConnectorAnimator(false);
 
                         currentItemView.SetGlowAnimator(false);
                     }
@@ -109,10 +114,10 @@ namespace OGClient.Gameplay.Grid
 
         public void ResetSelectables()
         {
-            if (_gridController.Model == null) return;
-            for (int listIndex = _gridController.Model.Count - 1; listIndex >= 0; listIndex--)
+            if (_gridController.GridModel == null) return;
+            for (int listIndex = _gridController.GridModel.Count - 1; listIndex >= 0; listIndex--)
             {
-                GridItemView currentItemView = _gridController.Model[listIndex].GridItemView;
+                GridItemView currentItemView = _gridController.GridModel[listIndex].GridItemView;
                 if (currentItemView)
                 {
                     currentItemView.SetAnimatorBool(SelectableProperty, true);

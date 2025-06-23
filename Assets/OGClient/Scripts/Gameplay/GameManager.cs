@@ -1,19 +1,18 @@
 using UniRx;
 using System;
-using Zenject;
 using OGShared;
 using UnityEngine;
 using OGClient.Popups;
+using OGShared.Gameplay;
 using OGClient.Gameplay.UI;
+using OGShared.DataProxies;
+using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Timers;
 using OGClient.Gameplay.Players;
 using System.Collections.Generic;
 using OGClient.Gameplay.DataProxies;
-using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Mathchmaking;
 using OGClient.Gameplay.UI.GameOver;
-using OGShared.DataProxies;
-using OGShared.Gameplay;
 namespace OGClient.Gameplay
 {
     public class GameManager : IDisposable, IMatchPhasable
@@ -26,6 +25,7 @@ namespace OGClient.Gameplay
         private readonly CompositeDisposable _compositeDisposable = new();
 
         private int _playerIndex;
+        private NetworkPlayerController _currentNetworkController;
 
         private readonly ToastView _toastView;
         private readonly RoundsView _roundsView;
@@ -33,27 +33,25 @@ namespace OGClient.Gameplay
         private readonly ScoreDataProxy _scoreDataProxy;
         private readonly PopupsController _popupsController;
         private readonly GridLinksDataProxy _gridLinksDataProxy;
+        private readonly MovesDataProxy _movesDataProxy;
         private readonly MatchTimerController _matchTimerController;
         private readonly ScriptableGameplaySettings _gameplaySettings;
         private readonly GameSessionDataProxy _gameSessionDataProxy;
         private readonly GridLinksController _gridLinksController;
 
-        // todo: remove, use GameSessionDataProxy instead
-        private readonly Subject<PlayerView> _playerSwitched = new();
-        public IObservable<PlayerView> PlayerSwitched => _playerSwitched;
-
-        public bool ThisClientIsCurrentPlayer => NetworkPlayerController != null && NetworkPlayerController.HasInputAuthority;
-        public NetworkPlayerController NetworkPlayerController { get; private set; }
+        public bool ThisClientIsCurrentPlayer => _currentNetworkController != null && _currentNetworkController.HasInputAuthority;
+        public int CurrentPlayerMovesLeft => _movesDataProxy.GetMovesLeft(_playerIndex);
 
         public GameManager(ScoreDataProxy scoreDataProxy, PopupsController popupsController, MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
                            GameSessionDataProxy gameSessionDataProxy, GridLinksDataProxy gridLinksDataProxy, RoundsView roundsView, PlayerTurnView playerTurnView,
-                           GridLinksController gridLinksController, ToastView toastView)
+                           GridLinksController gridLinksController, ToastView toastView, MovesDataProxy movesDataProxy)
         {
             if (NetworkRunnerInstance.Instance.IsServer) return;
 
             _toastView = toastView;
             _roundsView = roundsView;
             _playerTurnView = playerTurnView;
+            _movesDataProxy = movesDataProxy;
             _scoreDataProxy = scoreDataProxy;
             _gameplaySettings = gameplaySettings;
             _popupsController = popupsController;
@@ -69,8 +67,7 @@ namespace OGClient.Gameplay
 
             _gameSessionDataProxy.Initialized.Subscribe(_ => OnGameSessionDataInitialized()).AddTo(_compositeDisposable);
             _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(_compositeDisposable);
-
-            _gridLinksController.Model.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
+            _movesDataProxy.CurrentPlayerIdChanged.Subscribe(NextPlayer).AddTo(_compositeDisposable);
         }
 
         public void Dispose()
@@ -81,6 +78,7 @@ namespace OGClient.Gameplay
         public void AddNewPlayer(int index, NetworkPlayerController playerController, PlayerView playerView)
         {
             int absoluteIndex = _players.Count;
+            Debug.Log($"[CLIENT] Adding player {absoluteIndex}");
 
             _players.TryAdd(absoluteIndex, playerController);
             _playerViews.TryAdd(absoluteIndex, playerView);
@@ -88,7 +86,7 @@ namespace OGClient.Gameplay
 
         public void OnMatchPhaseChanged(MatchPhase phase)
         {
-            Debug.Log($"Match phase changed to: {phase}");
+            Debug.Log($"[CLIENT][GAME_MANAGER] Match phase changed to: {phase}");
             _matchPhaseActions.TryGetValue(phase, out Action action);
             action?.Invoke();
         }
@@ -103,12 +101,10 @@ namespace OGClient.Gameplay
 
         private void OnLinkExecuted(Unit unit)
         {
-            if (!ThisClientIsCurrentPlayer) return;
-
-            NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, -1);
+            _movesDataProxy.TriggerSpendMoveRequest(-1);
             if (_gridLinksController.Model.PowerupsInLinkCount > 1)
             {
-                NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, 1);
+                _movesDataProxy.TriggerSpendMoveRequest(1);
                 _toastView.SetToast(_gridLinksController.Model[^1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
             }
 
@@ -119,6 +115,7 @@ namespace OGClient.Gameplay
         private void StartMatchPhase()
         {
             _gridLinksDataProxy.ChangeControlState(false);
+            _gridLinksController.Model.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
         }
 
         private void PlayingMatchPhase()
@@ -139,23 +136,21 @@ namespace OGClient.Gameplay
             _popupsController.ShowPopupByType(PopupType.GameOver, new GameOverPopupModel($"{GetMatchWinner().PlayerModel.Nickname} WINS!"));
         }
 
-        private void NextPlayer()
+        private void NextPlayer(int playerIndex)
         {
-            _playerIndex = _playerIndex < _players.Count ? _playerIndex + 1 : 0;
+            _playerIndex = playerIndex;
             if (_gameSessionDataProxy.CurrentRound.Value <= _gameSessionDataProxy.Rounds.Value)
             {
                 SetCurrentPlayer();
             }
 
-            NextRound();
             _matchTimerController.ResetTime();
         }
 
         private void SetCurrentPlayer()
         {
-            Debug.Log($"Game Manager: Setting current player to index {_playerIndex}");
-            NetworkPlayerController = _players[_playerIndex];
-            NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
+            _currentNetworkController = _players[_playerIndex];
+            _movesDataProxy.TriggerResetMovesRequest();
 
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);
             _roundsView.SetRoundsText($"{_playerViews[_playerIndex].PlayerModel.Nickname + "'S TURN!"}");
@@ -168,7 +163,7 @@ namespace OGClient.Gameplay
             }
 
             HighlightPlayer();
-            _playerSwitched.OnNext(_playerViews[_playerIndex]);
+            _roundsView.OnPlayerSwitched(_playerViews[_playerIndex]);
         }
 
         private void HighlightPlayer()
@@ -181,28 +176,19 @@ namespace OGClient.Gameplay
 
         private void TimeUp()
         {
-            // if (CurrentPlayerController.photonView.IsMine)
-            // {
-            //     CurrentPlayerController.photonView.RPC("SetMoves", RpcTarget.All, 0);
-            // }
-
             Debug.Log($"Time is Up. trying to cancel execution and end turn.");
+            if (ThisClientIsCurrentPlayer)
+            {
+                _movesDataProxy.TriggerSpendMoveRequest(0);
+            }
             _gridLinksDataProxy.ChangeControlState(true);
-            NextPlayer();
+            // NextPlayer();
         }
 
         private void ResetRounds()
         {
             _roundsView.SetRoundProgress(1);
             // todo: update rounds view; set current round "1"
-        }
-
-        private void NextRound()
-        {
-            if (_playerIndex != 0) return;
-
-            _roundsView.ChangeRoundProgress(1);
-            // todo: update rounds view; set current round "_roundsDataProxy.CurrentRound.Value + 1"
         }
 
         private void RoundUpdate(int currentRound)

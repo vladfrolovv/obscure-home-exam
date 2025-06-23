@@ -30,7 +30,7 @@ namespace OGClient.Gameplay.Specials
             {
                 if (spawnOnRandomTile == true)
                 {
-                    GridTileView targetTileView = GridController.Model.GetRandomTile();
+                    GridTileView targetTileView = GridController.GridModel.GetRandomTile();
                     gridTileView = targetTileView;
                 }
 

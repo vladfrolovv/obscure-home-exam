@@ -29,6 +29,7 @@ namespace OGClient.Gameplay.Players
 
         private void OnInputStateSwitched(bool hasInput)
         {
+            Debug.Log($"Input state switched: {hasInput}");
             if (!hasInput)
             {
                 _disposableInput?.Dispose();
@@ -41,13 +42,12 @@ namespace OGClient.Gameplay.Players
 
         private void InstallInput()
         {
-            if (_disposableInput != null) return;
             _disposableInput = Observable.EveryUpdate().Subscribe(OnInputUpdate);
         }
 
         private void OnInputUpdate(long l)
         {
-            if (!_gameManager.ThisClientIsCurrentPlayer || _gameManager.NetworkPlayerController.MovesLeft <= 0) return;
+            if (!_gameManager.ThisClientIsCurrentPlayer || _gameManager.CurrentPlayerMovesLeft <= 0) return;
             if (!Input.GetMouseButtonUp(0) || !_gridLinksDataProxy.HasControl.Value) return;
 
             _gridLinksDataProxy.TryToExecuteLink();

@@ -2,6 +2,7 @@
 using OGClient;
 using UnityEngine;
 using System.Linq;
+using OGShared;
 namespace OGServer.Matchmaking
 {
     public class MatchStartController : NetworkBehaviour, IPlayerJoined

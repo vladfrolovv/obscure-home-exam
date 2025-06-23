@@ -8,7 +8,7 @@ using Zenject;
 using OGClient.Utils;
 namespace OGClient.Gameplay.Grid
 {
-    public class GridTileView : MonoBehaviour
+    public class GridTileView : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler
     {
 
         [Header("Controls")]
@@ -58,6 +58,16 @@ namespace OGClient.Gameplay.Grid
             _gridLinksController = gridLinksController;
         }
 
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            TryToLink();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            TryToLink();
+        }
+
         public void InstallTileConnections(GridTileView rightItemView, GridTileView leftItemView, GridTileView topItemView, GridTileView bottomItemView)
         {
             _rightItemView = rightItemView;
@@ -73,128 +83,8 @@ namespace OGClient.Gameplay.Grid
 
             LeanTween
                 .scale(gameObject, Vector3.one, _appearTime)
-                .setDelay(_gridController.Model.GridSize.x * _gridController.Model.GridSize.y * _appearDelayMultiplier)
+                .setDelay(_gridController.GridModel.GridSize.x * _gridController.GridModel.GridSize.y * _appearDelayMultiplier)
                 .setEaseOutBounce();
-        }
-
-
-        /// <summary>
-        /// Rules for linking:
-        /// 1. Must be adjacent to the last tile in the link sequence (up/down/left/right)
-        /// 2. Must be first in link sequence or same type
-        /// 3. Must not already exist in the link
-        /// 4. If we go back to a previous tile in a link, remove it
-        /// </summary>
-        private void TryToLink()
-        {
-            if (GridItemView == null) return;
-            if (!_gameManager.ThisClientIsCurrentPlayer) return;
-            if (_gameManager.NetworkPlayerController.MovesLeft <= 0) return;
-
-            // Check the last tile in the link sequence.
-            // We will use this to check if we are connecting to same type
-            GridTileView lastTileViewInLink = null;
-            if (_gridLinksController.Model.Count > 0)
-            {
-                lastTileViewInLink = _gridLinksController.Model[^1];
-            }
-
-            // If this tile was already added to the link, backtrack to it
-            if (_gridLinksController.Model.Contains(this))
-            {
-                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
-                _gridLinksController.CheckSelectables();
-
-                // Remove all items in the link after this one
-                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
-                // _gridPlayerController.photonView.RPC("LinkRemoveAfterByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
-
-                return;
-            }
-
-            // If we're not tapping and holding the tap on the screen, return
-            if (!Input.GetMouseButton(0)) return;
-
-            bool goodLink = false;
-
-            // If this is the first tile in the link, add it regardless of type match
-            if (_gridLinksController.Model.Count == 0)
-            {
-                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
-                _gridLinksController.CheckSelectables();
-
-                _connectorLine.SetActive(false);
-
-                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
-                // _gridPlayerController.photonView.RPC("LinkStartByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
-
-                return;
-            }
-
-            // Check if the item type matches the last tile in the link
-            if (lastTileViewInLink && (GridItemView.GridItemType == lastTileViewInLink.GridItemView.GridItemType || GridItemView.GridItemType < 0 || lastTileViewInLink.GridItemView.GridItemType < 0))
-            {
-                if (_topItemView && _topItemView == lastTileViewInLink) // Connect FROM the tile above this one
-                {
-                    goodLink = true;
-
-                    _connector.localEulerAngles = Vector3.forward * 90;
-                }
-                else if (_bottomItemView && _bottomItemView == lastTileViewInLink) // Connect FROM the tile below this one
-                {
-                    goodLink = true;
-
-                    _connector.localEulerAngles = Vector3.forward * 270;
-                }
-                else if (_leftItemView && _leftItemView == lastTileViewInLink) // Connect FROM the tile left of this one
-                {
-                    goodLink = true;
-
-                    _connector.localEulerAngles = Vector3.forward * 180;
-                }
-                else if (_rightItemView && _rightItemView == lastTileViewInLink) // Connect FROM the tile right of this one
-                {
-                    goodLink = true;
-
-                    _connector.localEulerAngles = Vector3.forward * 0;
-                }
-                else if (/*_gridController.IsDiagonalsAllowed*/ true) // Check diagonal connections
-                {
-                    if (_topItemView && _topItemView._rightItemView && _topItemView._rightItemView == lastTileViewInLink) // Connect FROM top right tile
-                    {
-                        goodLink = true;
-
-                        _connector.localEulerAngles = Vector3.forward * 45;
-                    }
-                    else if (_topItemView && _topItemView._leftItemView && _topItemView._leftItemView == lastTileViewInLink)
-                    {
-                        goodLink = true;
-
-                        _connector.localEulerAngles = Vector3.forward * 135;
-                    }
-                    else if (_bottomItemView && _bottomItemView._rightItemView && _bottomItemView._rightItemView == lastTileViewInLink) // Connect FROM bottom right tile
-                    {
-                        goodLink = true;
-
-                        _connector.localEulerAngles = Vector3.forward * 315;
-                    }
-                    else if (_bottomItemView && _bottomItemView._leftItemView && _bottomItemView._leftItemView == lastTileViewInLink)
-                    {
-                        goodLink = true;
-
-                        _connector.localEulerAngles = Vector3.forward * 225;
-                    }
-                }
-            }
-
-            if (goodLink)
-            {
-                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
-                _gridLinksController.CheckSelectables();
-
-                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
-                // _gridPlayerController.photonView.RPC("LinkAddByGrid", RpcTarget.All, gridTilePos.x, gridTilePos.y);
-            }
         }
 
         public void Glow(float delay)
@@ -208,12 +98,131 @@ namespace OGClient.Gameplay.Grid
             });
         }
 
+        /// <summary>
+        /// Rules for linking:
+        /// 1. Must be adjacent to the last tile in the link sequence (up/down/left/right)
+        /// 2. Must be first in link sequence or same type
+        /// 3. Must not already exist in the link
+        /// 4. If we go back to a previous tile in a link, remove it
+        /// </summary>
+        private void TryToLink()
+        {
+            if (!LinkingIsAvailable()) return;
+            if (TryToBacktrackLinking()) return;
+            if (!Input.GetMouseButton(0)) return;
+
+            GridTileView lastTileViewInLink = FindLastTileViewInLink();
+            bool goodLink = false;
+            // If this is the first tile in the link, add it regardless of type match
+            if (_gridLinksController.Model.Count == 0)
+            {
+                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
+                _gridLinksController.CheckSelectables();
+
+                _connectorLine.SetActive(false);
+
+                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
+                _gridController.GridLinksModel.LinkStartByGrid(gridTilePos.x, gridTilePos.y);
+                return;
+            }
+
+            // Check if the item type matches the last tile in the link
+            if (lastTileViewInLink &&
+                (GridItemView.GridItemType == lastTileViewInLink.GridItemView.GridItemType || GridItemView.GridItemType < 0 || lastTileViewInLink.GridItemView.GridItemType < 0))
+            {
+                if (_topItemView && _topItemView == lastTileViewInLink) // Connect FROM the tile above this one
+                {
+                    goodLink = true;
+                    _connector.localEulerAngles = Vector3.forward * 90;
+                }
+                else if (_bottomItemView && _bottomItemView == lastTileViewInLink) // Connect FROM the tile below this one
+                {
+                    goodLink = true;
+                    _connector.localEulerAngles = Vector3.forward * 270;
+                }
+                else if (_leftItemView && _leftItemView == lastTileViewInLink) // Connect FROM the tile left of this one
+                {
+                    goodLink = true;
+                    _connector.localEulerAngles = Vector3.forward * 180;
+                }
+                else if (_rightItemView && _rightItemView == lastTileViewInLink) // Connect FROM the tile right of this one
+                {
+                    goodLink = true;
+                    _connector.localEulerAngles = Vector3.forward * 0;
+                }
+                else if (_gridController.AllowDiagonals) // Check diagonal connections
+                {
+                    if (_topItemView && _topItemView._rightItemView && _topItemView._rightItemView == lastTileViewInLink) // Connect FROM top right tile
+                    {
+                        goodLink = true;
+                        _connector.localEulerAngles = Vector3.forward * 45;
+                    }
+                    else if (_topItemView && _topItemView._leftItemView && _topItemView._leftItemView == lastTileViewInLink)
+                    {
+                        goodLink = true;
+                        _connector.localEulerAngles = Vector3.forward * 135;
+                    }
+                    else if (_bottomItemView && _bottomItemView._rightItemView && _bottomItemView._rightItemView == lastTileViewInLink) // Connect FROM bottom right tile
+                    {
+                        goodLink = true;
+                        _connector.localEulerAngles = Vector3.forward * 315;
+                    }
+                    else if (_bottomItemView && _bottomItemView._leftItemView && _bottomItemView._leftItemView == lastTileViewInLink)
+                    {
+                        goodLink = true;
+                        _connector.localEulerAngles = Vector3.forward * 225;
+                    }
+                }
+            }
+
+            if (goodLink)
+            {
+                _gridLinksController.Model.LinkType = GridItemView.GridItemType;
+                _gridLinksController.CheckSelectables();
+
+                // todo: make this RPC
+                Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
+                _gridController.GridLinksModel.LinkAddByGrid(gridTilePos.x, gridTilePos.y);
+            }
+        }
+
+        private GridTileView FindLastTileViewInLink()
+        {
+            // Check the last tile in the link sequence.
+            // We will use this to check if we are connecting to same type
+            GridTileView lastTileViewInLink = null;
+            if (_gridLinksController.Model.Count > 0)
+            {
+                lastTileViewInLink = _gridLinksController.Model[^1];
+            }
+
+            return lastTileViewInLink;
+        }
+
+        private bool LinkingIsAvailable()
+        {
+            if (GridItemView == null) return true;
+            if (!_gameManager.ThisClientIsCurrentPlayer) return false;
+            if (_gameManager.CurrentPlayerMovesLeft <= 0) return false;
+
+            return true;
+        }
+
+        private bool TryToBacktrackLinking()
+        {
+            if (!_gridLinksController.Model.Contains(this)) return false;
+            _gridLinksController.Model.LinkType = GridItemView.GridItemType;
+            _gridLinksController.CheckSelectables();
+
+            // Remove all items in the link after this one
+            Vector2Int gridTilePos = _gridLinksController.Model.GetIndexInGrid(this);
+            _gridController.GridLinksModel.LinkRemoveAfterByGrid(gridTilePos.x, gridTilePos.y);
+            return true;
+        }
+
         private void Awake()
         {
             SetConnectorLineActive(false);
-
-            _eventTrigger.EventTriggerSubscription(EventTriggerType.PointerDown, TryToLink);
-            _eventTrigger.EventTriggerSubscription(EventTriggerType.PointerEnter, TryToLink);
         }
 
     }

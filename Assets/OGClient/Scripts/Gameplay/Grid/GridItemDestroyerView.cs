@@ -42,7 +42,7 @@ namespace OGClient.Gameplay.Grid
 
             _timeController.SlowMotion(0.2f, 0.1f);
 
-            Vector2Int gridSize = _gridController.Model.GridSize;
+            Vector2Int gridSize = _gridController.GridModel.GridSize;
             Vector2Int tileGridIndex = _gridLinksController.Model.GetIndexInGrid(gridTileView);
 
             for (_patternIndex = 0; _patternIndex < _destroyPatternModel.Directions.Count; _patternIndex++)

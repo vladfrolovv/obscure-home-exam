@@ -2,7 +2,10 @@ using Fusion;
 using OGClient.Gameplay.DataProxies;
 using UnityEngine;
 using OGClient.Gameplay.UI;
+using OGShared;
+using OGShared.DataProxies;
 using OGShared.Gameplay;
+using UniRx;
 using Zenject;
 namespace OGClient.Gameplay.Players
 {
@@ -24,23 +27,30 @@ namespace OGClient.Gameplay.Players
         private GameManager _gameManager;
         private MovesDataProxy _movesDataProxy;
         private ScoreDataProxy _scoreDataProxy;
-
-        public int MovesLeft => _movesDataProxy.GetMovesLeft(_playerIndex);
-        public int Score => _scoreDataProxy.GetPlayerScore(_playerIndex);
-
-        public MovesDataProxy Moves => _movesDataProxy;
+        private ClientsAvailabilityController _availabilityController;
 
         [Inject]
-        public void Construct(MovesDataProxy movesDataProxy, ScoreDataProxy scoreDataProxy, GameManager gameManager)
+        public void Construct(MovesDataProxy movesDataProxy, ScoreDataProxy scoreDataProxy, GameManager gameManager, ClientsAvailabilityController clientsAvailabilityController)
         {
             _gameManager = gameManager;
             _movesDataProxy = movesDataProxy;
             _scoreDataProxy = scoreDataProxy;
+            _availabilityController = clientsAvailabilityController;
         }
 
         public override void Spawned()
         {
             InstallPlayerViews();
+
+            if (!Object.HasInputAuthority) return;
+            RPC_ClientReady();
+        }
+
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        private void RPC_ClientReady()
+        {
+            Debug.Log($"[SERVER] Player {Object.InputAuthority} is ready.");
+            _availabilityController.OnClientReady(Object.InputAuthority);
         }
 
         private void InstallPlayerViews()

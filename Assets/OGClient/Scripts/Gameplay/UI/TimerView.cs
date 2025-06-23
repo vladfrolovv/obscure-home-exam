@@ -11,16 +11,18 @@ namespace OGClient.Gameplay.UI
 
         [SerializeField] private ProgressBarView _timerView;
 
-        private GameManager _gameManager;
+        // private GameManager _gameManager;
         private MatchTimerController _matchTimerController;
         private ScriptableGameplaySettings _gameplaySettings;
 
         private bool _timeAlmostUp;
 
         [Inject]
-        public void Construct(MatchTimerController matchTimerController, ScriptableGameplaySettings scriptableGameplaySettings, GameManager gameManager)
+        public void Construct(MatchTimerController matchTimerController, ScriptableGameplaySettings scriptableGameplaySettings
+                              // GameManager gameManager
+            )
         {
-            _gameManager = gameManager;
+            // _gameManager = gameManager;
             _matchTimerController = matchTimerController;
             _gameplaySettings = scriptableGameplaySettings;
         }
@@ -39,7 +41,7 @@ namespace OGClient.Gameplay.UI
             _matchTimerController.TimeAlmostUp.Subscribe(OnTimeAlmostUp).AddTo(this);
             _matchTimerController.TimeUp.Subscribe(OnTimeUp).AddTo(this);
 
-            _gameManager.PlayerSwitched.Subscribe(OnPlayerSwitched).AddTo(this);
+            // _gameManager.PlayerSwitched.Subscribe(OnPlayerSwitched).AddTo(this);
 
             SetupTimerView();
         }

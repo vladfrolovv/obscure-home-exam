@@ -1,4 +1,6 @@
 ﻿using OGClient.Gameplay.Authentication;
+using OGClient.Gameplay.DataProxies;
+using OGShared;
 using OGShared.DataProxies;
 using Zenject;
 namespace OGClient.Installers
@@ -10,6 +12,11 @@ namespace OGClient.Installers
         {
             Container.BindInterfacesAndSelfTo<PlayFabAuthDataProxy>().AsCached().NonLazy();
             Container.BindInterfacesAndSelfTo<PhotonAuthDataProxy>().AsCached().NonLazy();
+
+            Container.BindInterfacesAndSelfTo<ClientsAvailabilityController>().AsSingle().NonLazy();
+
+            Container.BindInterfacesAndSelfTo<MovesDataProxy>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<RoundsDataProxy>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<GameSessionDataProxy>().AsCached().NonLazy();
         }
 

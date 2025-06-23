@@ -3,7 +3,7 @@ using UniRx;
 using Zenject;
 using UnityEngine;
 using OGClient.Gameplay.Players;
-using OGClient.Gameplay.DataProxies;
+using OGShared.DataProxies;
 namespace OGClient.Gameplay.UI
 {
     public class MovesView : MonoBehaviour

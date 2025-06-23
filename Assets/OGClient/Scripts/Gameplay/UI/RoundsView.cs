@@ -1,5 +1,6 @@
 ﻿using OGClient.Gameplay.DataProxies;
 using OGClient.Gameplay.Players;
+using OGShared.DataProxies;
 using OGShared.Gameplay;
 using TMPro;
 using UniRx;
@@ -15,7 +16,6 @@ namespace OGClient.Gameplay.UI
         [SerializeField] private TextMeshProUGUI _roundsText;
         [SerializeField] private TextMeshProUGUI _currentRoundText;
 
-        [Inject] private LazyInject<GameManager> _gameManager;
         private RoundsDataProxy _roundsDataProxy;
         private ScriptableGameplaySettings _gameplaySettings;
 
@@ -30,17 +30,15 @@ namespace OGClient.Gameplay.UI
         public void SetRoundProgress(float progress) => _roundsBarView.SetProgress(progress);
         public void ChangeRoundProgress(float changeValue) => _roundsBarView.ChangeProgress(changeValue);
 
-        private void Awake()
-        {
-            _gameManager.Value.PlayerSwitched.Subscribe(OnPlayerSwitched).AddTo(this);
-
-            Setup();
-        }
-
-        private void OnPlayerSwitched(PlayerView view)
+        public void OnPlayerSwitched(PlayerView view)
         {
             _roundsBarView.SetIncrementColor(view.PlayerModel.Color);
             _roundsBarView.Bounce();
+        }
+
+        private void Awake()
+        {
+            Setup();
         }
 
         private void Setup()

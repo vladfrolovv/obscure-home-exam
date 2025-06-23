@@ -36,19 +36,19 @@ namespace OGClient.Gameplay.Specials
 
                 Vector3 randomOffset = UnityEngine.Random.insideUnitCircle * 0.5f;
 
-                GridTileView targetTileView = GridController.Model.GetPowerupTile();
+                GridTileView targetTileView = GridController.GridModel.GetPowerupTile();
 
                 //if ( targetTile == null ) targetTile = GridManager.instance.GetBoosterTile();
 
                 if (targetTileView == null)
                 {
-                    targetTileView = GridController.Model.GetRandomTile();
+                    targetTileView = GridController.GridModel.GetRandomTile();
 
                     int timeout = 20;
 
                     while (timeout > 0 && targetTileView.GridItemView == null)
                     {
-                        targetTileView = GridController.Model.GetRandomTile();
+                        targetTileView = GridController.GridModel.GetRandomTile();
 
                         timeout--;
                     }

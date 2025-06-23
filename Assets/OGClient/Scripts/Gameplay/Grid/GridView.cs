@@ -48,7 +48,7 @@ namespace OGClient.Gameplay.Grid
                 cellSize = (270 - setValue.y) / setValue.y;
             }
 
-            _gridController.Model.SetCellSize(cellSize);
+            _gridController.GridModel.SetCellSize(cellSize);
             _gridLayoutGroup.cellSize = new Vector2Int(cellSize, cellSize);
         }
 
@@ -72,7 +72,7 @@ namespace OGClient.Gameplay.Grid
         private void OnGridInitialized(Unit unit)
         {
             ShowGrid();
-            SetGridSize(_gridController.Model.GridSize);
+            SetGridSize(_gridController.GridModel.GridSize);
         }
 
         private void OnGridCleared(Unit unit)
