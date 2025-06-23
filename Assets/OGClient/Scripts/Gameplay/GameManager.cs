@@ -5,36 +5,38 @@ using OGShared;
 using UnityEngine;
 using OGClient.Popups;
 using OGClient.Gameplay.UI;
-using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Timers;
 using OGClient.Gameplay.Players;
 using System.Collections.Generic;
 using OGClient.Gameplay.DataProxies;
+using OGClient.Gameplay.Grid;
 using OGClient.Gameplay.Mathchmaking;
 using OGClient.Gameplay.UI.GameOver;
 using OGShared.DataProxies;
 using OGShared.Gameplay;
 namespace OGClient.Gameplay
 {
-    public class GameManager : MonoBehaviour, IMatchPhasable
+    public class GameManager : IDisposable, IMatchPhasable
     {
 
         private readonly Dictionary<MatchPhase, Action> _matchPhaseActions = new();
         private readonly Dictionary<int, NetworkPlayerController> _players = new();
         private readonly Dictionary<int, PlayerView> _playerViews = new();
 
-        [Header("Views")]
-        [SerializeField] private RoundsView _roundsView;
-        [SerializeField] private PlayerTurnView _playerTurnView;
+        private readonly CompositeDisposable _compositeDisposable = new();
 
         private int _playerIndex;
 
-        private ScoreDataProxy _scoreDataProxy;
-        private PopupsController _popupsController;
-        private GridLinksDataProxy _gridLinksDataProxy;
-        private MatchTimerController _matchTimerController;
-        private ScriptableGameplaySettings _gameplaySettings;
-        private GameSessionDataProxy _gameSessionDataProxy;
+        private readonly ToastView _toastView;
+        private readonly RoundsView _roundsView;
+        private readonly PlayerTurnView _playerTurnView;
+        private readonly ScoreDataProxy _scoreDataProxy;
+        private readonly PopupsController _popupsController;
+        private readonly GridLinksDataProxy _gridLinksDataProxy;
+        private readonly MatchTimerController _matchTimerController;
+        private readonly ScriptableGameplaySettings _gameplaySettings;
+        private readonly GameSessionDataProxy _gameSessionDataProxy;
+        private readonly GridLinksController _gridLinksController;
 
         // todo: remove, use GameSessionDataProxy instead
         private readonly Subject<PlayerView> _playerSwitched = new();
@@ -43,17 +45,37 @@ namespace OGClient.Gameplay
         public bool ThisClientIsCurrentPlayer => NetworkPlayerController != null && NetworkPlayerController.HasInputAuthority;
         public NetworkPlayerController NetworkPlayerController { get; private set; }
 
-        [Inject]
-        public void Construct(GridController gridController, ScoreDataProxy scoreDataProxy, PopupsController popupsController,
-                              MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
-                              GameSessionDataProxy gameSessionDataProxy, GridLinksDataProxy gridLinksDataProxy)
+        public GameManager(ScoreDataProxy scoreDataProxy, PopupsController popupsController, MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
+                           GameSessionDataProxy gameSessionDataProxy, GridLinksDataProxy gridLinksDataProxy, RoundsView roundsView, PlayerTurnView playerTurnView,
+                           GridLinksController gridLinksController, ToastView toastView)
         {
+            if (NetworkRunnerInstance.Instance.IsServer) return;
+
+            _toastView = toastView;
+            _roundsView = roundsView;
+            _playerTurnView = playerTurnView;
             _scoreDataProxy = scoreDataProxy;
             _gameplaySettings = gameplaySettings;
             _popupsController = popupsController;
             _gridLinksDataProxy = gridLinksDataProxy;
             _matchTimerController = matchTimerController;
             _gameSessionDataProxy = gameSessionDataProxy;
+            _gridLinksController = gridLinksController;
+
+            _matchPhaseActions.Add(MatchPhase.Starting, StartMatchPhase);
+            _matchPhaseActions.Add(MatchPhase.Playing, PlayingMatchPhase);
+            _matchPhaseActions.Add(MatchPhase.LastRound, LastRoundPhase);
+            _matchPhaseActions.Add(MatchPhase.Ending, EndMatchPhase);
+
+            _gameSessionDataProxy.Initialized.Subscribe(_ => OnGameSessionDataInitialized()).AddTo(_compositeDisposable);
+            _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(_compositeDisposable);
+
+            _gridLinksController.Model.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
+        }
+
+        public void Dispose()
+        {
+            _compositeDisposable?.Dispose();
         }
 
         public void AddNewPlayer(int index, NetworkPlayerController playerController, PlayerView playerView)
@@ -73,23 +95,25 @@ namespace OGClient.Gameplay
 
         public void OnGameSessionDataInitialized()
         {
-            _gameSessionDataProxy.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(this);
-            _gameSessionDataProxy.CurrentRound.Subscribe(RoundUpdate).AddTo(this);
+            _gameSessionDataProxy.MatchPhaseChanged.Subscribe(OnMatchPhaseChanged).AddTo(_compositeDisposable);
+            _gameSessionDataProxy.CurrentRound.Subscribe(RoundUpdate).AddTo(_compositeDisposable);
 
             OnMatchPhaseChanged(MatchPhase.Starting);
         }
 
-        private void Awake()
+        private void OnLinkExecuted(Unit unit)
         {
-            if (NetworkRunnerInstance.Instance.IsServer) return;
+            if (!ThisClientIsCurrentPlayer) return;
 
-            _matchPhaseActions.Add(MatchPhase.Starting, StartMatchPhase);
-            _matchPhaseActions.Add(MatchPhase.Playing, PlayingMatchPhase);
-            _matchPhaseActions.Add(MatchPhase.LastRound, LastRoundPhase);
-            _matchPhaseActions.Add(MatchPhase.Ending, EndMatchPhase);
+            NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, -1);
+            if (_gridLinksController.Model.PowerupsInLinkCount > 1)
+            {
+                NetworkPlayerController.Moves.SetPlayerMoves(_playerIndex, 1);
+                _toastView.SetToast(_gridLinksController.Model[^1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
+            }
 
-            _gameSessionDataProxy.Initialized.Subscribe(_ => OnGameSessionDataInitialized()).AddTo(this);
-            _matchTimerController.TimeUp.Subscribe(_ => TimeUp()).AddTo(this);
+            _matchTimerController.PauseTimerFor(-1);
+            _gridLinksDataProxy.ChangeControlState(false);
         }
 
         private void StartMatchPhase()

@@ -26,20 +26,23 @@ namespace OGClient.Gameplay.Grid
 
         private int _tileListRandomIndex;
 
-        private readonly GridView _gridView;
-        private readonly GridHolderView _gridHolderView;
         private readonly DiContainer _diContainer;
+        private readonly GridHolderView _gridHolderView;
         private readonly GameSessionDataProxy _gameSessionDataProxy;
         private readonly ScriptableGridSettings _gridSettings;
 
+        private readonly Subject<Unit> _gridInitialized = new();
+        private readonly Subject<Unit> _gridCleared = new();
+
+        public IObservable<Unit> GridInitialized => _gridInitialized;
+        public IObservable<Unit> GridCleared => _gridCleared;
+
         public GridModel Model { get; private set; }
 
-        public GridController(DiContainer diContainer, GameSessionDataProxy gameSessionDataProxy, GridView gridView,
-                              ScriptableGridSettings gridSettings, GridHolderView gridHolderView)
+        public GridController(GameSessionDataProxy gameSessionDataProxy, ScriptableGridSettings gridSettings, GridHolderView gridHolderView, DiContainer diContainer)
         {
-            _gridView = gridView;
-            _gridHolderView = gridHolderView;
             _diContainer = diContainer;
+            _gridHolderView = gridHolderView;
             _gameSessionDataProxy = gameSessionDataProxy;
             _gridSettings = gridSettings;
 
@@ -145,22 +148,20 @@ namespace OGClient.Gameplay.Grid
                     if (Model[listIndex].GridItemView != null) continue;
 
                     int randomItem = Random.Range(0, _gridSettings.ItemsTypes.Length);
-                    CreateGridItem(randomItem, x, y, Model.GridSize.y * _gridView.CellSize);
+                    CreateGridItem(randomItem, x, y, Model.GridSize.y * Model.CellSize);
                 }
             }
         }
 
-                private void InitializeGrid(Vector2Int gridSize, int seed = -1)
+        private void InitializeGrid(Vector2Int gridSize, int seed = -1)
         {
             Model = new GridModel(gridSize, seed);
 
             SpawnTiles();
             FillGrid();
 
-            _gridView.ShowGrid();
-            _gridView.SetGridSize(gridSize);
-
             Model.InitializeGrid();
+            _gridInitialized?.OnNext(Unit.Default);
         }
 
         private void SpawnTiles()
@@ -260,7 +261,7 @@ namespace OGClient.Gameplay.Grid
         private void EndingMatchPhase()
         {
             ClearGrid();
-            _gridView.HideGrid();
+            _gridCleared?.OnNext(Unit.Default);
         }
 
     }

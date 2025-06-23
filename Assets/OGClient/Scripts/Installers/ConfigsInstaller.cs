@@ -13,6 +13,7 @@ namespace OGClient.Installers
     {
 
         [SerializeField] private ScriptableMergeCombos _scriptableMergeCombos;
+        [SerializeField] private ScriptableGridSettings _scriptableGridSettings;
         [SerializeField] private ScriptablePlayersProfiles _scriptablePlayersProfiles;
         [SerializeField] private ScriptableGameplaySettings _scriptableGameplaySettings;
         [SerializeField] private ScriptableMatchmakingState _scriptableMatchmakingState;
@@ -22,6 +23,7 @@ namespace OGClient.Installers
         public override void InstallBindings()
         {
             Container.BindInstance(_scriptableMergeCombos);
+            Container.BindInstance(_scriptableGridSettings);
             Container.BindInstance(_scriptablePlayersProfiles);
             Container.BindInstance(_scriptableGameplaySettings);
             Container.BindInstance(_scriptableMatchmakingState);

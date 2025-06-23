@@ -20,7 +20,6 @@ namespace OGClient.Installers
         [SerializeField] private EventSystem _eventSystem;
 
         [Header("Controllers")]
-        [SerializeField] private GameManager _gameManager;
         [SerializeField] private PopupsController _popupsController;
 
         [Header("Vies")]
@@ -28,6 +27,8 @@ namespace OGClient.Installers
         [SerializeField] private ToastView _toastView;
         [SerializeField] private GridView _gridView;
         [SerializeField] private GridHolderView _gridHolderView;
+        [SerializeField] private RoundsView _roundsView;
+        [SerializeField] private PlayerTurnView _playerTurnView;
 
         public override void InstallBindings()
         {
@@ -35,13 +36,15 @@ namespace OGClient.Installers
             Container.BindInstance(_eventSystem).AsSingle();
 
             // controllers
-            Container.BindInstance(_gameManager).AsSingle();
             Container.BindInstance(_popupsController).AsSingle();
 
             // views
             Container.BindInstance(_mergeEffectView).AsSingle();
             Container.BindInstance(_toastView).AsSingle();
             Container.BindInstance(_gridView).AsSingle();
+            Container.BindInstance(_roundsView).AsSingle();
+            Container.BindInstance(_gridHolderView).AsSingle();
+            Container.BindInstance(_playerTurnView).AsSingle();
 
             Container.BindInterfacesAndSelfTo<TimeController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MatchTimerController>().AsSingle().NonLazy();
@@ -49,6 +52,7 @@ namespace OGClient.Installers
             Container.BindInterfacesAndSelfTo<GridController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<GridLinksController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PlayerLinkingController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<GameManager>().AsSingle().NonLazy();
 
             InstallDataProxies();
         }

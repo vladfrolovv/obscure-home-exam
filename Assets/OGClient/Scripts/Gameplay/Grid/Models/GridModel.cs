@@ -23,6 +23,13 @@ namespace OGClient.Gameplay.Grid.Models
         public GridTileView this[int index] => _tiles[index];
         public int Count => _tiles.Count;
 
+        public int CellSize { get; private set; }
+
+        public void SetCellSize(int cellSize)
+        {
+            CellSize = cellSize;
+        }
+
         public void AddTile(GridTileView tile)
         {
             _tiles.Add(tile);

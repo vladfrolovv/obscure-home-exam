@@ -21,8 +21,6 @@ namespace OGClient.Gameplay.Grid.Models
             _specialLinks.AddRange(gridLinkSettings.SpecialLinks);
         }
 
-        private readonly Subject<Unit> _executeLink = new();
-
         private MergeComboModel _mergeComboModel;
 
         private readonly GridModel _gridModel;
@@ -33,20 +31,28 @@ namespace OGClient.Gameplay.Grid.Models
         private readonly List<GridTileView> _tilesLink = new ();
         private readonly List<SpecialLinkModel> _specialLinks = new();
 
-        private int _specialIndex = -1;
+        public int SpecialIndex { get; private set; } = -1;
+        public float ExecuteTotalTime { get; private set; }
+
+
         private int _currentLinkSize;
         private bool _isExecuting;
         private bool _thisClientIsCurrentPlayer;
-        private float _executeTotalTime;
         private Vector2 _direction = Vector2.zero;
 
+        public int LinkType { get; set; } = -1;
         public int Count => _tilesLink.Count;
+        public int PowerupsInLinkCount => _powerupsInLink.Count;
         public GridTileView this[int index] => _tilesLink[index];
+        public GridItemView GetSpecial(int index) => _specialLinks[index].SpawnItemView;
         public bool Contains(GridTileView tileView) => _tilesLink.Contains(tileView);
 
-        public int LinkType { get; set; } = -1;
-
-        public IObservable<Unit> LinkExecuted => _executeLink;
+        private readonly Subject<Unit> _linkExecuted = new();
+        private readonly Subject<Unit> _startedLink = new();
+        private readonly Subject<List<ItemCollectionModel>> _collectedItems = new();
+        public IObservable<Unit> LinkExecuted => _linkExecuted;
+        public IObservable<Unit> StartedLink => _startedLink;
+        public IObservable<List<ItemCollectionModel>> CollectedItems => _collectedItems;
 
         public void SetThisClientIsCurrentPlayer(bool isCurrentPlayer)
         {
@@ -55,36 +61,44 @@ namespace OGClient.Gameplay.Grid.Models
 
         public void LinkStart(GridTileView tileView)
         {
+            _startedLink?.OnNext(Unit.Default);
             _tilesLink.Clear();
             _powerupsInLink.Clear();
             _mergeComboModel = null;
-
-            // todo: fix booster activation
-            // _gameManager.currentPlayer.booster.EndActivation();
-
             _direction = Vector2.zero;
-
             LinkAdd(tileView);
         }
 
-        private void ExecuteLink()
+        // todo: RPC
+        public void LinkStartByGrid(int gridX, int gridY)
         {
-            if (_isExecuting) return;
+            _tilesLink.Clear();
+            _powerupsInLink.Clear();
+            _mergeComboModel = null;
+            _direction = Vector2.zero;
+
+            LinkAddByGrid(gridX, gridY);
+        }
+
+        public bool TryToExecuteLink()
+        {
+            if (_isExecuting) return false;
             _isExecuting = true;
 
-            // If the link is too short, deselect the tiles
             if (_tilesLink.Count < _gridLinkSettings.MinimumLinkSize)
             {
                 CancelExecuteLink();
                 _isExecuting = false;
 
-                return;
+                return false;
             }
 
             float tempExecuteTime = _gridLinkSettings.ExecuteTime;
             float extraExecuteTime = 0;
-            _executeTotalTime = 0;
+            ExecuteTotalTime = 0;
 
+            // todo: collect on this client
+            List<ItemCollectionModel> itemsCollected = new();
             for (int index = 0; index < _tilesLink.Count; index++)
             {
                 LeanTween.rotate(_tilesLink[index].gameObject, Vector3.forward * 0, 0.2f);
@@ -103,60 +117,21 @@ namespace OGClient.Gameplay.Grid.Models
                 }
 
                 if (index == _tilesLink.Count - 1) gridTileView.GridItemView.IsLastInLink = true;
-
-                if (_thisClientIsCurrentPlayer)
-                {
-                    // photonView.RPC("CollectItemAtGrid", RpcTarget.All, tileGridIndex.x, tileGridIndex.y, executeTotalTime + extraExecuteTime);
-                }
+                itemsCollected.Add(new ItemCollectionModel(tileGridIndex.x, tileGridIndex.y, ExecuteTotalTime + extraExecuteTime));
 
                 if (gridItemView.GridItemType > -1 || _powerupsInLink.Count < 2) extraExecuteTime += gridItemView.ExtraExecuteTime;
 
-                _executeTotalTime += tempExecuteTime;
+                ExecuteTotalTime += tempExecuteTime;
 
                 tempExecuteTime *= _gridLinkSettings.ExecuteTimeMultiplier;
                 tempExecuteTime = Mathf.Clamp(tempExecuteTime, _gridLinkSettings.ExecuteTimeMinimum, 999);
             }
 
-            _executeTotalTime += extraExecuteTime;
+            ExecuteTotalTime += extraExecuteTime;
 
-
-            if (_thisClientIsCurrentPlayer)
-            {
-                // todo: fix moves
-                // _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, -1);
-
-                if (_powerupsInLink.Count > 1)
-                {
-                    // todo: fix moves
-                    // _gameManager.CurrentPlayerController.photonView.RPC("ChangeMoves", RpcTarget.All, 1);
-                    // _gameManager.GridPlayerController.ToastView.SetToast(tileLink[tileLink.Count - 1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
-                }
-
-                if (_powerupsInLink.Count < 1)
-                {
-                    // todo: fix special
-                    // photonView.RPC(nameof(SpawnSpecial), RpcTarget.All, specialIndex, executeTotalTime);
-                }
-
-                // Invoke(nameof(RPC_RemoveFromExecuteList), executeTotalTime);
-            }
-
-            // todo: add callback
-            // _matchTimerController.PauseTimerFor(-1);
-            // _gridLinksDataProxy.ChangeControlState(false);
-
-            _executeLink.OnNext(Unit.Default);
-        }
-
-        // todo: RPC
-        public void LinkStartByGrid(int gridX, int gridY)
-        {
-            _tilesLink.Clear();
-            _powerupsInLink.Clear();
-            _mergeComboModel = null;
-            _direction = Vector2.zero;
-
-            LinkAddByGrid(gridX, gridY);
+            _collectedItems?.OnNext(itemsCollected);
+            _linkExecuted?.OnNext(Unit.Default);
+            return true;
         }
 
         // todo: RPC
@@ -349,7 +324,7 @@ namespace OGClient.Gameplay.Grid.Models
         public int CheckSpecial()
         {
             int longestSpecial = 0;
-            _specialIndex = -1;
+            SpecialIndex = -1;
 
             // Check any special link size, and create powerups accordingly
             for (int index = 0; index < _specialLinks.Count; index++)
@@ -359,34 +334,25 @@ namespace OGClient.Gameplay.Grid.Models
                 if (_currentLinkSize <= _tilesLink.Count && _currentLinkSize > longestSpecial)
                 {
                     longestSpecial = _currentLinkSize;
-                    _specialIndex = index;
+                    SpecialIndex = index;
                 }
             }
 
-            if (_specialIndex != -1)
+            if (SpecialIndex != -1)
             {
-                GridItemView gridItemView = _specialLinks[_specialIndex].SpawnItemView;
+                GridItemView gridItemView = _specialLinks[SpecialIndex].SpawnItemView;
                 if (gridItemView != null && gridItemView.HasOtherOrientations)
                 {
                     CheckDirection();
-                    GridItemView tempGridItemView = _specialLinks[_specialIndex].SpawnItemView.GetOtherOrientation(_direction);
+                    GridItemView tempGridItemView = _specialLinks[SpecialIndex].SpawnItemView.GetOtherOrientation(_direction);
                     if (tempGridItemView != null)
                     {
-                        _specialLinks[_specialIndex].SpawnItemView = tempGridItemView;
+                        _specialLinks[SpecialIndex].SpawnItemView = tempGridItemView;
                     }
                 }
             }
 
-            return _specialIndex;
-        }
-
-        public void SpawnSpecial(int index, float delay)
-        {
-            if (index == -1) return;
-
-            // todo: fix spawn specials
-            // GridItemView gridItemView = _specialLinks[index].SpawnItemView;
-            // _gridController.SpawnItem(gridItemView, _tilesLink[^1], delay);
+            return SpecialIndex;
         }
 
         private void Collect(GridItemView gridItemView, Transform target, float delay, GridTileView gridTileView)

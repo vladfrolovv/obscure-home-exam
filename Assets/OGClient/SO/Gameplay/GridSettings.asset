@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca01498d4d347ae8181cc26976887c1, type: 3}
+  m_Name: GridSettings
+  m_EditorClassIdentifier: 
+  <EvenTileColor>k__BackingField: {r: 0.5372549, g: 0.6156863, b: 0.8117647, a: 1}
+  <OddTileColor>k__BackingField: {r: 0.59607846, g: 0.6745098, b: 0.8901961, a: 1}
+  <ItemDropDelay>k__BackingField: 0.05
+  <ItemDropTime>k__BackingField: 0.05
+  <OverrideGridPattern>k__BackingField: {fileID: 0}
+  <ItemsTypes>k__BackingField:
+  - {fileID: 11400000, guid: ae78b344879d16645b5db1e9c00a808d, type: 2}
+  - {fileID: 11400000, guid: 699fae67ca8ac2f4db15c92076028838, type: 2}
+  - {fileID: 11400000, guid: cac7f38d9c09f70489a4ebff052000b1, type: 2}
+  - {fileID: 11400000, guid: 5aa20f132780bbc40883f92c20671d4f, type: 2}
+  <PowerUpItems>k__BackingField: []
+  <TileViewPrefab>k__BackingField: {fileID: -1166266179286488006, guid: c9a4cc3161499ec4aa3f5e45134efe48, type: 3}
+  <ItemViewPrefab>k__BackingField: {fileID: -4054056152294309094, guid: 042c69b8ad2e1404c83736c1769a14da, type: 3}

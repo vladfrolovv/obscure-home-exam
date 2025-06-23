@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UniRx;
+using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 namespace OGClient.Gameplay.Grid
@@ -18,48 +19,65 @@ namespace OGClient.Gameplay.Grid
 
         private GridController _gridController;
 
-        public int CellSize { get; private set; }
-
         [Inject]
         public void Construct(GridController gridController)
         {
             _gridController = gridController;
         }
 
-        public void SetGridSize(Vector2Int setValue)
+        public void ShakeBoard()
         {
+            _gridAnimator.Play(GridShakeAnimationParam);
+        }
+
+        private void SetGridSize(Vector2Int setValue)
+        {
+            int cellSize = 0;
             if ( setValue.x > setValue.y )
             {
                 _gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
                 _gridLayoutGroup.constraintCount = setValue.x;
 
-                CellSize = (270 - setValue.x) / setValue.x;
+                cellSize = (270 - setValue.x) / setValue.x;
             }
             else
             {
                 _gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedRowCount;
                 _gridLayoutGroup.constraintCount = setValue.y;
 
-                CellSize = (270 - setValue.y) / setValue.y;
+                cellSize = (270 - setValue.y) / setValue.y;
             }
 
-            _gridLayoutGroup.cellSize = new Vector2Int(CellSize, CellSize);
+            _gridController.Model.SetCellSize(cellSize);
+            _gridLayoutGroup.cellSize = new Vector2Int(cellSize, cellSize);
         }
 
-        public void ShowGrid()
+        private void ShowGrid()
         {
             _gridCanvas.enabled = true;
             _gridAnimator.Play(GridIntroAnimationParam);
         }
 
-        public void HideGrid()
+        private void HideGrid()
         {
             _gridCanvas.enabled = false;
         }
 
-        public void ShakeBoard()
+        private void Awake()
         {
-            _gridAnimator.Play(GridShakeAnimationParam);
+            _gridController.GridInitialized.Subscribe(OnGridInitialized).AddTo(this);
+            _gridController.GridCleared.Subscribe(OnGridCleared).AddTo(this);
+        }
+
+        private void OnGridInitialized(Unit unit)
+        {
+            ShowGrid();
+            SetGridSize(_gridController.Model.GridSize);
+        }
+
+        private void OnGridCleared(Unit unit)
+        {
+            HideGrid();
         }
 
     }

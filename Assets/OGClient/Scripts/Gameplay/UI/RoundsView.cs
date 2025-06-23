@@ -15,14 +15,13 @@ namespace OGClient.Gameplay.UI
         [SerializeField] private TextMeshProUGUI _roundsText;
         [SerializeField] private TextMeshProUGUI _currentRoundText;
 
-        private GameManager _gameManager;
+        [Inject] private LazyInject<GameManager> _gameManager;
         private RoundsDataProxy _roundsDataProxy;
         private ScriptableGameplaySettings _gameplaySettings;
 
         [Inject]
-        public void Construct(ScriptableGameplaySettings gameplaySettings, GameManager gameManager)
+        public void Construct(ScriptableGameplaySettings gameplaySettings)
         {
-            _gameManager = gameManager;
             _gameplaySettings = gameplaySettings;
         }
 
@@ -33,7 +32,7 @@ namespace OGClient.Gameplay.UI
 
         private void Awake()
         {
-            _gameManager.PlayerSwitched.Subscribe(OnPlayerSwitched).AddTo(this);
+            _gameManager.Value.PlayerSwitched.Subscribe(OnPlayerSwitched).AddTo(this);
 
             Setup();
         }

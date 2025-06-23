@@ -31,7 +31,7 @@ namespace OGClient.Gameplay.Grid
             gridLinksDataProxy.HasControl.Subscribe(OnControlStateChanged).AddTo(_compositeDisposable);
 
             Model = new GridLinksModel(gridController.Model, gridLinkSettings);
-            Model.LinkExecuted.Subscribe(_ => ResetSelectables()).AddTo(_compositeDisposable);
+            Model.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
         }
 
         public void Dispose()
@@ -52,6 +52,25 @@ namespace OGClient.Gameplay.Grid
             {
                 ResetSelectables();
             }
+        }
+
+        private void OnLinkExecuted(Unit unit)
+        {
+            ResetSelectables();
+            if (Model.PowerupsInLinkCount < 1)
+            {
+                SpawnSpecial(Model.SpecialIndex, Model.ExecuteTotalTime);
+            }
+
+            // Invoke(nameof(RPC_RemoveFromExecuteList), executeTotalTime);
+        }
+
+        private void SpawnSpecial(int index, float delay)
+        {
+            if (index == -1) return;
+
+            GridItemView gridItemView = Model.GetSpecial(index);
+            _gridController.CreateGridItem(gridItemView, Model[^1], delay);
         }
 
         public void CheckSelectables()
@@ -90,6 +109,7 @@ namespace OGClient.Gameplay.Grid
 
         public void ResetSelectables()
         {
+            if (_gridController.Model == null) return;
             for (int listIndex = _gridController.Model.Count - 1; listIndex >= 0; listIndex--)
             {
                 GridItemView currentItemView = _gridController.Model[listIndex].GridItemView;
