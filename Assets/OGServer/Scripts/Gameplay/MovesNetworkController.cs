@@ -43,6 +43,8 @@ namespace OGServer.Gameplay
         private void AdvanceTurn()
         {
             if (!Object.HasStateAuthority) return;
+
+            Debug.Log($"Turning to next player. Current Player: {CurrentPlayerId}");
             StartPlayerTurn(CurrentPlayerId == 1 ? 0 : 1);
         }
 
@@ -59,7 +61,6 @@ namespace OGServer.Gameplay
         private void RPC_UpdateMovesDataProxy()
         {
             Debug.Log($"Moves Data Proxy Updated with Player: {CurrentPlayerId}, Moves: {Moves[CurrentPlayerId]}");
-
             _movesDataProxy.SetPlayerMoves(CurrentPlayerId, Moves[CurrentPlayerId]);
             _movesDataProxy.SetCurrentTurnPlayer(CurrentPlayerId);
         }

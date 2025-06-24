@@ -63,35 +63,30 @@ namespace OGServer.Gameplay
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_BroadcastLinkStarted(Vector2Int pos)
         {
-            Debug.Log($"[CLIENT {Runner.LocalPlayer} RECEIVED BroadcastLinkStarted @ {pos}");
             _gridLinkingDataProxy.RaiseLinkStarted(pos);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_BroadcastLinkAdd(Vector2Int pos)
         {
-            Debug.Log($"[CLIENT {Runner.LocalPlayer} RECEIVED BroadcastLinkAdd @ {pos}");
             _gridLinkingDataProxy.RaiseLinkAdded(pos);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_BroadcastLinkRemoveAfter(Vector2Int pos)
         {
-            Debug.Log($"[CLIENT {Runner.LocalPlayer} RECEIVED BroadcastLinkRemoveAfter @ {pos}");
             _gridLinkingDataProxy.RaiseLinkRemovedAfter(pos);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_BroadcastGridItemCollected(Vector2Int pos)
         {
-            Debug.Log($"[CLIENT {Runner.LocalPlayer} RECEIVED BroadcastGridItemCollected @ {pos}");
             _gridLinkingDataProxy.RaiseGridItemCollected(pos);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_BroadcastLinkExecute()
         {
-            Debug.Log($"CLIENT {Runner.LocalPlayer} RECEIVED BroadcastLinkExecute");
             _gridLinkingDataProxy.RaiseLinkExecuted();
         }
 

@@ -43,8 +43,8 @@ namespace OGClient.Gameplay
         public int CurrentPlayerMovesLeft => _movesDataProxy.GetMovesLeft(_playerIndex);
 
         public GameManager(ScoreDataProxy scoreDataProxy, PopupsController popupsController, MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
-                           GameSessionDataProxy gameSessionDataProxy, RoundsView roundsView, PlayerTurnView playerTurnView,
-                           GridLinksController gridLinksController, ToastView toastView, MovesDataProxy movesDataProxy, PlayerLinkingDataProxy playerLinkingDataProxy)
+                           GameSessionDataProxy gameSessionDataProxy, RoundsView roundsView, PlayerTurnView playerTurnView, GridLinksController gridLinksController, ToastView toastView,
+                           MovesDataProxy movesDataProxy, PlayerLinkingDataProxy playerLinkingDataProxy)
         {
             if (NetworkRunnerInstance.Instance.IsServer) return;
 
@@ -99,23 +99,9 @@ namespace OGClient.Gameplay
             OnMatchPhaseChanged(MatchPhase.Starting);
         }
 
-        private void OnLinkExecuted(Unit unit)
-        {
-            _movesDataProxy.TriggerSpendMoveRequest(-1);
-            if (_gridLinksController.PowerupsInLink.Count > 1)
-            {
-                _movesDataProxy.TriggerSpendMoveRequest(1);
-                _toastView.SetToast(_gridLinksController.TilesLink[^1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
-            }
-
-            _matchTimerController.PauseTimerFor(-1);
-            _playerLinkingDataProxy.ChangeControlState(false);
-        }
-
         private void StartMatchPhase()
         {
             _playerLinkingDataProxy.ChangeControlState(false);
-            // _gridLinksController.LinkExecuted.Subscribe(OnLinkExecuted).AddTo(_compositeDisposable);
         }
 
         private void PlayingMatchPhase()

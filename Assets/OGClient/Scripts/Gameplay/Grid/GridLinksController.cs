@@ -532,10 +532,10 @@ namespace OGClient.Gameplay.Grid
 
         public void CheckExecuteLink()
         {
-            if (_executeList.Count > 0) return;
-
-            Observable.Timer(TimeSpan.FromSeconds(0.3f))
-                .Subscribe(_ => EndExecuteLink()).AddTo(_compositeDisposable);
+            // if (_executeList.Count > 0) return;
+            //
+            // Observable.Timer(TimeSpan.FromSeconds(0.3f))
+            //     .Subscribe(_ => EndExecuteLink()).AddTo(_compositeDisposable);
         }
 
         private void EndExecuteLink()
