@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using OGClient.Gameplay.Grid.Configs;
+using OGShared.DataProxies;
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -44,6 +45,7 @@ namespace OGClient.Gameplay.Grid
         private GridController _gridController;
         private ScriptableGridSettings _gridSettings;
         private GridLinksController _gridLinksController;
+        private GridLinkingDataProxy _gridLinkingDataProxy;
 
         public void SetControlsActive(bool active) => _eventTrigger.enabled = active;
         public void SetConnectorLineActive(bool active) => _connectorLine.SetActive(active);
@@ -52,12 +54,14 @@ namespace OGClient.Gameplay.Grid
         public void SetClickSize(float setValue) => _buttonImage.transform.localScale = Vector3.one * setValue;
 
         [Inject]
-        public void Construct(GridController gridController, GameManager gameManager, GridLinksController gridLinksController, ScriptableGridSettings gridSettings)
+        public void Construct(GridController gridController, GameManager gameManager, GridLinksController gridLinksController, ScriptableGridSettings gridSettings,
+                              GridLinkingDataProxy gridLinkingDataProxy)
         {
             _gameManager = gameManager;
             _gridController = gridController;
             _gridLinksController = gridLinksController;
             _gridSettings = gridSettings;
+            _gridLinkingDataProxy = gridLinkingDataProxy;
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -124,7 +128,7 @@ namespace OGClient.Gameplay.Grid
                 _connectorLine.SetActive(false);
 
                 Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
-                _gridLinksController.LinkStartByGrid(gridTilePos.x, gridTilePos.y);
+                _gridLinksController.LinkStartByGrid(gridTilePos);
                 return;
             }
 
@@ -182,9 +186,8 @@ namespace OGClient.Gameplay.Grid
                 _gridLinksController.LinkType = GridItemView.GridItemType;
                 _gridLinksController.CheckSelectables();
 
-                // todo: make this RPC
                 Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
-                _gridLinksController.LinkAddByGrid(gridTilePos.x, gridTilePos.y);
+                _gridLinksController.LinkAddedByGrid(gridTilePos);
             }
         }
 
@@ -206,7 +209,7 @@ namespace OGClient.Gameplay.Grid
         private bool LinkingIsAvailable()
         {
             if (GridItemView == null) return true;
-            if (!_gameManager.ThisClientIsCurrentPlayer) return false;
+            if (!_gameManager.CurrentPlayerIsClient) return false;
             if (_gameManager.CurrentPlayerMovesLeft <= 0) return false;
 
             return true;

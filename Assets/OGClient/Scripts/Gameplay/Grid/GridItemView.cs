@@ -54,6 +54,8 @@ namespace OGClient.Gameplay.Grid
         public void PlayAnimation(string setValue) => _itemAnimator.Play(setValue);
         public void SetAnimatorBool(string stateName, bool setValue) => _itemAnimator.SetBool(stateName, setValue);
 
+        public string ClearAnimationProperty => _clearAnimationProperty;
+
         public void InstallGridItem(ScriptableGridItem gridItemInfo)
         {
             if (gridItemInfo == null) return;
@@ -96,6 +98,12 @@ namespace OGClient.Gameplay.Grid
         {
             if (string.IsNullOrEmpty(_collectAnimationProperty)) return;
             PlayAnimation(_collectAnimationProperty);
+        }
+
+        public void DisableGlow()
+        {
+            _glowAnimator.enabled = false;
+            _glowImage.color = Color.white;
         }
 
         private void Start()

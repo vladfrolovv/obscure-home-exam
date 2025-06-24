@@ -1,5 +1,4 @@
 ﻿using Fusion;
-using OGClient;
 using UnityEngine;
 using OGClient.Scenes;
 using OGServer.Gameplay;
@@ -63,7 +62,6 @@ namespace OGShared
         {
             _networkRunner.Spawn(_matchStartControllerPrefab, Vector3.zero, Quaternion.identity);
             NetworkGameManager networkGameManager = _networkRunner.Spawn(_networkGameManagerPrefab, Vector3.zero, Quaternion.identity);
-            // NetworkGameManager.Instance = networkGameManager;
 
             _networkRunner.AddCallbacks(networkGameManager);
             DontDestroyOnLoad(networkGameManager.gameObject);

@@ -1,8 +1,6 @@
 ﻿using OGClient.Gameplay.Authentication;
-using OGClient.Gameplay.DataProxies;
 using OGShared;
 using OGShared.DataProxies;
-using OGShared.Gameplay.Grid;
 using Zenject;
 namespace OGClient.Installers
 {

@@ -17,6 +17,8 @@ namespace OGShared.DataProxies
         public IObservable<int> LocalPlayerWantsToSpendMoves => _localPlayerWantsToSpendMoves;
         public IObservable<Unit> LocalPlayerWantsToResetMoves => _localPlayerWantsToResetMoves;
 
+        public int CurrentPlayerId { get; private set; } = 0;
+
         public void SetPlayerMoves(int playerId, int movesAmount)
         {
             _moves[playerId] = movesAmount;
@@ -24,7 +26,7 @@ namespace OGShared.DataProxies
 
         public void SetCurrentTurnPlayer(int playerId)
         {
-            Debug.Log($"Set Current Turn Player {playerId}");
+            CurrentPlayerId = playerId;
             _currentPlayerId.OnNext(playerId);
         }
 

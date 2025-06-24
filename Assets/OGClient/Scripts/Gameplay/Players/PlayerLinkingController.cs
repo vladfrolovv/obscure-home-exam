@@ -1,6 +1,6 @@
 ﻿using System;
 using OGClient.Gameplay.DataProxies;
-using OGShared.Gameplay.Grid;
+using OGShared.DataProxies;
 using UniRx;
 using UnityEngine;
 namespace OGClient.Gameplay.Players
@@ -50,10 +50,10 @@ namespace OGClient.Gameplay.Players
 
         private void OnInputUpdate(long l)
         {
-            if (!_gameManager.ThisClientIsCurrentPlayer || _gameManager.CurrentPlayerMovesLeft <= 0) return;
+            if (!_gameManager.CurrentPlayerIsClient || _gameManager.CurrentPlayerMovesLeft <= 0) return;
             if (!Input.GetMouseButtonUp(0) || !_playerLinkingDataProxy.HasControl.Value) return;
 
-            _gridLinkingDataProxy.OnLinkExecuted();
+            _gridLinkingDataProxy.RaiseLinkExecuted();
         }
 
     }

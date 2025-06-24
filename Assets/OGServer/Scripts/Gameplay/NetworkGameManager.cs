@@ -2,13 +2,13 @@ using UniRx;
 using System;
 using Zenject;
 using Fusion;
+using OGShared;
 using UnityEngine;
 using Fusion.Sockets;
-using System.Collections.Generic;
 using OGClient.Utils;
-using OGShared;
-using OGShared.DataProxies;
 using OGShared.Gameplay;
+using OGShared.DataProxies;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 namespace OGServer.Gameplay
 {
@@ -30,13 +30,14 @@ namespace OGServer.Gameplay
 
         private GameSessionDataProxy _gameSessionDataProxy;
         private ScriptableGameSessionSettings _gameSessionSettings;
+        private GridLinkingDataProxy _gridLinkingDataProxy;
         private ClientsAvailabilityController _availabilityController;
 
         private readonly bool _allClientsAreReady = true;
 
         [Inject]
         public void Construct(GameSessionDataProxy gameSessionDataProxy, ScriptableGameSessionSettings scriptableGameSessionSettings,
-                              ClientsAvailabilityController availabilityController)
+                              ClientsAvailabilityController availabilityController, GridLinkingDataProxy gridLinkingDataProxy)
         {
             _gameSessionDataProxy = gameSessionDataProxy;
             _gameSessionSettings = scriptableGameSessionSettings;

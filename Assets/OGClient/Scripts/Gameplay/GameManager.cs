@@ -39,7 +39,7 @@ namespace OGClient.Gameplay
         private readonly GridLinksController _gridLinksController;
         private readonly PlayerLinkingDataProxy _playerLinkingDataProxy;
 
-        public bool ThisClientIsCurrentPlayer => _currentNetworkController != null && _currentNetworkController.HasInputAuthority;
+        public bool CurrentPlayerIsClient => _currentNetworkController != null && _currentNetworkController.HasInputAuthority;
         public int CurrentPlayerMovesLeft => _movesDataProxy.GetMovesLeft(_playerIndex);
 
         public GameManager(ScoreDataProxy scoreDataProxy, PopupsController popupsController, MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
@@ -154,9 +154,10 @@ namespace OGClient.Gameplay
 
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);
             _roundsView.SetRoundsText($"{_playerViews[_playerIndex].PlayerModel.Nickname + "'S TURN!"}");
+            _gridLinksController.SetCurrentPlayerIsClient(CurrentPlayerIsClient);
 
             _playerLinkingDataProxy.ChangeControlState(true);
-            if (ThisClientIsCurrentPlayer)
+            if (CurrentPlayerIsClient)
             {
                 _matchTimerController.ResetTime();
                 _matchTimerController.StartTimer();
@@ -177,7 +178,7 @@ namespace OGClient.Gameplay
         private void TimeUp()
         {
             Debug.Log($"Time is Up. trying to cancel execution and end turn.");
-            if (ThisClientIsCurrentPlayer)
+            if (CurrentPlayerIsClient)
             {
                 _movesDataProxy.TriggerSpendMoveRequest(0);
             }
