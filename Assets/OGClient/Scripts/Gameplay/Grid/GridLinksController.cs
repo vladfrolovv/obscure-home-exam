@@ -68,10 +68,10 @@ namespace OGClient.Gameplay.Grid
 
             _specialLinks.AddRange(_gridLinkSettings.SpecialLinks);
 
-            _currentPlayerIsClient.Subscribe(OnCurrentPlayerSwitched).AddTo(_compositeDisposable);
-
             _gridLinkingDataProxy.GridItemCollected.Subscribe(CollectItemAtGrid).AddTo(_compositeDisposable);
             _gridLinkingDataProxy.LinkExecuted.Subscribe(_ => ExecuteLink()).AddTo(_compositeDisposable);
+
+            _currentPlayerIsClient.Subscribe(OnCurrentPlayerSwitched).AddTo(_compositeDisposable);
 
             matchTimerController.TimeUp.Subscribe(_ => OnControlStateChanged(false)).AddTo(_compositeDisposable);
             playerLinkingDataProxy.HasControl.Subscribe(OnControlStateChanged).AddTo(_compositeDisposable);
@@ -268,7 +268,6 @@ namespace OGClient.Gameplay.Grid
                 }
 
                 GridTileView gridTileView = _tilesLink[index];
-
                 GridItemView gridItemView = gridTileView.GridItemView;
                 Vector2Int tileGridIndex = GetIndexInGrid(gridTileView);
                 if (gridTileView.GridItemView.GridItemType < 0)
