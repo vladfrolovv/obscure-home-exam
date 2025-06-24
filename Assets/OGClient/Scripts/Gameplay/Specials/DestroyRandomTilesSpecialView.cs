@@ -77,7 +77,7 @@ namespace OGClient.Gameplay.Specials
                 Destroy(gridItemView.gameObject);
             }
 
-            _gridLinksController.RemoveFromExecuteList(this.gameObject);
+            // _gridLinksController.RemoveFromExecuteList(this.gameObject);
             _gridLinksController.CheckExecuteLink();
         }
 

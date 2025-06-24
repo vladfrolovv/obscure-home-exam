@@ -41,7 +41,7 @@ namespace OGClient.Gameplay.Specials
                 if (autoTrigger == true) _gridLinksController.CollectItemAtTile(gridTileView, spawnIndex * triggerRate);
             }
 
-            _gridLinksController.RemoveFromExecuteList(this.gameObject);
+            // _gridLinksController.RemoveFromExecuteList(this.gameObject);
             _gridLinksController.CheckExecuteLink();
         }
 

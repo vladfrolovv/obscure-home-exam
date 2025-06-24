@@ -222,7 +222,7 @@ namespace OGClient.Gameplay.Grid
             _gridLinksController.CheckSelectables();
 
             Vector2Int gridTilePos = _gridLinksController.GetIndexInGrid(this);
-            _gridLinksController.LinkRemoveAfterByGrid(gridTilePos.x, gridTilePos.y);
+            _gridLinksController.LinkRemoveAfterByGrid(gridTilePos);
             return true;
         }
 

@@ -18,10 +18,10 @@ namespace OGServer.Gameplay
 
         public override void Spawned()
         {
-            Debug.Log($"[Spawned] Client={Runner.LocalPlayer}, InputAuth={Object.HasInputAuthority}");
-
             _gridLinkingDataProxy.StartedLink.Subscribe(RPC_RequestLinkStart).AddTo(this);
             _gridLinkingDataProxy.LinkAdded.Subscribe(RPC_RequestLinkAdd).AddTo(this);
+            _gridLinkingDataProxy.LinkRemovedAfter.Subscribe(RPC_RequestLinkRemoveAfter).AddTo(this);
+            _gridLinkingDataProxy.GridItemCollected.Subscribe(RPC_RequestGridItemCollected).AddTo(this);
             _gridLinkingDataProxy.LinkExecuted.Subscribe(_ => RPC_RequestLinkExecute()).AddTo(this);
         }
 
@@ -29,7 +29,6 @@ namespace OGServer.Gameplay
         private void RPC_RequestLinkStart(Vector2Int pos)
         {
             if (!Object.HasStateAuthority) return;
-            Debug.Log($"[SERVER] RPC Request for link start at position {pos} from player {Object.InputAuthority.RawEncoded}");
             RPC_BroadcastLinkStarted(pos);
         }
 
@@ -37,16 +36,27 @@ namespace OGServer.Gameplay
         private void RPC_RequestLinkAdd(Vector2Int pos)
         {
             if (!Object.HasStateAuthority) return;
-            Debug.Log($"[SERVER] RPC Request for link add at position {pos} from player {Object.InputAuthority.RawEncoded}");
             RPC_BroadcastLinkAdd(pos);
+        }
+
+        [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
+        private void RPC_RequestLinkRemoveAfter(Vector2Int pos)
+        {
+            if (!Object.HasStateAuthority) return;
+            RPC_BroadcastLinkRemoveAfter(pos);
+        }
+
+        [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
+        private void RPC_RequestGridItemCollected(Vector2Int pos)
+        {
+            if (!Object.HasStateAuthority) return;
+            RPC_BroadcastGridItemCollected(pos);
         }
 
         [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
         private void RPC_RequestLinkExecute()
         {
             if (!Object.HasStateAuthority) return;
-
-            Debug.Log($"[SERVER] RPC Request for link execute from player {Object.InputAuthority.RawEncoded}");
             RPC_BroadcastLinkExecute();
         }
 
@@ -65,9 +75,23 @@ namespace OGServer.Gameplay
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_BroadcastLinkRemoveAfter(Vector2Int pos)
+        {
+            Debug.Log($"[CLIENT {Runner.LocalPlayer} RECEIVED BroadcastLinkRemoveAfter @ {pos}");
+            _gridLinkingDataProxy.RaiseLinkRemovedAfter(pos);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_BroadcastGridItemCollected(Vector2Int pos)
+        {
+            Debug.Log($"[CLIENT {Runner.LocalPlayer} RECEIVED BroadcastGridItemCollected @ {pos}");
+            _gridLinkingDataProxy.RaiseGridItemCollected(pos);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
         private void RPC_BroadcastLinkExecute()
         {
-            Debug.Log($"[CLIENT {Runner.LocalPlayer} RECEIVED BroadcastLinkExecute");
+            Debug.Log($"CLIENT {Runner.LocalPlayer} RECEIVED BroadcastLinkExecute");
             _gridLinkingDataProxy.RaiseLinkExecuted();
         }
 

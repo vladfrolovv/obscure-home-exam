@@ -31,6 +31,7 @@ namespace OGClient.Gameplay.Grid
         private readonly GameSessionDataProxy _gameSessionDataProxy;
         private readonly ScriptableGridSettings _gridSettings;
         private readonly ScriptableGridLinkSettings _gridLinkSettings;
+        private readonly GridLinkingDataProxy _gridLinkingDataProxy;
 
         private readonly Subject<Unit> _gridInitialized = new();
         private readonly Subject<Unit> _gridCleared = new();
@@ -41,13 +42,14 @@ namespace OGClient.Gameplay.Grid
         public GridModel GridModel { get; private set; }
 
         public GridController(GameSessionDataProxy gameSessionDataProxy, ScriptableGridSettings gridSettings, GridHolderView gridHolderView, DiContainer diContainer,
-                              ScriptableGridLinkSettings gridLinkSettings)
+                              ScriptableGridLinkSettings gridLinkSettings, GridLinkingDataProxy gridLinkingDataProxy)
         {
             _diContainer = diContainer;
             _gridHolderView = gridHolderView;
             _gameSessionDataProxy = gameSessionDataProxy;
             _gridSettings = gridSettings;
             _gridLinkSettings = gridLinkSettings;
+            _gridLinkingDataProxy = gridLinkingDataProxy;
 
             _matchPhaseActions.Add(MatchPhase.Ending, EndingMatchPhase);
 

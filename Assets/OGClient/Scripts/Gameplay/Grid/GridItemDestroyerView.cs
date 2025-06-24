@@ -50,7 +50,8 @@ namespace OGClient.Gameplay.Grid
                 int tileX = Mathf.Clamp(tileGridIndex.x + _destroyPatternModel.Directions[_patternIndex].x, 0, gridSize.x - 1);
                 int tileY = Mathf.Clamp(tileGridIndex.y + _destroyPatternModel.Directions[_patternIndex].y, 0, gridSize.y - 1);
 
-                _gridLinksController.CollectItemAtGrid(tileX, tileY, _destroyPatternModel.Delay);
+                // , _destroyPatternModel.Delay;
+                _gridLinksController.CollectItemAtGrid(new Vector2Int(tileX, tileY));
             }
 
             yield return new WaitForSeconds(0.2f);
@@ -59,7 +60,7 @@ namespace OGClient.Gameplay.Grid
 
             _gridView.ShakeBoard();
 
-            _gridLinksController.RemoveFromExecuteList(this.gameObject);
+            // _gridLinksController.RemoveFromExecuteList(this.gameObject);
             _gridLinksController.CheckExecuteLink();
         }
     }

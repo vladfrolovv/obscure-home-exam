@@ -1,5 +1,6 @@
 ﻿using System;
 using OGClient.Gameplay.DataProxies;
+using OGClient.Gameplay.Grid;
 using OGShared.DataProxies;
 using UniRx;
 using UnityEngine;
@@ -9,17 +10,22 @@ namespace OGClient.Gameplay.Players
     {
 
         private readonly GridLinkingDataProxy _gridLinkingDataProxy;
+        private readonly GridLinksController _gridLinksController;
+        private readonly GridController _gridController;
         private readonly PlayerLinkingDataProxy _playerLinkingDataProxy;
         private readonly GameManager _gameManager;
 
         private IDisposable _disposableInput;
         private readonly CompositeDisposable _compositeDisposable = new();
 
-        public PlayerLinkingController(GameManager gameManager, PlayerLinkingDataProxy playerLinkingDataProxy, GridLinkingDataProxy gridLinkingDataProxy)
+        public PlayerLinkingController(GameManager gameManager, PlayerLinkingDataProxy playerLinkingDataProxy, GridLinkingDataProxy gridLinkingDataProxy,
+                                       GridLinksController gridLinksController, GridController gridController)
         {
             _gameManager = gameManager;
             _gridLinkingDataProxy = gridLinkingDataProxy;
             _playerLinkingDataProxy = playerLinkingDataProxy;
+            _gridLinksController = gridLinksController;
+            _gridController = gridController;
 
             InstallInput();
             playerLinkingDataProxy.HasControl.Subscribe(OnInputStateSwitched).AddTo(_compositeDisposable);
