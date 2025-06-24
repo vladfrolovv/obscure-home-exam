@@ -112,6 +112,7 @@ namespace OGClient.Gameplay.Grid
 
         public void CollapseTiles()
         {
+            Debug.Log($"Is Collapsing Tiles");
             for (int listIndex = GridModel.Count - 1; listIndex >= 0; listIndex--)
             {
                 GridItemView gridItemView = GridModel[listIndex].GridItemView;
@@ -123,19 +124,37 @@ namespace OGClient.Gameplay.Grid
                 {
                     checkIndex -= GridModel.GridSize.x;
 
-                    if (!GridModel[checkIndex].GridItemView) break;
-                    GridModel[listIndex].GridItemView = GridModel[checkIndex].GridItemView;
-                    GridModel[checkIndex].GridItemView = null;
-                    GridModel[listIndex].GridItemView.transform.SetParent(GridModel[listIndex].transform);
+                    // if (!GridModel[checkIndex].GridItemView) continue;
+                    // GridModel[listIndex].GridItemView = GridModel[checkIndex].GridItemView;
+                    // GridModel[checkIndex].GridItemView = null;
+                    // GridModel[listIndex].GridItemView.transform.SetParent(GridModel[listIndex].transform);
+                    //
+                    // float dropDelay = _gridSettings.ItemDropDelay * (GridModel.GridSize.x - (float)checkIndex / GridModel.GridSize.x);
+                    // float dropTime = _gridSettings.ItemDropTime;
+                    //
+                    // GridModel[listIndex].GridItemView.PlayDelayedAnimation(FallAnimationParam, dropDelay);
+                    // GridModel[listIndex].GridItemView.PlayDelayedAnimation(BounceAnimationParam, dropDelay + dropTime);
+                    //
+                    // LeanTween.move(GridModel[listIndex].GridItemView.gameObject,
+                    //     GridModel[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay);
 
-                    float dropDelay = _gridSettings.ItemDropDelay * (GridModel.GridSize.x - (float)checkIndex / GridModel.GridSize.x);
-                    float dropTime = _gridSettings.ItemDropTime;
+                    if (GridModel[checkIndex].GridItemView)
+                    {
+                        GridModel[listIndex].GridItemView = GridModel[checkIndex].GridItemView;
+                        GridModel[checkIndex].GridItemView = null;
+                        GridModel[listIndex].GridItemView.transform.SetParent(GridModel[listIndex].transform);
 
-                    GridModel[listIndex].GridItemView.PlayDelayedAnimation(FallAnimationParam, dropDelay);
-                    GridModel[listIndex].GridItemView.PlayDelayedAnimation(BounceAnimationParam, dropDelay + dropTime);
+                        float dropDelay = _gridSettings.ItemDropDelay * (GridModel.GridSize.x - (float)checkIndex / GridModel.GridSize.x);
+                        float dropTime = _gridSettings.ItemDropTime;
 
-                    LeanTween.move(GridModel[listIndex].GridItemView.gameObject,
-                        GridModel[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay);
+                        GridModel[listIndex].GridItemView.PlayDelayedAnimation(FallAnimationParam, dropDelay);
+                        GridModel[listIndex].GridItemView.PlayDelayedAnimation(BounceAnimationParam, dropDelay + dropTime);
+
+                        LeanTween.move(GridModel[listIndex].GridItemView.gameObject,
+                            GridModel[listIndex].transform.position, dropTime).setEaseInCubic().setDelay(dropDelay);
+
+                        break;
+                    }
                 }
             }
 
