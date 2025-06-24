@@ -84,7 +84,6 @@ namespace OGServer.Gameplay
             Observable.Timer(TimeSpan.FromSeconds(BaseConstants.GAME_START_DELAY))
                 .Subscribe(_ =>
                 {
-                    _movesNetworkController.InitializeMovesController();
                     _gameSessionDataProxy.SetMatchPhase(MatchPhase.Playing);
 
                     Rpc_SetMatchPhase(MatchPhase.Playing);

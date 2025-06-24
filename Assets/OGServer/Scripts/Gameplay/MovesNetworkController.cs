@@ -1,7 +1,6 @@
 ﻿using UniRx;
 using Fusion;
 using Zenject;
-using OGClient;
 using OGShared;
 using OGShared.Gameplay;
 using OGShared.DataProxies;
@@ -25,21 +24,19 @@ namespace OGServer.Gameplay
             _gameplaySettings = gameplaySettings;
         }
 
-        public void InitializeMovesController()
+        public override void Spawned()
         {
             if (!Object.HasStateAuthority) return;
+
             StartPlayerTurn(GetFirstPlayerOfMatch());
 
-            Debug.Log($"[SERVER] is trying to initialize moves controller with First Player[{CurrentPlayerId}] and Standard Moves amount [{_gameplaySettings.MovesPerTurn}]");
-            _movesDataProxy.LocalPlayerWantsToSpendMoves.Subscribe(RPC_TryToSpendMove).AddTo(this);
-            _movesDataProxy.LocalPlayerWantsToResetMoves.Subscribe(_ => RPC_TryToResetMoves()).AddTo(this);
-        }
+            Debug.Log($"[SERVER] is trying to initialize moves controller with First Player[{CurrentPlayerId}] "
+                      + $"Standard Moves amount [{_gameplaySettings.MovesPerTurn}]");
 
-        private int GetFirstPlayerOfMatch()
-        {
-            return 0;
+            _movesDataProxy.LocalPlayerWantsToSpendMoves.Subscribe(RPC_RequestTryToSpendMove).AddTo(this);
+            _movesDataProxy.LocalPlayerWantsToResetMoves.Subscribe(_ => RPC_RequestTryToResetMoves()).AddTo(this);
         }
-
+        
         private void AdvanceTurn()
         {
             if (!Object.HasStateAuthority) return;
@@ -54,20 +51,15 @@ namespace OGServer.Gameplay
 
             CurrentPlayerId = playerId;
             Moves.Add(CurrentPlayerId, _gameplaySettings.MovesPerTurn);
-            RPC_UpdateMovesDataProxy();
-        }
 
-        [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
-        private void RPC_UpdateMovesDataProxy()
-        {
-            Debug.Log($"Moves Data Proxy Updated with Player: {CurrentPlayerId}, Moves: {Moves[CurrentPlayerId]}");
-            _movesDataProxy.SetPlayerMoves(CurrentPlayerId, Moves[CurrentPlayerId]);
-            _movesDataProxy.SetCurrentTurnPlayer(CurrentPlayerId);
+            RPC_BroadcastUpdateMovesDataProxy();
+            RPC_BroadcastPlayerTurnStarted(CurrentPlayerId);
         }
 
         [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
-        private void RPC_TryToSpendMove(int moves)
+        private void RPC_RequestTryToSpendMove(int moves)
         {
+            if (!Object.HasStateAuthority) return;
             int playerId = Object.InputAuthority.PlayerId;
             Debug.Log($"[SERVER] trying to spend move for {playerId}");
 
@@ -81,11 +73,14 @@ namespace OGServer.Gameplay
             {
                 AdvanceTurn();
             }
+
+            RPC_BroadcastUpdateMovesDataProxy();
         }
 
         [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
-        private void RPC_TryToResetMoves()
+        private void RPC_RequestTryToResetMoves()
         {
+            if (!Object.HasStateAuthority) return;
             int playerId = Object.InputAuthority.PlayerId;
             Debug.Log($"[SERVER] trying to reset moves for {playerId}");
 
@@ -95,6 +90,28 @@ namespace OGServer.Gameplay
             {
                 AdvanceTurn();
             }
+
+            RPC_BroadcastUpdateMovesDataProxy();
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
+        private void RPC_BroadcastUpdateMovesDataProxy()
+        {
+            Debug.Log($"Moves Data Proxy Updated with Player: {CurrentPlayerId}, Moves: {Moves[CurrentPlayerId]}");
+            _movesDataProxy.SetPlayerMoves(CurrentPlayerId, Moves[CurrentPlayerId]);
+            _movesDataProxy.SetCurrentTurnPlayer(CurrentPlayerId);
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        private void RPC_BroadcastPlayerTurnStarted(int playerId)
+        {
+            Debug.Log($"[SERVER] Player Turn Started for Player: {playerId}");
+            _movesDataProxy.SetCurrentTurnPlayer(playerId);
+        }
+        
+        private static int GetFirstPlayerOfMatch()
+        {
+            return Random.Range(0, BaseConstants.PLAYERS_PER_MATCH);
         }
 
     }

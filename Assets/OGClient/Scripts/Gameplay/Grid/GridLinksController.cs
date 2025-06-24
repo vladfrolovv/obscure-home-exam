@@ -9,6 +9,7 @@ using OGClient.Gameplay.Grid.Configs;
 using OGClient.Gameplay.Grid.MergeCombos;
 using OGClient.Gameplay.Grid.Models;
 using OGClient.Gameplay.UI;
+using OGShared;
 using OGShared.DataProxies;
 using UnityEngine.EventSystems;
 using Debug = UnityEngine.Debug;
@@ -49,14 +50,14 @@ namespace OGClient.Gameplay.Grid
         private readonly ReactiveProperty<bool> _currentPlayerIsClient = new(false);
 
         public IReadOnlyList<GridTileView> TilesLink => _tilesLink;
-        public IReadOnlyList<GridItemView> PowerupsInLink => _powerupsInLink;
-
         public void SetCurrentPlayerIsClient(bool client) => _currentPlayerIsClient.Value = client;
 
         public GridLinksController(GridController gridController, MergeCombosController mergeCombosController, MatchTimerController matchTimerController,
                                    ScriptableGridLinkSettings gridLinkSettings, EventSystem eventSystem, PlayerLinkingDataProxy playerLinkingDataProxy,
                                    GridLinkingDataProxy gridLinkingDataProxy, ToastView toastView, MovesDataProxy movesDataProxy)
         {
+            if (NetworkRunnerInstance.Instance.IsServer) return;
+            
             _eventSystem = eventSystem;
             _gridController = gridController;
             _mergeCombosController = mergeCombosController;
@@ -83,7 +84,6 @@ namespace OGClient.Gameplay.Grid
             {
                 Debug.Log($"Current player is client. Sending inputs");
                 _disposableListenerLinkingEvents?.Dispose();
-
             }
             else
             {
@@ -245,6 +245,12 @@ namespace OGClient.Gameplay.Grid
         private void ExecuteLink()
         {
             Debug.Log($"Is executing link | Tiles Count {_tilesLink.Count}");
+            if (!_currentPlayerIsClient.Value)
+            {
+                EndExecuteLink();
+                return;
+            }
+
             if (_isExecuting) return;
             _isExecuting = true;
 

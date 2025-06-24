@@ -5,7 +5,7 @@ using OGServer.Gameplay;
 using OGServer.Matchmaking;
 namespace OGShared
 {
-    public class ClientStartupController : MonoBehaviour
+    public class StartupController : MonoBehaviour
     {
 
         [Header("Prefabs")]
@@ -69,6 +69,9 @@ namespace OGShared
 
         private static bool IsDedicatedServer()
         {
+#if UNITY_EDITOR
+            return true;
+#endif
             return Application.isBatchMode;
         }
 

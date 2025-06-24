@@ -135,6 +135,7 @@ namespace OGClient.Gameplay
 
         private void SetCurrentPlayer()
         {
+            Debug.Log($"Setting current player to index: {_playerIndex} | Player Moves: {_movesDataProxy.Moves[_playerIndex]}");
             _currentNetworkController = _players[_playerIndex];
             _movesDataProxy.TriggerResetMovesRequest();
 

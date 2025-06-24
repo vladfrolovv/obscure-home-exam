@@ -1,6 +1,5 @@
 ﻿using System;
 using UniRx;
-using UnityEngine;
 namespace OGShared.DataProxies
 {
     public class MovesDataProxy
