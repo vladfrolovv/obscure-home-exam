@@ -16,6 +16,16 @@ Server are coupled tighter than it should be.
 ## Dedicated Server overiview:
 ![obscure-diagrams drawio](https://github.com/user-attachments/assets/7023fb48-1c0d-4e08-b405-38b8034611aa)
 
+#### How to start local server (PlayFab TBD)?
+Right now - matchmaking solution is straightforward single room, which is created when local server executed.
+1. Run og-builds/og-dedicated-server/OGExam.exe for single match;
+2. Connect Clients.
+
+#### Inputs Handling
+Server receives input RPCs from the current player via DataProxies Subjects, validates them, and executes actions.
+It then syncs the updated state to all clients via broadcast RPCs.
+
+
 ## Demo:
 https://github.com/user-attachments/assets/36f19c79-948e-4fcc-a2e6-f9ff03ef7d3e
 
