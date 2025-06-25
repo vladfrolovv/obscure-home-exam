@@ -45,7 +45,7 @@ namespace OGClient.Gameplay.Grid
 
         private readonly CompositeDisposable _compositeDisposable = new();
         private readonly CompositeDisposable _disposableListenerLinkingEvents = new();
-        private readonly CompositeDisposable _disposableSenderLinkingEvents = new();
+        private readonly List<IDisposable> _disposableListeners = new();
         private readonly ReactiveProperty<bool> _currentPlayerIsClient = new(false);
 
         public IReadOnlyList<GridTileView> TilesLink => _tilesLink;
@@ -82,15 +82,15 @@ namespace OGClient.Gameplay.Grid
             if (isClient)
             {
                 Debug.Log($"Current player is client. Sending inputs");
-                _disposableListenerLinkingEvents?.Dispose();
+                _disposableListeners.ForEach(d => d?.Dispose());
+                _disposableListeners.Clear();
             }
             else
             {
                 Debug.Log($"Current player is not client. receiving inputs");
-                _disposableSenderLinkingEvents?.Dispose();
-                _gridLinkingDataProxy.StartedLink.Subscribe(LinkStartByGrid).AddTo(_disposableListenerLinkingEvents);
-                _gridLinkingDataProxy.LinkAdded.Subscribe(LinkAddedByGrid).AddTo(_disposableListenerLinkingEvents);
-                _gridLinkingDataProxy.LinkRemovedAfter.Subscribe(LinkRemoveAfterByGrid).AddTo(_disposableListenerLinkingEvents);
+                _disposableListeners.Add(_gridLinkingDataProxy.StartedLink.Subscribe(LinkStartByGrid));
+                _disposableListeners.Add(_gridLinkingDataProxy.LinkAdded.Subscribe(LinkAddedByGrid));
+                _disposableListeners.Add(_gridLinkingDataProxy.LinkRemovedAfter.Subscribe(LinkRemoveAfterByGrid));
             }
         }
 

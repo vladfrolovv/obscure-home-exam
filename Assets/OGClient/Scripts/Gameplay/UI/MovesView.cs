@@ -33,8 +33,8 @@ namespace OGClient.Gameplay.UI
 
         private void Awake()
         {
-            _movesDataProxy.Moves.ObserveAdd().Subscribe(OnMovesAdd).AddTo(this);
-            _movesDataProxy.Moves.ObserveReplace().Subscribe(OnMovesReplaced).AddTo(this);
+            // _movesDataProxy.Moves.ObserveAdd().Subscribe(OnMovesAdd).AddTo(this);
+            // _movesDataProxy.Moves.ObserveReplace().Subscribe(OnMovesReplaced).AddTo(this);
         }
 
         private void OnMovesAdd(DictionaryAddEvent<int, int> addEvent)
@@ -50,7 +50,6 @@ namespace OGClient.Gameplay.UI
         private void OnMovesUpgrade(int playerIndex, int movesLeft)
         {
             if (_playerIndex != playerIndex) return;
-            Debug.Log($"Trying to update moves for player {_playerIndex} with value {movesLeft}");
 
             _movesBarView.ChangeProgress(movesLeft);
             _movesText.SetText($"{movesLeft}");
