@@ -25,15 +25,13 @@ namespace OGClient.Gameplay.Players
         private bool _isMainPlayer;
 
         private GameManager _gameManager;
-        private MovesDataProxy _movesDataProxy;
         private ScoreDataProxy _scoreDataProxy;
         private ClientsAvailabilityController _availabilityController;
 
         [Inject]
-        public void Construct(MovesDataProxy movesDataProxy, ScoreDataProxy scoreDataProxy, GameManager gameManager, ClientsAvailabilityController clientsAvailabilityController)
+        public void Construct(ScoreDataProxy scoreDataProxy, GameManager gameManager, ClientsAvailabilityController clientsAvailabilityController)
         {
             _gameManager = gameManager;
-            _movesDataProxy = movesDataProxy;
             _scoreDataProxy = scoreDataProxy;
             _availabilityController = clientsAvailabilityController;
         }
@@ -55,20 +53,15 @@ namespace OGClient.Gameplay.Players
 
         private void InstallPlayerViews()
         {
-            _playerIndex = Object.InputAuthority.RawEncoded;
+            _playerIndex = _gameManager.AddNewPlayer(this, _playerView);
+            _scoreDataProxy.SetPlayerScore(_playerIndex, 0);
             _isMainPlayer = Object.HasInputAuthority;
-
             PlayerModel playerModel = new (_playerIndex, isMain: _isMainPlayer, nickname: $"Player {_playerIndex}",
                 _playersProfiles.GetColor(_isMainPlayer));
 
             _scoreView.SetPlayerIndex(_playerIndex);
             _movesView.Setup(_playerIndex, _gameplaySettings.MovesPerTurn, _playersProfiles.GetColor(_isMainPlayer), this);
             _playerView.InstallPlayerView(playerModel);
-
-            _gameManager.AddNewPlayer(_playerIndex, this, _playerView);
-
-            _movesDataProxy.SetPlayerMoves(_playerIndex, _gameplaySettings.MovesPerTurn);
-            _scoreDataProxy.SetPlayerScore(_playerIndex, 0);
         }
 
     }

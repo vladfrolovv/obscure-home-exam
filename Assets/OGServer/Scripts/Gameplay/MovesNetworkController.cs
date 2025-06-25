@@ -1,4 +1,5 @@
-﻿using UniRx;
+﻿using System.Collections.Generic;
+using UniRx;
 using Fusion;
 using Zenject;
 using OGShared;
@@ -10,9 +11,8 @@ namespace OGServer.Gameplay
     public class MovesNetworkController : NetworkBehaviour
     {
 
-        [Networked, Capacity(BaseConstants.PLAYERS_PER_MATCH)]
-        private NetworkDictionary<int, int> Moves => default;
         [Networked] private int CurrentPlayerId { get; set; }
+        private readonly Dictionary<int, int> _moves = new (BaseConstants.PLAYERS_PER_MATCH);
 
         private MovesDataProxy _movesDataProxy;
         private ScriptableGameplaySettings _gameplaySettings;
@@ -26,21 +26,19 @@ namespace OGServer.Gameplay
 
         public override void Spawned()
         {
+            _movesDataProxy.SpendMoves.Subscribe(RPC_RequestTryToSpendMove).AddTo(this);
+            _movesDataProxy.ResetMoves.Subscribe(_ => RPC_RequestTryToResetMoves()).AddTo(this);
+        }
+
+        public void InitializeMovesNetworkController()
+        {
             if (!Object.HasStateAuthority) return;
-
             StartPlayerTurn(GetFirstPlayerOfMatch());
-
-            Debug.Log($"[SERVER] is trying to initialize moves controller with First Player[{CurrentPlayerId}] "
-                      + $"Standard Moves amount [{_gameplaySettings.MovesPerTurn}]");
-
-            _movesDataProxy.LocalPlayerWantsToSpendMoves.Subscribe(RPC_RequestTryToSpendMove).AddTo(this);
-            _movesDataProxy.LocalPlayerWantsToResetMoves.Subscribe(_ => RPC_RequestTryToResetMoves()).AddTo(this);
         }
         
         private void AdvanceTurn()
         {
             if (!Object.HasStateAuthority) return;
-
             Debug.Log($"Turning to next player. Current Player: {CurrentPlayerId}");
             StartPlayerTurn(CurrentPlayerId == 1 ? 0 : 1);
         }
@@ -50,9 +48,12 @@ namespace OGServer.Gameplay
             if (!Object.HasStateAuthority) return;
 
             CurrentPlayerId = playerId;
-            Moves.Add(CurrentPlayerId, _gameplaySettings.MovesPerTurn);
+            _moves[playerId] = _gameplaySettings.MovesPerTurn;
 
-            RPC_BroadcastUpdateMovesDataProxy();
+            Debug.Log($"[SERVER] is trying to initialize moves controller with First Player[{CurrentPlayerId}] "
+                      + $"Standard Moves amount [{_gameplaySettings.MovesPerTurn}]");
+
+            RPC_BroadcastUpdateMovesDataProxy(CurrentPlayerId, _moves[CurrentPlayerId]);
             RPC_BroadcastPlayerTurnStarted(CurrentPlayerId);
         }
 
@@ -60,46 +61,38 @@ namespace OGServer.Gameplay
         private void RPC_RequestTryToSpendMove(int moves)
         {
             if (!Object.HasStateAuthority) return;
-            int playerId = Object.InputAuthority.PlayerId;
-            Debug.Log($"[SERVER] trying to spend move for {playerId}");
-
-            if (playerId != CurrentPlayerId) return;
-            if (!Moves.TryGet(playerId, out int movesLeft) || movesLeft <= 0) return;
-
-            int spendMoves = moves == 0 ? -Moves[playerId] : moves;
-            Moves.Set(playerId, movesLeft + spendMoves);
-            _movesDataProxy.SetPlayerMoves(CurrentPlayerId, Moves[CurrentPlayerId]);
-            if (Moves[playerId] == 0)
+            if (_moves.TryGetValue(CurrentPlayerId, out int left) && left > 0)
             {
-                AdvanceTurn();
-            }
+                int spend = moves == 0 ? left : moves;
+                _moves[CurrentPlayerId] = left - spend;
+                Debug.Log($"[SERVER] Player {CurrentPlayerId} spent {spend}, left {_moves[CurrentPlayerId]}");
 
-            RPC_BroadcastUpdateMovesDataProxy();
+                if (_moves[CurrentPlayerId] <= 0)
+                    AdvanceTurn();
+
+                RPC_BroadcastUpdateMovesDataProxy(CurrentPlayerId, _moves[CurrentPlayerId]);
+            }
         }
 
         [Rpc(RpcSources.Proxies, RpcTargets.StateAuthority)]
         private void RPC_RequestTryToResetMoves()
         {
             if (!Object.HasStateAuthority) return;
-            int playerId = Object.InputAuthority.PlayerId;
-            Debug.Log($"[SERVER] trying to reset moves for {playerId}");
+            _moves[CurrentPlayerId] = _gameplaySettings.MovesPerTurn;
+            Debug.Log($"[SERVER] Player {CurrentPlayerId} reset moves to {_moves[CurrentPlayerId]}");
 
-            Moves.Set(playerId, _gameplaySettings.MovesPerTurn);
-            _movesDataProxy.SetPlayerMoves(CurrentPlayerId, Moves[CurrentPlayerId]);
-            if (Moves[playerId] == 0)
-            {
+            if (_moves[CurrentPlayerId] <= 0)
                 AdvanceTurn();
-            }
 
-            RPC_BroadcastUpdateMovesDataProxy();
+            RPC_BroadcastUpdateMovesDataProxy(CurrentPlayerId, _moves[CurrentPlayerId]);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.Proxies)]
-        private void RPC_BroadcastUpdateMovesDataProxy()
+        private void RPC_BroadcastUpdateMovesDataProxy(int playerId, int moves)
         {
-            Debug.Log($"Moves Data Proxy Updated with Player: {CurrentPlayerId}, Moves: {Moves[CurrentPlayerId]}");
-            _movesDataProxy.SetPlayerMoves(CurrentPlayerId, Moves[CurrentPlayerId]);
-            _movesDataProxy.SetCurrentTurnPlayer(CurrentPlayerId);
+            Debug.Log($"[CLIENT] UpdateMovesDataProxy: Player {playerId}, Moves {moves}");
+            _movesDataProxy.SetPlayerMoves(playerId, moves);
+            _movesDataProxy.SetCurrentTurnPlayer(playerId);
         }
 
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

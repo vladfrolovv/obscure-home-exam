@@ -50,6 +50,7 @@ namespace OGClient.Gameplay.UI
         private void OnMovesUpgrade(int playerIndex, int movesLeft)
         {
             if (_playerIndex != playerIndex) return;
+            Debug.Log($"Trying to update moves for player {_playerIndex} with value {movesLeft}");
 
             _movesBarView.ChangeProgress(movesLeft);
             _movesText.SetText($"{movesLeft}");

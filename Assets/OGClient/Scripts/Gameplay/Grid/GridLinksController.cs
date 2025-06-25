@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using OGClient.Gameplay.DataProxies;
 using UniRx;
 using UnityEngine;
@@ -57,7 +56,7 @@ namespace OGClient.Gameplay.Grid
                                    GridLinkingDataProxy gridLinkingDataProxy, ToastView toastView, MovesDataProxy movesDataProxy)
         {
             if (NetworkRunnerInstance.Instance.IsServer) return;
-            
+
             _eventSystem = eventSystem;
             _gridController = gridController;
             _mergeCombosController = mergeCombosController;
@@ -308,10 +307,11 @@ namespace OGClient.Gameplay.Grid
 
             if (_currentPlayerIsClient.Value)
             {
-                _movesDataProxy.TriggerSpendMoveRequest(-1);
+                Debug.Log($"[CLIENT] Trying to spend moves for link execution.");
+                _movesDataProxy.RaiseSpendMoveRequest(1);
                 if (_powerupsInLink.Count > 1)
                 {
-                    _movesDataProxy.TriggerSpendMoveRequest(-1);
+                    _movesDataProxy.RaiseSpendMoveRequest(-1);
                     _toastView.SetToast(_tilesLink[^1].transform.position, "EXTRA MOVE!", new Color(1, 0.37f, 0.67f, 1));
                 }
             }

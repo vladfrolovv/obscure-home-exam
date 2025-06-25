@@ -56,7 +56,6 @@ namespace OGClient.Gameplay.UI
         public void ChangeProgress(float changeValue)
         {
             progress += changeValue;
-
             UpdateProgress(changeValue);
         }
 

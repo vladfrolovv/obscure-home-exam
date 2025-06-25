@@ -24,10 +24,9 @@ namespace OGClient.Gameplay
 
         private readonly CompositeDisposable _compositeDisposable = new();
 
-        private int _playerIndex;
+        private int _playerIndex = -1;
         private NetworkPlayerController _currentNetworkController;
 
-        private readonly ToastView _toastView;
         private readonly RoundsView _roundsView;
         private readonly PlayerTurnView _playerTurnView;
         private readonly ScoreDataProxy _scoreDataProxy;
@@ -39,16 +38,17 @@ namespace OGClient.Gameplay
         private readonly GridLinksController _gridLinksController;
         private readonly PlayerLinkingDataProxy _playerLinkingDataProxy;
 
-        public bool CurrentPlayerIsClient => _currentNetworkController != null && _currentNetworkController.HasInputAuthority;
+        public bool CurrentPlayerIsClient => _currentNetworkController != null &&
+                                             _currentNetworkController.HasInputAuthority;
         public int CurrentPlayerMovesLeft => _movesDataProxy.GetMovesLeft(_playerIndex);
 
-        public GameManager(ScoreDataProxy scoreDataProxy, PopupsController popupsController, MatchTimerController matchTimerController, ScriptableGameplaySettings gameplaySettings,
-                           GameSessionDataProxy gameSessionDataProxy, RoundsView roundsView, PlayerTurnView playerTurnView, GridLinksController gridLinksController, ToastView toastView,
+        public GameManager(ScoreDataProxy scoreDataProxy, PopupsController popupsController, MatchTimerController matchTimerController,
+                           ScriptableGameplaySettings gameplaySettings, GameSessionDataProxy gameSessionDataProxy,
+                           RoundsView roundsView, PlayerTurnView playerTurnView, GridLinksController gridLinksController,
                            MovesDataProxy movesDataProxy, PlayerLinkingDataProxy playerLinkingDataProxy)
         {
             if (NetworkRunnerInstance.Instance.IsServer) return;
 
-            _toastView = toastView;
             _roundsView = roundsView;
             _playerTurnView = playerTurnView;
             _movesDataProxy = movesDataProxy;
@@ -75,13 +75,15 @@ namespace OGClient.Gameplay
             _compositeDisposable?.Dispose();
         }
 
-        public void AddNewPlayer(int index, NetworkPlayerController playerController, PlayerView playerView)
+        public int AddNewPlayer(NetworkPlayerController playerController, PlayerView playerView)
         {
             int absoluteIndex = _players.Count;
             Debug.Log($"[CLIENT] Adding player {absoluteIndex}");
 
             _players.TryAdd(absoluteIndex, playerController);
             _playerViews.TryAdd(absoluteIndex, playerView);
+
+            return absoluteIndex;
         }
 
         public void OnMatchPhaseChanged(MatchPhase phase)
@@ -124,26 +126,27 @@ namespace OGClient.Gameplay
 
         private void NextPlayer(int playerIndex)
         {
-            _playerIndex = playerIndex;
-            if (_gameSessionDataProxy.CurrentRound.Value <= _gameSessionDataProxy.Rounds.Value)
+            if (playerIndex == _playerIndex) return;
+            Observable.Timer(TimeSpan.FromSeconds(BaseConstants.GAME_START_DELAY)).Subscribe(delegate
             {
+                _playerIndex = playerIndex;
                 SetCurrentPlayer();
-            }
-
-            _matchTimerController.ResetTime();
+                _matchTimerController.ResetTime();
+            }).AddTo(_compositeDisposable);
         }
 
         private void SetCurrentPlayer()
         {
             Debug.Log($"Setting current player to index: {_playerIndex} | Player Moves: {_movesDataProxy.Moves[_playerIndex]}");
             _currentNetworkController = _players[_playerIndex];
-            _movesDataProxy.TriggerResetMovesRequest();
+            _movesDataProxy.RaiseResetMovesRequest();
 
             _playerTurnView.ShowAnimation(_playerViews[_playerIndex].PlayerModel.Nickname);
             _roundsView.SetRoundsText($"{_playerViews[_playerIndex].PlayerModel.Nickname + "'S TURN!"}");
             _gridLinksController.SetCurrentPlayerIsClient(CurrentPlayerIsClient);
 
-            _playerLinkingDataProxy.ChangeControlState(true);
+            _playerLinkingDataProxy.ChangeControlState(CurrentPlayerIsClient);
+
             if (CurrentPlayerIsClient)
             {
                 _matchTimerController.ResetTime();
@@ -167,7 +170,8 @@ namespace OGClient.Gameplay
             Debug.Log($"Time is Up. trying to cancel execution and end turn.");
             if (CurrentPlayerIsClient)
             {
-                _movesDataProxy.TriggerSpendMoveRequest(0);
+                Debug.Log($"Trying to set moves to 0 for player {_playerIndex}");
+                _movesDataProxy.RaiseSpendMoveRequest(0);
             }
             _playerLinkingDataProxy.ChangeControlState(true);
             // NextPlayer();
